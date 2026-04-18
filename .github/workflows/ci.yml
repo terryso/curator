@@ -7,35 +7,34 @@ on:
     branches: [main]
 
 jobs:
-  build-and-test:
-    name: Build & Test (macOS)
+  test:
+    name: Test (macOS)
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache xcodegen
+        uses: actions/cache@v4
+        with:
+          path: /opt/homebrew/Cellar/xcodegen
+          key: xcodegen-${{ runner.os }}
+        id: cache-xcodegen
+
       - name: Install xcodegen
+        if: steps.cache-xcodegen.outputs.cache-hit != 'true'
         run: brew install xcodegen
 
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Cache DerivedData
+      - name: Cache SPM packages
         uses: actions/cache@v4
         with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: xcode-${{ runner.os }}-${{ hashFiles('Curator.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved', 'project.yml') }}
-          restore-keys: xcode-${{ runner.os }}-
+          path: ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('Curator.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
 
-      - name: Build
-        run: |
-          xcodebuild build \
-            -project Curator.xcodeproj \
-            -scheme Curator \
-            -destination 'platform=macOS,arch=arm64' \
-            CODE_SIGN_IDENTITY="-" \
-            | xcpretty --color || true
-
-      - name: Run unit tests
+      - name: Run tests with coverage
         run: |
           xcodebuild test \
             -project Curator.xcodeproj \

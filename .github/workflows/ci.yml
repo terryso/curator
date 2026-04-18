@@ -50,7 +50,6 @@ jobs:
           RESULT_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" -path "*/Test*" -type d | head -1)
           if [ -z "$RESULT_PATH" ]; then
             echo "No test results found, skipping coverage"
-            echo "COVERAGE=0.0" >> $GITHUB_ENV
             exit 0
           fi
 
@@ -58,18 +57,4 @@ jobs:
           if [ -z "$COVERAGE" ]; then
             COVERAGE="0.0"
           fi
-          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
           echo "Coverage: ${COVERAGE}%"
-
-      - name: Update coverage badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: Schneegans/dynamic-badges-action@v1.8.0
-        with:
-          auth: ${{ secrets.GIST_TOKEN }}
-          gistID: ${{ secrets.GIST_ID }}
-          filename: coverage.json
-          label: coverage
-          message: ${{ env.COVERAGE }}%
-          valColorRange: ${{ env.COVERAGE }}
-          maxColorRange: 100
-          minColorRange: 0

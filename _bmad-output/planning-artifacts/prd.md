@@ -29,521 +29,521 @@ classification:
 workflowType: 'prd'
 ---
 
-# Product Requirements Document — Curator
+# 产品需求文档 — Curator
 
-**Author:** Nick
-**Date:** 2026-04-14
+**作者:** Nick
+**日期:** 2026-04-14
 
-## Executive Summary
+## 概要
 
-**Product Vision:**
+**产品愿景:**
 
-A native macOS application that replaces an entire professional photo toolchain with natural language commands. Users manage, organize, edit, and process their Apple Photos library by describing what they want — the AI agent plans the work, executes it with full transparency, and waits for user approval on critical operations.
+一款原生 macOS 应用，用自然语言指令替代整个专业照片工具链。用户通过描述自己的需求来管理、整理、编辑和处理 Apple 照片图库——AI Agent 负责规划工作、透明执行，并在关键操作前等待用户确认。
 
-**Target Users:** Mac users with large photo libraries (1,000+ photos) who find Apple Photos inadequate for intelligent organization, deduplication, and batch processing. They want professional-grade results without learning professional-grade tools.
+**目标用户:** 拥有大型照片图库（1000+ 照片）的 Mac 用户，认为 Apple 照片无法满足智能整理、去重和批量处理需求。他们想要专业级的效果，但不想学习专业级工具。
 
-**Problem:** Photo libraries grow unmanageably large while the tools to manage them remain either too basic (Apple Photos) or too complex (Lightroom, Photoshop). Users accumulate thousands of photos but lack a practical way to organize, deduplicate, rename, or enhance them at scale. Existing solutions like PowerPhotos ($30) and PhotoSweeper rely on rule-based matching — no AI, no understanding of photo content, no natural language interaction.
+**问题:** 照片图库越来越庞大，而管理工具要么太基础（Apple 照片），要么太复杂（Lightroom、Photoshop）。用户积累了成千上万张照片，却没有实用的方法来批量整理、去重、重命名或增强。现有方案如 PowerPhotos（$30）和 PhotoSweeper 依赖规则匹配——没有 AI、不理解照片内容、不支持自然语言交互。
 
-**Why Now:** Multimodal LLMs (Claude, GPT-4o) have reached the capability threshold where AI can genuinely understand photo content — not just detect faces and objects, but comprehend scenes, quality, context, and user intent. This creates a product window that didn't exist 12 months ago.
+**为什么是现在:** 多模态 LLM（Claude、GPT-4o）已经达到了 AI 真正理解照片内容的能力门槛——不只是检测人脸和物体，而是理解场景、质量、上下文和用户意图。这在 12 个月前还不存在。
 
-**Built On:** OpenAgentSDKSwift — the first real-world application constructed on the SDK, validating its agent loop, tool execution, session management, and streaming capabilities in a consumer-facing product.
+**技术基础:** OpenAgentSDKSwift——构建在该 SDK 之上的第一个真实应用，验证其 Agent 循环、工具执行、会话管理和流式传输能力在消费级产品中的表现。
 
-### What Makes This Special
+### 核心差异化
 
-**Natural Language as the Interface.** This is not a chat app that happens to work with photos. It's an agent workspace where users express goals ("find all blurry photos and delete the duplicates"), and the agent autonomously plans a multi-step workflow: scan the library, analyze each photo for quality and similarity, group results, present for review, and execute approved changes.
+**自然语言即界面。** 这不是一个碰巧能处理照片的聊天应用。这是一个 Agent 工作空间——用户表达目标（"找出所有模糊照片并删除重复的"），Agent 自主规划多步工作流：扫描图库、分析每张照片的质量和相似度、分组结果、呈现审核、执行确认的变更。
 
-**Agent Transparency and Control.** Every AI photo tool on the market is a black box — users press a button and hope. This app shows the agent's reasoning, surfaces what it found and why, and requires explicit approval before destructive operations. Users stay in control while the agent does the heavy lifting.
+**Agent 透明与控制。** 市面上所有 AI 照片工具都是黑盒——用户按个按钮然后祈祷。本应用展示 Agent 的推理过程、呈现发现及原因，并在破坏性操作前要求明确确认。用户始终掌控全局，Agent 负责繁重工作。
 
-**SDK Validation as Strategic Asset.** As the flagship application built on OpenAgentSDKSwift, this product demonstrates that the SDK can power a real consumer application — not just developer examples. This creates a flywheel: SDK improvements benefit the app, and app requirements drive SDK evolution.
+**SDK 验证作为战略资产。** 作为构建在 OpenAgentSDKSwift 上的旗舰应用，本产品证明 SDK 能够驱动真正的消费级应用——不只是开发者示例。这创造了飞轮效应：SDK 改进惠及应用，应用需求推动 SDK 演进。
 
-**Competitive Positioning:**
-- vs Apple Photos: AI intelligence vs basic organization
-- vs PowerPhotos/PhotoSweeper: Agent-driven vs rule-based
-- vs Claude Desktop: Purpose-built photo agent vs general chat
-- vs Lightroom: Natural language vs complex UI
+**竞争定位:**
+- vs Apple 照片：AI 智能化 vs 基础整理
+- vs PowerPhotos/PhotoSweeper：Agent 驱动 vs 规则驱动
+- vs Claude Desktop：专用的照片 Agent vs 通用聊天
+- vs Lightroom：自然语言 vs 复杂 UI
 
-## Project Classification
+## 项目分类
 
-| Dimension | Classification |
-|-----------|---------------|
-| **Project Type** | Desktop Application (native macOS, SwiftUI) |
-| **Domain** | Consumer AI / Photo Management |
-| **Complexity** | Medium — AI infrastructure handled by SDK; complexity in PhotoKit integration, image analysis pipeline, and user trust |
-| **Context** | Greenfield product built on brownfield SDK (OpenAgentSDKSwift) |
-| **Distribution** | Direct website download (DMG, notarized) — not Mac App Store |
+| 维度 | 分类 |
+|------|------|
+| **项目类型** | 桌面应用（原生 macOS，SwiftUI） |
+| **领域** | 消费级 AI / 照片管理 |
+| **复杂度** | 中等——AI 基础设施由 SDK 处理；复杂性在于 PhotoKit 集成、图像分析管线和用户信任 |
+| **背景** | 基于已有 SDK（OpenAgentSDKSwift）构建的全新产品 |
+| **分发方式** | 网站直接下载（DMG，已公证）——非 Mac App Store |
 
-## Success Criteria
+## 成功标准
 
-### User Success
+### 用户成功
 
-- **Aha Moment:** User types a natural language command (e.g., "find all duplicate photos") and receives meaningful analysis results within 60 seconds
-- **Trust Building:** User approves the agent's first batch operation (delete/rename/move) without anxiety
-- **Habit Formation:** User opens the app at least once per week to process photos (sustained need, not novelty trial)
-- **Task Completion Rate:** 90% of natural language commands are correctly understood and executed without rephrasing
+- **顿悟时刻:** 用户输入自然语言指令（如"找出所有重复照片"）并在 60 秒内获得有意义的分析结果
+- **信任建立:** 用户无焦虑地批准 Agent 的第一次批量操作（删除/重命名/移动）
+- **习惯养成:** 用户每周至少打开一次应用处理照片（持续需求，而非尝鲜）
+- **任务完成率:** 90% 的自然语言指令被正确理解并执行，无需重新措辞
 
-### Business Success
+### 商业成功
 
-**3 Months (Validation):**
-- 100+ downloads (website distribution)
-- 10+ paying users (validates willingness to pay)
-- Daily personal use — the app replaces existing photo management tools for the founding team
+**3 个月（验证期）:**
+- 100+ 下载量（网站分发）
+- 10+ 付费用户（验证付费意愿）
+- 创始团队日常个人使用——替代现有照片管理工具
 
-**6 Months (Growth):**
-- 500+ downloads
-- 50+ paying users
-- At least 1 user spontaneously recommends it to someone else
+**6 个月（增长期）:**
+- 500+ 下载量
+- 50+ 付费用户
+- 至少 1 位用户自发向他人推荐
 
-### Technical Success
+### 技术成功
 
-- **SDK Capability Validation:** Complete end-to-end run of agent loop, tool execution, streaming, session management, custom tools, and approval workflow
-- **Performance:** 1,000 photos analyzed within 5 minutes (including API call latency)
-- **Stability:** Process 5,000+ photos without crashes or data loss
-- **PhotoKit Integration:** Correctly read and write Apple Photos library without data corruption
+- **SDK 能力验证:** 完整端到端运行 Agent 循环、工具执行、流式传输、会话管理、自定义工具和审批工作流
+- **性能:** 1000 张照片在 5 分钟内完成分析（含 API 调用延迟）
+- **稳定性:** 处理 5000+ 张照片无崩溃或数据丢失
+- **PhotoKit 集成:** 正确读写 Apple 照片图库，无数据损坏
 
-### Measurable Outcomes
+### 可量化指标
 
-| Metric | MVP Target | 6-Month Target |
-|--------|-----------|----------------|
-| First aha completion rate | >80% | >95% |
-| Monthly active users | 20 | 200 |
-| Paying users | 10 | 50 |
-| Photos processed per month | 1,000 | 50,000 |
-| App crash rate | <2% | <0.5% |
+| 指标 | MVP 目标 | 6 个月目标 |
+|------|----------|-----------|
+| 首次顿悟完成率 | >80% | >95% |
+| 月活用户 | 20 | 200 |
+| 付费用户 | 10 | 50 |
+| 月处理照片数 | 1,000 | 50,000 |
+| 应用崩溃率 | <2% | <0.5% |
 
-## User Journeys
+## 用户旅程
 
-### Journey 1: Zhang — "Too Many Photos, Can't Manage Them"
+### 旅程 1：小张——"照片太多，管不了"
 
-**Opening:** Zhang is a 30-year-old product manager with 15,000 photos on his MacBook. Every time he opens Photos it's chaos — travel photos mixed with screenshots, duplicates everywhere, titles all start with IMG_. He tried manual organization once, gave up after 2 hours.
+**开场:** 小张是一位 30 岁的产品经理，MacBook 上有 15000 张照片。每次打开照片 app 都是一片混乱——旅行照混着截图，重复照片到处都是，文件名全是 IMG_。他试过手动整理，2 小时后放弃了。
 
-**Trigger:** A friend recommends the app — "just tell it what to do and it handles it." Zhang downloads it, skeptical.
+**触发:** 朋友推荐这个应用——"告诉它你要干嘛，它帮你搞定。"小张半信半疑地下载了。
 
-**Step 1 — First Launch:**
-- System requests Photos library access → Zhang hesitates, sees read-only permission explanation → approves
-- Main screen shows a clean input field: "What would you like to do with your photos?"
+**第一步——首次启动:**
+- 系统请求照片图库访问权限 → 小张犹豫，看到只读权限说明 → 批准
+- 主界面显示简洁的输入框："你想对照片做什么？"
 
-**Step 2 — First Command:**
-- Zhang types: "Help me find all duplicate photos"
-- Agent starts working, showing real-time progress:
-  - "Scanning your photo library... 3,200 scanned"
-  - "Analyzing image similarity... found 47 potential duplicate groups"
-  - "Confirming duplicates with AI... 34 groups confirmed"
-- Zhang watches the progress — feels like "this thing is actually doing work"
+**第二步——首次指令:**
+- 小张输入："帮我找出所有重复的照片"
+- Agent 开始工作，实时显示进度：
+  - "正在扫描照片图库... 已扫描 3,200 张"
+  - "正在分析图像相似度... 发现 47 组潜在重复"
+  - "正在用 AI 确认重复... 确认 34 组"
+- 小张看着进度——感觉"这东西真的在干活"
 
-**Step 3 — Review Results:**
-- Agent displays 34 duplicate groups with side-by-side comparison and explanation for each match
-- Zhang browses several groups — accuracy is impressive (burst shots, copies across folders)
-- Clicks "Approve All" to remove duplicates
+**第三步——审核结果:**
+- Agent 展示 34 组重复照片，每组有并排对比和 AI 匹配说明
+- 小张浏览了几组——准确度令人印象深刻（连拍、跨文件夹的副本）
+- 点击"全部批准"移除重复
 
-**Climax:** 3 minutes later, 34 duplicate groups resolved. Zhang's photo library feels "cleaner" for the first time. Trust begins.
+**高潮:** 3 分钟后，34 组重复全部处理完毕。小张的照片图库第一次感觉"干净了"。信任开始建立。
 
-**Resolution:** Zhang types "Rename last year's National Day photos" — another success. Decides to use it weekly.
+**结局:** 小张输入"重命名去年国庆的照片"——又一次成功。决定每周使用。
 
-**Capabilities Required:** PhotoKit read access, natural language parsing, smart deduplication engine, AI visual similarity analysis, real-time progress display, batch operation preview and approval
+**所需能力:** PhotoKit 读取、自然语言解析、智能去重引擎、AI 视觉相似度分析、实时进度展示、批量操作预览和审批
 
-### Journey 2: Li — "Organize Albums by Theme"
+### 旅程 2：小李——"按主题整理相册"
 
-**Opening:** Li is a travel blogger with 30,000 photos spanning 5 years of trips. She wants albums organized by destination and theme, but Photos auto-categorization is useless — it groups "beach" and "snow mountain" both as "landscape."
+**开场:** 小李是旅行博主，30,000 张照片跨越 5 年的旅行。她想要按目的地和主题整理相册，但照片 app 的自动分类毫无用处——把"海滩"和"雪山"都归为"风景"。
 
-**Trigger:** Needs to organize photos for a new blog post, grouped by city and theme.
+**触发:** 需要为新的博客文章整理照片，按城市和主题分组。
 
-**Step 1:**
-- Li types: "Organize all my travel photos into albums by city and theme"
-- Agent responds: "I'll analyze ~30,000 photos by city and theme. This will take 15-20 minutes. Start?"
+**第一步:**
+- 小李输入："把我的旅行照片按城市和主题整理成相册"
+- Agent 回复："我将按城市和主题分析约 30,000 张照片，预计需要 15-20 分钟。开始？"
 
-**Step 2 — Agent Analyzing:**
-- Real-time progress display
-- Discovers: Beijing 1,200, Tokyo 800, Paris 600... plus themes like "food," "architecture," "street photography"
-- Agent asks a question mid-process: "300 photos can't be matched to a city (indoor/close-up shots). Should I try categorizing them by theme instead?"
+**第二步——Agent 分析中:**
+- 实时进度显示
+- 发现：北京 1,200、东京 800、巴黎 600... 以及"美食""建筑""街拍"等主题
+- Agent 中途提问："有 300 张照片无法匹配到城市（室内/特写镜头）。要不要改为按主题分类？"
 
-**Step 3 — Review:**
-- 15 suggested albums displayed with cover photo and count
-- Li adjusts a few: merges "Tokyo food" and "Osaka food" into "Japan food"
-- Approves creation
+**第三步——审核:**
+- 展示 15 个建议相册，每个有封面照和数量
+- 小李调整了几个：把"东京美食"和"大阪美食"合并为"日本美食"
+- 批准创建
 
-**Climax:** 15 smart albums created instantly — 5 years of photos organized for the first time. Agent even separated "sunset" from "sunrise" — Li is impressed.
+**高潮:** 15 个智能相册瞬间创建——5 年的照片第一次被整理好。Agent 甚至把"日落"和"日出"分开了——小李很惊喜。
 
-**Resolution:** Li recommends the app to fellow travel bloggers.
+**结局:** 小李向旅行博主同行推荐了这个应用。
 
-**Capabilities Required:** Large-scale photo analysis, AI scene recognition, geo/time clustering, interactive category adjustment, batch album creation, mid-process clarification
+**所需能力:** 大规模照片分析、AI 场景识别、地理/时间聚类、交互式分类调整、批量相册创建、中途澄清
 
-### Journey 3: Wang — "I Don't Trust AI Touching My Photos"
+### 旅程 3：老王——"我不信任 AI 碰我的照片"
 
-**Opening:** Wang is a 45-year-old engineer, skeptical of AI. But he has 8,000 family photos to organize — did 500 manually in two days. His wife is pushing him to finish.
+**开场:** 老王是一位 45 岁的工程师，对 AI 持怀疑态度。但他有 8000 张家庭照片要整理——手动做了 500 张花了两天。妻子催他赶紧搞定。
 
-**Trigger:** Wife says "try this AI tool, stop doing it manually."
+**触发:** 妻子说"试试这个 AI 工具，别手动搞了。"
 
-**Step 1 — Cautious Start:**
-- Wang sees photo library access request, immediately suspicious
-- App shows clear privacy notice: photos analyzed in-session only, sent to LLM API for understanding, never stored on third-party servers
-- Wang decides to try a small, safe task first
+**第一步——谨慎开始:**
+- 老王看到照片图库访问请求，立刻警觉
+- 应用展示清晰的隐私说明：照片仅在会话中分析，发送到 LLM API 用于理解，绝不存储在第三方服务器
+- 老王决定先试试一个安全的小任务
 
-**Step 2 — Small-Scale Test:**
-- Wang types: "Find all blurry photos in my library" (a read-only task, no deletion)
-- Agent scans without modifying anything
-- Displays 23 blurry photos with blur reason (camera shake, missed focus, motion blur)
+**第二步——小范围测试:**
+- 老王输入："找出我图库里所有模糊的照片"（只读操作，不删除）
+- Agent 扫描但不修改任何内容
+- 展示 23 张模糊照片及模糊原因（手抖、失焦、运动模糊）
 
-**Step 3 — Building Trust:**
-- Wang checks several — accuracy is good
-- Sees that every operation requires his approval, agent never auto-deletes
-- Starts to relax, tries a bolder task: "Rename last month's family gathering photos"
+**第三步——建立信任:**
+- 老王检查了几张——准确度不错
+- 看到每个操作都需要他确认，Agent 不会自动删除
+- 开始放松，尝试更大胆的任务："重命名上个月家庭聚会的照片"
 
-**Climax:** Renaming results are precise — "IMG_9021.jpg" becomes "2026-03 Family Gathering - Xiao Ming Blowing Candles.jpg". Wang's first "AI actually understands my photos" moment.
+**高潮:** 重命名结果精准——"IMG_9021.jpg" 变成了 "2026-03 家庭聚会 - 小明吹蜡烛.jpg"。老王第一次感到"AI 真的理解我的照片"。
 
-**Resolution:** Wang doesn't delete anything (chooses conservative approach), but starts using the app to analyze and understand his library. Trust builds gradually.
+**结局:** 老王没有删除任何东西（选择保守方式），但开始用应用分析和了解他的图库。信任逐步建立。
 
-**Capabilities Required:** Privacy transparency, read-only analysis mode, detailed result explanations, progressive permission control, non-destructive operations by default, undo mechanism
+**所需能力:** 隐私透明、只读分析模式、详细结果解释、渐进式权限控制、默认非破坏性操作、撤销机制
 
-### Journey 4: Alex — "API Key Config and Model Switching"
+### 旅程 4：Alex——"API Key 配置和模型切换"
 
-**Opening:** Alex is a developer and early OpenAgentSDKSwift user. He wants to use his own API keys and compare photo analysis quality across models.
+**开场:** Alex 是开发者和 OpenAgentSDKSwift 的早期用户。他想用自己的 API Key，并比较不同模型的照片分析质量。
 
-**Step 1:**
-- Opens settings, enters Anthropic API Key
-- Also configures an OpenAI-compatible DeepSeek key as fallback
-- Sets Claude as default for photo analysis, DeepSeek for simple tasks (cost savings)
+**第一步:**
+- 打开设置，输入 Anthropic API Key
+- 同时配置了 OpenAI 兼容的 DeepSeek Key 作为备用
+- 设置 Claude 为照片分析默认模型，DeepSeek 处理简单任务（节省成本）
 
-**Step 2:**
-- Processing 5,000 photos when Claude API hits rate limit
-- App auto-falls back to DeepSeek, continues processing
-- Completion shows cost report: Claude $2.30 + DeepSeek $0.40 = $2.70 total
+**第二步:**
+- 处理 5000 张照片时 Claude API 触达速率限制
+- 应用自动回退到 DeepSeek，继续处理
+- 完成时显示费用报告：Claude $2.30 + DeepSeek $0.40 = $2.70 总计
 
-**Capabilities Required:** Multi-provider API key management, default model selection, automatic failover, cost tracking and reporting, model comparison
+**所需能力:** 多供应商 API Key 管理、默认模型选择、自动故障转移、成本追踪和报告、模型对比
 
-### Journey Requirements Summary
+### 旅程需求汇总
 
-| Journey | Core Capabilities Revealed |
-|---------|---------------------------|
-| Zhang — Deduplication | Dedup engine, real-time progress, batch approval |
-| Li — Smart Albums | Large-scale analysis, scene recognition, interactive categorization |
-| Wang — Trust Building | Privacy transparency, read-only mode, progressive trust |
-| Alex — Model Config | Multi-provider, failover, cost tracking |
+| 旅程 | 揭示的核心能力 |
+|------|--------------|
+| 小张——去重 | 去重引擎、实时进度、批量审批 |
+| 小李——智能相册 | 大规模分析、场景识别、交互式分类 |
+| 老王——信任建立 | 隐私透明、只读模式、渐进式信任 |
+| Alex——模型配置 | 多供应商、故障转移、成本追踪 |
 
-## Domain-Specific Requirements
+## 领域特定需求
 
-### Privacy & Data Safety
+### 隐私与数据安全
 
-- **Transparency First:** App must clearly communicate what data is sent to LLM APIs, for what purpose, and what the provider's data retention policy is
-- **No Third-Party Storage:** Photos analyzed in-session only; no photos stored on any third-party server beyond the LLM API call
-- **Local-First Caching:** All thumbnails, metadata caches, and analysis results stored locally on device
-- **Consent Before Upload:** User must explicitly approve before any photo is sent to an external API
+- **透明优先:** 应用必须清楚说明发送了什么数据到 LLM API、为什么发送、供应商的数据留存政策是什么
+- **无第三方存储:** 照片仅在会话中分析；除 LLM API 调用外，照片不存储在任何第三方服务器
+- **本地优先缓存:** 所有缩略图、元数据缓存和分析结果存储在设备本地
+- **上传前需确认:** 用户必须明确批准后，照片才会发送到外部 API
 
-### PhotoKit API Constraints
+### PhotoKit API 约束
 
-- **Read-Only Default:** App starts with read-only access; write operations require explicit user upgrade
-- **Metadata Limitations:** Some photo metadata fields are read-only via PhotoKit; app must handle gracefully
-- **Performance at Scale:** PhotoKit queries on 10,000+ photos require pagination and background fetching
-- **Sandbox Boundaries:** App must operate within macOS sandbox constraints for file access
+- **默认只读:** 应用以只读权限启动；写操作需要用户明确升级
+- **元数据限制:** 部分照片元数据字段通过 PhotoKit 是只读的；应用需优雅处理
+- **大规模性能:** 10,000+ 照片的 PhotoKit 查询需要分页和后台获取
+- **沙盒边界:** 应用必须在 macOS 沙盒约束内操作
 
-### Data Integrity (Critical)
+### 数据完整性（关键）
 
-- **All Write Operations Reversible:** Every modification (rename, delete, move, metadata change) must be undoable
-- **Pre-Operation Backup:** Batch operations automatically snapshot affected metadata before execution
-- **Rollback on Failure:** If a batch operation fails mid-way, automatically rollback completed items
-- **Never Modify Original Files:** Agent operates on Photos library metadata and organization, never overwrites original image files
+- **所有写操作可逆:** 每次修改（重命名、删除、移动、元数据变更）都必须可撤销
+- **操作前备份:** 批量操作执行前自动快照受影响的元数据
+- **失败自动回滚:** 批量操作中途失败时，自动回滚已完成的项目
+- **绝不修改原始文件:** Agent 操作照片图库的元数据和组织结构，绝不覆盖原始图像文件
 
-### LLM Cost Management
+### LLM 成本管理
 
-- **Pre-Execution Cost Estimate:** Before large operations, display estimated API cost based on photo count and selected model
-- **Smart Batching:** Use local algorithms (perceptual hashing, metadata analysis) to pre-filter before sending to LLM
-- **Rate Limit Handling:** Graceful degradation when API rate limits are hit (queue, retry, fallback to alternate provider)
-- **Cost Dashboard:** Track and display cumulative API spending per session/week/month
+- **执行前成本预估:** 大规模操作前，根据照片数量和所选模型展示预估 API 费用
+- **智能批处理:** 使用本地算法（感知哈希、元数据分析）在发送给 LLM 之前进行预筛选
+- **速率限制处理:** API 速率限制触发时优雅降级（排队、重试、回退到备用供应商）
+- **费用面板:** 追踪并展示累计 API 支出（按会话/周/月）
 
-### macOS Distribution Requirements
+### macOS 分发要求
 
-- **Apple Developer Signing:** App signed with Developer ID certificate
-- **Notarization:** All builds submitted for Apple notarization (required for Gatekeeper bypass)
-- **Hardened Runtime:** Compatible with hardened runtime requirements
-- **Entitlements:** Properly declare `com.apple.security.personal-information.photos` entitlement
+- **Apple 开发者签名:** 应用使用 Developer ID 证书签名
+- **公证:** 所有构建提交 Apple 公证（Gatekeeper 旁路所需）
+- **强化运行时:** 兼容强化运行时要求
+- **权限声明:** 正确声明 `com.apple.security.personal-information.photos` 权限
 
-## Innovation & Novel Patterns
+## 创新与新颖模式
 
-### Detected Innovation Areas
+### 检测到的创新领域
 
-**1. Agent-Native Photo Management**
-Traditional photo tools follow a "user operates -> tool executes" model. This product inverts the paradigm: **user expresses intent -> agent autonomously plans and executes**. Users don't need to know "how to deduplicate" — they say "clean up my duplicate photos" and the agent handles it. This is a paradigm shift from "tool" to "intelligent agent."
+**1. Agent 原生照片管理**
+传统照片工具遵循"用户操作 → 工具执行"模型。本产品颠覆了这一范式：**用户表达意图 → Agent 自主规划并执行**。用户不需要知道"如何去重"——只需说"清理我的重复照片"，Agent 自动处理。这是从"工具"到"智能 Agent"的范式转变。
 
-**2. Transparent Agent Execution**
-All AI photo tools on the market (including Google Photos AI categorization) are black boxes. Users don't know how the AI made its decisions. This product makes the agent's reasoning fully visible — why were these two photos flagged as duplicates? Why this name? Why this grouping? Users can see the "why," which is how trust is built.
+**2. 透明的 Agent 执行**
+市面上所有 AI 照片工具（包括 Google 照片的 AI 分类）都是黑盒。用户不知道 AI 怎么做的决策。本产品让 Agent 的推理完全可见——为什么这两张被标记为重复？为什么建议这个名字？为什么这样分组？用户能看到"为什么"，这就是信任建立的方式。
 
-**3. SDK-Powered Consumer App**
-Most AI desktop apps either wrap the OpenAI SDK for simple chat or build agent logic from scratch. This product uses a purpose-built Agent SDK (OpenAgentSDKSwift) to power a consumer application, proving that "an Agent SDK isn't just a developer tool — it can drive a real consumer-grade product."
+**3. SDK 驱动的消费级应用**
+大多数 AI 桌面应用要么封装 OpenAI SDK 做简单聊天，要么从零构建 Agent 逻辑。本产品使用专用的 Agent SDK（OpenAgentSDKSwift）驱动消费级应用，证明"Agent SDK 不只是开发者工具——它能驱动真正的消费级产品"。
 
-### Market Context & Competitive Landscape
+### 市场背景与竞争格局
 
-| Competitor | Approach | Limitation |
-|-----------|----------|------------|
-| Apple Photos | Rule-based auto-categorization | No AI understanding, rigid categories |
-| PowerPhotos | Database-style duplicate matching | No visual AI, no natural language |
-| PhotoSweeper | Perceptual hashing for dedup | Single-purpose, no agent intelligence |
-| Claude Desktop | General AI chat | Not purpose-built for photo management |
-| Google Photos | Cloud AI classification | Privacy concerns, no local control |
+| 竞品 | 方案 | 局限 |
+|------|------|------|
+| Apple 照片 | 基于规则的自动分类 | 无 AI 理解，类别死板 |
+| PowerPhotos | 数据库式重复匹配 | 无视觉 AI，无自然语言 |
+| PhotoSweeper | 感知哈希去重 | 单一功能，无 Agent 智能 |
+| Claude Desktop | 通用 AI 聊天 | 非专用照片管理 |
+| Google 照片 | 云端 AI 分类 | 隐私担忧，无本地控制 |
 
-**Market Gap:** No product combines AI agent capabilities + PhotoKit integration + natural language interface + transparent execution.
+**市场空白:** 没有产品同时具备 AI Agent 能力 + PhotoKit 集成 + 自然语言界面 + 透明执行。
 
-### Validation Approach
+### 验证方法
 
-- **MVP Validation:** 10 users complete their first dedup or rename task with 90%+ success rate
-- **Differentiation Validation:** Users spontaneously mention "this is better than PowerPhotos because..." (proves differentiation is perceived)
-- **SDK Validation:** Complete agent loop runs without failure in production environment
+- **MVP 验证:** 10 位用户完成首次去重或重命名任务，成功率 90%+
+- **差异化验证:** 用户自发提到"这比 PowerPhotos 好因为..."（证明差异化被感知）
+- **SDK 验证:** Agent 循环在生产环境中无故障运行
 
-## Desktop Application Specific Requirements
+## 桌面应用特定需求
 
-### Platform Support
+### 平台支持
 
-- **Minimum Version:** macOS 15+ (Sequoia) — aligns with developer environment and latest SwiftUI APIs
-- **Architecture:** Apple Silicon (arm64) only for MVP; Intel (x86_64) as growth-phase addition if demand exists
-- **No iOS/iPadOS:** PhotoKit behavior differs significantly on iOS; desktop-first experience
-- **No Windows/Linux:** PhotoKit is Apple-only; cross-platform would require a fundamentally different architecture
+- **最低版本:** macOS 15+（Sequoia）——匹配开发环境和最新 SwiftUI API
+- **架构:** MVP 仅支持 Apple Silicon（arm64）；如存在需求，增长期增加 Intel（x86_64）支持
+- **不支持 iOS/iPadOS:** PhotoKit 在 iOS 上的行为差异显著；桌面优先体验
+- **不支持 Windows/Linux:** PhotoKit 是 Apple 独有的；跨平台需要完全不同的架构
 
-### System Integration
+### 系统集成
 
-**PhotoKit Integration (Core):**
-- Read access: Browse photo libraries, albums, smart albums, folders
-- Write access: Create/delete albums, modify photo metadata (title, description, keywords), move photos between albums
-- Asset management: Access full-resolution images and thumbnails for AI analysis
-- Library monitoring: Detect changes to the library made externally (e.g., user adds photos via iPhone sync)
+**PhotoKit 集成（核心）:**
+- 读取：浏览照片图库、相册、智能相册、文件夹
+- 写入：创建/删除相册、修改照片元数据（标题、描述、关键词）、在相册间移动照片
+- 资源管理：访问全分辨率图像和缩略图用于 AI 分析
+- 图库监控：检测外部对图库的变更（如用户通过 iPhone 同步添加照片）
 
-**macOS Native Features:**
-- Drag-and-drop: Accept photo files/folders from Finder into the app
-- Finder Quick Action (Post-MVP): Right-click photos -> "Analyze with Curator"
-- Menu bar icon (Post-MVP): Quick access to recent tasks and status
-- Notification Center: Alert when long-running tasks complete
-- Spotlight indexing (Post-MVP): Make processed photo metadata searchable
+**macOS 原生功能:**
+- 拖放：从 Finder 接受照片文件/文件夹到应用
+- Finder 快速操作（MVP 后）：右键照片 → "用 Curator 分析"
+- 菜单栏图标（MVP 后）：快速访问最近任务和状态
+- 通知中心：长时间任务完成时提醒
+- Spotlight 索引（MVP 后）：使处理后的照片元数据可搜索
 
-### Update Strategy
+### 更新策略
 
-- **Auto-Update:** Sparkle 2 framework (industry standard for non-App Store Mac apps)
-- **Update Channel:** Stable releases via website RSS/appcast feed
-- **Delta Updates:** Support delta updates to minimize download size
-- **Manual Check:** Menu option to check for updates
+- **自动更新:** Sparkle 2 框架（非 App Store Mac 应用的行业标准）
+- **更新渠道:** 通过网站 RSS/appcast feed 分发稳定版
+- **增量更新:** 支持增量更新以减少下载大小
+- **手动检查:** 菜单选项检查更新
 
-### Offline Capabilities
+### 离线能力
 
-- **Offline Mode:** App launches and displays cached photo library data when no internet
-- **Local Operations:** Perceptual hashing (pHash), metadata analysis, library browsing work offline
-- **Clear Offline Indicator:** UI shows when LLM-dependent features are unavailable
-- **Offline Queue (Post-MVP):** Queue natural language commands for execution when connectivity returns
+- **离线模式:** 无网络时应用启动并展示缓存的照片图库数据
+- **本地操作:** 感知哈希（pHash）、元数据分析、图库浏览支持离线
+- **明确离线指示:** UI 在 LLM 相关功能不可用时明确提示
+- **离线队列（MVP 后）:** 暂存自然语言指令，网络恢复后执行
 
-### Implementation Considerations
+### 实现考量
 
-**SwiftUI + AppKit Bridge:**
-- SwiftUI for primary UI (leverages macOS 15+ APIs)
-- AppKit interop where needed (PhotoKit operations, menu bar, dock integration)
-- No UIKit — macOS only
+**SwiftUI + AppKit 桥接:**
+- SwiftUI 作为主要 UI（利用 macOS 15+ API）
+- 需要时使用 AppKit 互操作（PhotoKit 操作、菜单栏、Dock 集成）
+- 不使用 UIKit——仅 macOS
 
-**SDK Integration Architecture:**
-- OpenAgentSDKSwift as a Swift Package Manager dependency
-- Custom SDK tools for PhotoKit operations (read library, modify metadata, manage albums)
-- Custom SDK tools for image analysis pipeline (thumbnail generation, local hashing, API dispatch)
-- Agent streaming via `AsyncStream<SDKMessage>` piped to SwiftUI views
+**SDK 集成架构:**
+- OpenAgentSDKSwift 作为 Swift Package Manager 依赖
+- 自定义 SDK 工具用于 PhotoKit 操作（读取图库、修改元数据、管理相册）
+- 自定义 SDK 工具用于图像分析管线（缩略图生成、本地哈希、API 调度）
+- Agent 流式传输通过 `AsyncStream<SDKMessage>` 管道传输到 SwiftUI 视图
 
-**Performance:**
-- Background thread for all PhotoKit and image processing operations
-- Thumbnail cache to avoid re-processing
-- Pagination for large libraries (load 100 photos at a time)
-- Memory budget: cap at 500MB for photo processing pipeline
+**性能:**
+- 所有 PhotoKit 和图像处理操作在后台线程执行
+- 缩略图缓存避免重复处理
+- 大型图库分页加载（每次加载 100 张）
+- 内存预算：照片处理管线限制在 500MB 以内
 
-## Project Scoping & Phased Development
+## 项目范围与分阶段开发
 
-### MVP Strategy & Philosophy
+### MVP 策略与理念
 
-**MVP Approach:** Problem-Solving MVP — validate the core hypothesis: **"Users will use natural language to let an AI Agent manage their photos, and will pay for it."**
+**MVP 方式:** 问题解决型 MVP——验证核心假设：**"用户会使用自然语言让 AI Agent 管理他们的照片，并愿意为此付费。"**
 
-The MVP is not the product with the fewest features — it's the product that learns the fastest. We need the minimum experience that lets users say "this is better than PowerPhotos."
+MVP 不是功能最少的产品——而是学习最快的产品。我们需要让用户能说出"这比 PowerPhotos 好用"的最小体验。
 
-**Core Hypothesis:** Natural language + AI Agent is more efficient at managing photo libraries than traditional toolchains.
+**核心假设:** 自然语言 + AI Agent 比传统工具链更高效地管理照片图库。
 
-**Validation Signal:** 10 users complete their first dedup or rename task, and at least 5 spontaneously perform a second operation.
+**验证信号:** 10 位用户完成首次去重或重命名任务，且至少 5 位自发进行第二次操作。
 
-### MVP Feature Set (Phase 1)
+### MVP 功能集（第一阶段）
 
-**Core User Journeys Supported:**
-- Journey 1 (Zhang): Deduplication — most common photo management need, fastest to validate value
-- Journey 3 (Wang): Trust building — read-only analysis + progressive trust, the on-ramp for all users
-- Journey 4 (Alex) partial: API Key configuration — basic multi-provider support
+**核心用户旅程支持:**
+- 旅程 1（小张）：去重——最常见的照片管理需求，最快验证价值
+- 旅程 3（老王）：信任建立——只读分析 + 渐进式信任，所有用户的入门路径
+- 旅程 4（Alex）部分：API Key 配置——基础多供应商支持
 
-**Must-Have Capabilities:**
+**必备能力:**
 
-| # | Capability | Why Must-Have |
-|---|-----------|--------------|
-| 1 | PhotoKit read access | No photo data = no product |
-| 2 | Natural language input -> Agent execution | Core differentiator; without this, the product doesn't exist |
-| 3 | Smart deduplication (local pHash + LLM confirmation) | Highest-frequency need, fastest value validation |
-| 4 | AI-powered renaming | Second highest-frequency need, demonstrates AI understanding |
-| 5 | Agent execution visualization | Core of trust building — users must see what the agent is doing |
-| 6 | User approval for destructive operations | Safety baseline — without this, users won't use the app |
-| 7 | API Key management (Anthropic + OpenAI-compatible) | BYOK is the business model foundation |
-| 8 | Cost estimate (show projected spend before execution) | Users need to know the cost before their first operation |
+| # | 能力 | 为什么必备 |
+|---|------|----------|
+| 1 | PhotoKit 读取访问 | 没有照片数据 = 没有产品 |
+| 2 | 自然语言输入 → Agent 执行 | 核心差异化；没有这个产品就不存在 |
+| 3 | 智能去重（本地 pHash + LLM 确认） | 最高频需求，最快价值验证 |
+| 4 | AI 驱动重命名 | 第二高频需求，展示 AI 理解能力 |
+| 5 | Agent 执行可视化 | 信任建立的核心——用户必须看到 Agent 在做什么 |
+| 6 | 破坏性操作需用户确认 | 安全基线——没有这个用户不会用 |
+| 7 | API Key 管理（Anthropic + OpenAI 兼容） | BYOK 是商业模型基础 |
+| 8 | 成本预估（执行前展示预计花费） | 用户在首次操作前需要知道费用 |
 
-**Explicitly Deferred from MVP:**
-- Smart album creation (Journey 2) — valuable but complex; dedup and renaming validate the core hypothesis first
-- Drag-and-drop — useful but not the core interaction
-- Menu bar / Finder integration — system integration is nice-to-have
-- Offline queue — edge case
-- Intel Mac support — testing cost not justified for MVP
+**明确排除在 MVP 之外:**
+- 智能相册创建（旅程 2）——有价值但复杂；先用去重和重命名验证核心假设
+- 拖放——有用但不是核心交互
+- 菜单栏 / Finder 集成——系统集成是锦上添花
+- 离线队列——边缘场景
+- Intel Mac 支持——MVP 阶段测试成本不合理
 
-### Post-MVP Features
+### MVP 后功能
 
-**Phase 2 (Growth — Months 4-6):**
-- Smart album creation by event/theme/people
-- Photo quality detection (blur, overexposure)
-- Batch editing commands
-- Drag-and-drop file/folder support
-- Processing history with undo
-- Intel Mac support (if demand exists)
+**第二阶段（增长——第 4-6 个月）:**
+- 按事件/主题/人物创建智能相册
+- 照片质量检测（模糊、过曝）
+- 批量编辑指令
+- 拖放文件/文件夹支持
+- 处理历史与撤销
+- Intel Mac 支持（如有需求）
 
-**Phase 3 (Expansion — Months 7-12):**
-- Menu bar quick access + Finder Quick Action
-- Local model support (Ollama, privacy-first)
-- MCP server integration
-- Multi-language support
-- iCloud Photo Library deep integration
-- Multi-agent collaboration
+**第三阶段（扩展——第 7-12 个月）:**
+- 菜单栏快速访问 + Finder 快速操作
+- 本地模型支持（Ollama，隐私优先）
+- MCP 服务器集成
+- 多语言支持
+- iCloud 照片图库深度集成
+- 多 Agent 协作
 
-### Risk Mitigation Strategy
+### 风险缓解策略
 
-**Technical Risks:**
+**技术风险:**
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| PhotoKit API limitations exceed expectations | Medium | High | MVP starts read-only; write operations as second milestone |
-| LLM visual understanding inaccurate | Medium | High | Local pHash pre-filter + LLM only for final confirmation, reducing error surface |
-| Performance issues with large libraries (10,000+) | Medium | Medium | Paginated loading + background processing + progress display, no UI blocking |
-| API costs exceed user expectations | Low | High | Mandatory cost estimate before execution, user can cancel |
+| 风险 | 可能性 | 影响 | 缓解措施 |
+|------|--------|------|----------|
+| PhotoKit API 限制超出预期 | 中 | 高 | MVP 从只读开始；写操作作为第二里程碑 |
+| LLM 视觉理解不够准确 | 中 | 高 | 本地 pHash 预筛选 + LLM 仅做最终确认，减少错误面 |
+| 大型图库（10,000+）性能问题 | 中 | 中 | 分页加载 + 后台处理 + 进度展示，不阻塞 UI |
+| API 费用超出用户预期 | 低 | 高 | 执行前强制展示费用预估，用户可取消 |
 
-**Market Risks:**
+**市场风险:**
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Users distrust AI touching photos | High | High | Read-only analysis first, all operations require approval, transparent execution |
-| BYOK model too high barrier | High | Medium | Clear API key setup guide, consider built-in credits in growth phase |
-| Major tech company enters this space | Low | High | Niche focus + macOS native advantage; big players won't bother with this niche |
+| 风险 | 可能性 | 影响 | 缓解措施 |
+|------|--------|------|----------|
+| 用户不信任 AI 处理照片 | 高 | 高 | 先做只读分析，所有操作需确认，透明执行 |
+| BYOK 模式门槛太高 | 高 | 中 | 清晰的 API Key 设置指引，增长期考虑内置额度 |
+| 大厂进入这个领域 | 低 | 高 | 小众聚焦 + macOS 原生优势；大厂不屑于这种细分 |
 
-**Resource Risks:**
+**资源风险:**
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| Solo developer bandwidth limited | High | Medium | Strict MVP scope control, Phase 2 delivered one feature at a time by priority |
-| SDK bugs block app development | Medium | High | App development drives SDK improvements, creating a positive feedback loop |
+| 风险 | 可能性 | 影响 | 缓解措施 |
+|------|--------|------|----------|
+| 独立开发者带宽有限 | 高 | 中 | 严格 MVP 范围控制，第二阶段按优先级逐一交付 |
+| SDK bug 阻塞应用开发 | 中 | 高 | 应用开发驱动 SDK 改进，形成正向反馈循环 |
 
-## Functional Requirements
+## 功能需求
 
-### Photo Library Access
+### 照片图库访问
 
-- FR1: User can grant the app read access to their Apple Photos library
-- FR2: User can browse their complete photo library including albums, smart albums, and folders
-- FR3: User can view photo thumbnails and metadata (date, title, description, keywords, location)
-- FR4: System can detect external changes to the photo library (e.g., new photos synced from iPhone)
-- FR5: System can paginate through large photo libraries without blocking the UI
-- FR6: User can grant the app write access to modify photo metadata and create/delete albums
-- FR7: System can access full-resolution photo assets for AI analysis
+- FR1: 用户可以授予应用 Apple 照片图库的读取权限
+- FR2: 用户可以浏览完整的照片图库，包括相册、智能相册和文件夹
+- FR3: 用户可以查看照片缩略图和元数据（日期、标题、描述、关键词、位置）
+- FR4: 系统可以检测照片图库的外部变更（如从 iPhone 同步的新照片）
+- FR5: 系统可以分页浏览大型照片图库而不阻塞 UI
+- FR6: 用户可以授予应用写入权限以修改照片元数据和创建/删除相册
+- FR7: 系统可以访问全分辨率照片资源用于 AI 分析
 
-### Natural Language Interaction
+### 自然语言交互
 
-- FR8: User can input natural language commands to instruct the agent (e.g., "find all duplicate photos")
-- FR9: System can parse natural language commands into actionable agent tasks
-- FR10: System can ask clarifying questions when the user's intent is ambiguous
-- FR11: User can view and continue previous conversation sessions
-- FR12: System can handle multi-turn conversations for complex photo management tasks
+- FR8: 用户可以输入自然语言指令指导 Agent（如"找出所有重复照片"）
+- FR9: 系统可以将自然语言指令解析为可执行的 Agent 任务
+- FR10: 系统可以在用户意图不明确时提出澄清问题
+- FR11: 用户可以查看和继续之前的对话会话
+- FR12: 系统可以处理多轮对话以完成复杂的照片管理任务
 
-### Agent Execution & Visualization
+### Agent 执行与可视化
 
-- FR13: System can execute multi-step agent workflows autonomously based on user commands
-- FR14: User can view real-time agent execution progress (which step, how many photos processed, current action)
-- FR15: User can view the agent's reasoning for each decision (why flagged as duplicate, why this name suggested)
-- FR16: System can stream agent execution updates to the UI without blocking user interaction
-- FR17: User can cancel an in-progress agent task at any time
+- FR13: 系统可以基于用户指令自主执行多步 Agent 工作流
+- FR14: 用户可以实时查看 Agent 执行进度（当前步骤、已处理照片数、当前动作）
+- FR15: 用户可以查看 Agent 每个决策的推理过程（为什么标记为重复、为什么建议这个名称）
+- FR16: 系统可以将 Agent 执行更新流式传输到 UI 而不阻塞用户交互
+- FR17: 用户可以随时取消进行中的 Agent 任务
 
-### Photo Analysis — Deduplication
+### 照片分析——去重
 
-- FR18: User can request duplicate photo detection across their entire library
-- FR19: System can detect visually similar photos using local perceptual hashing algorithms
-- FR20: System can use LLM-based analysis to confirm whether visually similar photos are true duplicates
-- FR21: User can review duplicate groups with side-by-side comparison and AI explanation for each match
-- FR22: User can approve or reject individual duplicate groups before any deletion occurs
-- FR23: User can batch-approve or batch-reject all suggested duplicate removals
+- FR18: 用户可以请求对整个图库进行重复照片检测
+- FR19: 系统可以使用本地感知哈希算法检测视觉相似的照片
+- FR20: 系统可以使用基于 LLM 的分析确认视觉相似的照片是否为真正重复
+- FR21: 用户可以审核重复分组，包含并排对比和每个匹配的 AI 说明
+- FR22: 用户可以在任何删除操作前批准或拒绝单个重复分组
+- FR23: 用户可以批量批准或批量拒绝所有建议的重复移除
 
-### Photo Analysis — AI Renaming
+### 照片分析——AI 重命名
 
-- FR24: User can request AI-powered renaming for selected photos or entire albums
-- FR25: System can analyze photo content and generate descriptive titles in the user's preferred language
-- FR26: User can review suggested names before they are applied
-- FR27: User can modify individual suggested names before approval
-- FR28: System can rename photos in batch after user approval
+- FR24: 用户可以请求对选定照片或整个相册进行 AI 驱动重命名
+- FR25: 系统可以分析照片内容并以用户偏好语言生成描述性标题
+- FR26: 用户可以在应用建议名称前进行审核
+- FR27: 用户可以在批准前修改单个建议名称
+- FR28: 系统可以在用户批准后批量重命名照片
 
-### Photo Analysis — Smart Albums (Post-MVP)
+### 照片分析——智能相册（MVP 后）
 
-- FR29: User can request automatic album creation organized by event, theme, or people
-- FR30: System can cluster photos by visual similarity, time proximity, and geographic location
-- FR31: User can interactively adjust suggested album groupings before creation
-- FR32: System can create albums in the Apple Photos library after user approval
+- FR29: 用户可以请求按事件、主题或人物自动创建相册
+- FR30: 系统可以按视觉相似度、时间邻近性和地理位置聚类照片
+- FR31: 用户可以在创建前交互式调整建议的相册分组
+- FR32: 系统可以在用户批准后在 Apple 照片中创建相册
 
-### User Control & Safety
+### 用户控制与安全
 
-- FR33: System requires explicit user approval before any destructive operation (delete, move, rename)
-- FR34: User can undo any batch operation within a configurable time window
-- FR35: System creates a metadata snapshot before any batch modification for rollback purposes
-- FR36: System automatically rolls back completed items if a batch operation fails mid-execution
-- FR37: User can operate in read-only analysis mode without any write operations
-- FR38: System never modifies original image files — only metadata and organization
+- FR33: 系统在任何破坏性操作（删除、移动、重命名）前需要用户明确批准
+- FR34: 用户可以在可配置的时间窗口内撤销任何批量操作
+- FR35: 系统在任何批量修改前创建元数据快照用于回滚
+- FR36: 系统在批量操作中途失败时自动回滚已完成的项目
+- FR37: 用户可以在只读分析模式下操作，不执行任何写操作
+- FR38: 系统绝不修改原始图像文件——仅操作元数据和组织结构
 
-### Privacy & Transparency
+### 隐私与透明度
 
-- FR39: System displays a clear privacy notice explaining what data is sent to LLM APIs
-- FR40: User can see which specific photos were sent for LLM analysis and why
-- FR41: System does not store user photos on any third-party server beyond the LLM API call
-- FR42: All local caches (thumbnails, analysis results) are stored on-device only
+- FR39: 系统展示清晰的隐私声明，说明发送了什么数据到 LLM API
+- FR40: 用户可以查看哪些具体照片被发送到 LLM 分析以及原因
+- FR41: 系统不在任何第三方服务器上存储用户照片（除 LLM API 调用外）
+- FR42: 所有本地缓存（缩略图、分析结果）仅存储在设备上
 
-### Provider & Cost Management
+### 供应商与成本管理
 
-- FR43: User can configure API keys for multiple LLM providers (Anthropic, OpenAI-compatible)
-- FR44: User can select a default provider for photo analysis tasks
-- FR45: User can configure a fallback provider for automatic failover when the primary provider is unavailable
-- FR46: System displays a cost estimate before executing large-scale analysis tasks
-- FR47: System tracks and displays cumulative API spending per session and per month
-- FR48: System gracefully handles API rate limits by queuing, retrying, or falling back
+- FR43: 用户可以配置多个 LLM 供应商的 API Key（Anthropic、OpenAI 兼容）
+- FR44: 用户可以选择照片分析任务的默认供应商
+- FR45: 用户可以配置备用供应商，在主供应商不可用时自动故障转移
+- FR46: 系统在大规模分析任务执行前展示费用预估
+- FR47: 系统追踪并展示累计 API 支出（按会话和按月）
+- FR48: 系统通过排队、重试或回退来优雅处理 API 速率限制
 
-### App Infrastructure
+### 应用基础设施
 
-- FR49: System checks for and installs app updates automatically via Sparkle framework
-- FR50: System can launch and display cached photo library data when offline
-- FR51: System clearly indicates when LLM-dependent features are unavailable due to no internet
-- FR52: Local operations (browsing, perceptual hashing, metadata analysis) work without internet
+- FR49: 系统通过 Sparkle 框架自动检查并安装应用更新
+- FR50: 系统可以在离线时启动并展示缓存的照片图库数据
+- FR51: 系统在 LLM 相关功能因无网络不可用时明确提示
+- FR52: 本地操作（浏览、感知哈希、元数据分析）无需网络即可工作
 
-## Non-Functional Requirements
+## 非功能需求
 
-### Performance
+### 性能
 
-- NFR1: App launches to interactive state within 3 seconds on Apple Silicon Mac
-- NFR2: Photo library browsing scrolls at 60fps with thumbnail grid view
-- NFR3: Agent execution progress updates appear in UI within 500ms of event
-- NFR4: Perceptual hashing processes 100 photos per minute on Apple Silicon
-- NFR5: Library scan of 10,000 photos completes initial metadata indexing within 60 seconds
-- NFR6: Memory usage stays below 500MB during photo processing operations
-- NFR7: UI remains responsive (no spinning cursor) during all background agent tasks
-- NFR8: Photo thumbnail grid loads next page within 200ms when scrolling
+- NFR1: 应用在 Apple Silicon Mac 上 3 秒内启动到可交互状态
+- NFR2: 照片图库浏览在缩略图网格视图中以 60fps 滚动
+- NFR3: Agent 执行进度更新在事件发生后 500ms 内出现在 UI 中
+- NFR4: 感知哈希在 Apple Silicon 上每分钟处理 100 张照片
+- NFR5: 10,000 张照片的图库扫描在 60 秒内完成初始元数据索引
+- NFR6: 照片处理操作期间内存使用保持在 500MB 以下
+- NFR7: 所有后台 Agent 任务期间 UI 保持响应（无旋转光标）
+- NFR8: 照片缩略图网格滚动时下一页在 200ms 内加载
 
-### Security
+### 安全
 
-- NFR9: API keys are stored in macOS Keychain, never in plaintext or config files
-- NFR10: Photo data sent to LLM APIs uses HTTPS/TLS encryption in transit
-- NFR11: Local analysis cache is stored in app's sandbox container, inaccessible to other apps
-- NFR12: App does not log or cache full-resolution photo data after analysis completes
-- NFR13: User can clear all local caches and analysis history from settings
-- NFR14: App binary is signed with Apple Developer ID and notarized by Apple
+- NFR9: API Key 存储在 macOS 钥匙串中，不以明文或配置文件形式存储
+- NFR10: 发送到 LLM API 的照片数据使用 HTTPS/TLS 加密传输
+- NFR11: 本地分析缓存存储在应用沙盒容器中，其他应用无法访问
+- NFR12: 分析完成后应用不记录或缓存全分辨率照片数据
+- NFR13: 用户可以从设置中清除所有本地缓存和分析历史
+- NFR14: 应用二进制文件使用 Apple Developer ID 签名并通过 Apple 公证
 
-### Data Integrity
+### 数据完整性
 
-- NFR15: Zero tolerance for photo file corruption — app never writes to original image files
-- NFR16: Batch operations create metadata backup before execution; rollback completes within 5 seconds
-- NFR17: App handles unexpected termination (crash, force-quit) without losing in-progress metadata changes
-- NFR18: Library scan detects and reports inconsistencies in photo library state
+- NFR15: 对照片文件损坏零容忍——应用绝不写入原始图像文件
+- NFR16: 批量操作执行前创建元数据备份；回滚在 5 秒内完成
+- NFR17: 应用优雅处理意外终止（崩溃、强制退出）而不丢失进行中的元数据变更
+- NFR18: 图库扫描检测并报告照片图库状态的不一致
 
-### Integration Quality
+### 集成质量
 
-- NFR19: PhotoKit operations handle permission changes gracefully (user revokes access mid-session)
-- NFR20: LLM API calls implement exponential backoff with max 3 retries before reporting failure
-- NFR21: Provider failover completes within 10 seconds of primary provider failure
-- NFR22: Sparkle auto-update checks occur once per day, do not interrupt active agent tasks
-- NFR23: App remains functional when PhotoKit returns partial results (e.g., iCloud photos not yet downloaded)
+- NFR19: PhotoKit 操作优雅处理权限变更（用户在会话中途撤销访问）
+- NFR20: LLM API 调用实现指数退避，最多 3 次重试后报告失败
+- NFR21: 供应商故障转移在主供应商失败后 10 秒内完成
+- NFR22: Sparkle 自动更新每天检查一次，不中断活跃的 Agent 任务
+- NFR23: 当 PhotoKit 返回部分结果时（如 iCloud 照片尚未下载）应用保持功能正常

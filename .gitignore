@@ -19,9 +19,10 @@ DerivedData/
 # Swift Package Manager
 .build/
 .swiftpm/
-Packages/
 Package.pins
-Package.resolved
+# Keep local package stubs and Package.resolved for reproducible builds
+# Packages/ — local SDK stubs needed for build
+# Package.resolved — ensures reproducible dependency versions
 
 # macOS
 .DS_Store

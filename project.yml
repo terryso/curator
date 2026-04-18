@@ -1,0 +1,73 @@
+name: Curator
+options:
+  bundleIdPrefix: com.nick
+  deploymentTarget:
+    macOS: "15.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGN_IDENTITY: "-"
+
+targets:
+  Curator:
+    type: application
+    platform: macOS
+    sources:
+      - Curator
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nick.Curator
+        INFOPLIST_FILE: Curator/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Curator/Curator.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ARCHS: arm64
+        SWIFT_STRICT_CONCURRENCY: complete
+        ENABLE_PREVIEWS: YES
+    dependencies:
+      - package: OpenAgentSDKSwift
+        product: OpenAgentSDKSwift
+      - package: Sparkle
+        product: Sparkle
+
+  CuratorTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - CuratorTests
+    dependencies:
+      - target: Curator
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nick.CuratorTests
+        GENERATE_INFOPLIST_FILE: YES
+        ARCHS: arm64
+        CODE_SIGN_ENTITLEMENTS: Curator/CuratorTestsHost.entitlements
+
+  CuratorUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - CuratorUITests
+    dependencies:
+      - target: Curator
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nick.CuratorUITests
+        GENERATE_INFOPLIST_FILE: YES
+        ARCHS: arm64
+
+packages:
+  OpenAgentSDKSwift:
+    path: Packages/OpenAgentSDKSwift
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.0.0"

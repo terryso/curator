@@ -1,0 +1,230 @@
+{
+  "phase": "PHASE_1_COMPLETE",
+  "generated_at": "2026-04-18T09:26:33Z",
+  "trace_target": {
+    "type": "story",
+    "id": "1-1",
+    "label": "项目初始化与构建配置"
+  },
+  "collection_mode": "contract_static",
+  "allow_gate": true,
+  "coverage_basis": "acceptance_criteria",
+  "summary_confidence": "high",
+  "oracle": {
+    "resolution_mode": "formal_requirements",
+    "confidence": "high",
+    "sources": [
+      "_bmad-output/implementation-artifacts/1-1-project-init-and-build-config.md",
+      "_bmad-output/test-artifacts/atdd-checklist-1-1-project-init-and-build-config.md",
+      "_bmad-output/planning-artifacts/architecture.md"
+    ],
+    "external_pointer_status": "not_used",
+    "synthetic": false
+  },
+  "requirements": [
+    {
+      "id": "AC1",
+      "title": "项目成功构建",
+      "description": "执行 xcodebuild build 项目成功编译无错误，目标平台 macOS 15.0，架构 arm64",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "CuratorTests/BuildConfigurationTests.swift:testXcodeProjectBuildsSuccessfully",
+          "title": "testXcodeProjectBuildsSuccessfully",
+          "file": "CuratorTests/BuildConfigurationTests.swift",
+          "line": 14,
+          "level": "integration",
+          "status": "active",
+          "skipped": false,
+          "fixme": false,
+          "pending": false
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "title": "SPM 依赖正确配置",
+      "description": "OpenAgentSDKSwift 和 Sparkle 2 依赖已正确添加，Feature-based 目录结构已创建",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "CuratorTests/SPMDependencyTests.swift:testOpenAgentSDKSwiftDependencyResolved",
+          "title": "testOpenAgentSDKSwiftDependencyResolved",
+          "file": "CuratorTests/SPMDependencyTests.swift",
+          "line": 12,
+          "level": "integration",
+          "status": "active",
+          "skipped": false,
+          "fixme": false,
+          "pending": false
+        },
+        {
+          "id": "CuratorTests/SPMDependencyTests.swift:testSparkleDependencyResolved",
+          "title": "testSparkleDependencyResolved",
+          "file": "CuratorTests/SPMDependencyTests.swift",
+          "line": 25,
+          "level": "integration",
+          "status": "active",
+          "skipped": false,
+          "fixme": false,
+          "pending": false
+        },
+        {
+          "id": "CuratorTests/DirectoryStructureTests.swift:testFeatureBasedDirectoryStructureExists",
+          "title": "testFeatureBasedDirectoryStructureExists",
+          "file": "CuratorTests/DirectoryStructureTests.swift",
+          "line": 12,
+          "level": "integration",
+          "status": "active",
+          "skipped": false,
+          "fixme": false,
+          "pending": false
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "title": "Entitlements 文件配置正确",
+      "description": "包含 app-sandbox、personal-information.photos、network.client、keychain 权限声明",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "CuratorTests/EntitlementsTests.swift:testEntitlementsFileContainsRequiredKeys",
+          "title": "testEntitlementsFileContainsRequiredKeys",
+          "file": "CuratorTests/EntitlementsTests.swift",
+          "line": 12,
+          "level": "integration",
+          "status": "active",
+          "skipped": false,
+          "fixme": false,
+          "pending": false
+        }
+      ]
+    }
+  ],
+  "coverage_statistics": {
+    "total_requirements": 3,
+    "fully_covered": 3,
+    "partially_covered": 0,
+    "uncovered": 0,
+    "overall_coverage_percentage": 100,
+    "priority_breakdown": {
+      "P0": { "total": 3, "covered": 3, "percentage": 100 },
+      "P1": { "total": 0, "covered": 0, "percentage": 100 },
+      "P2": { "total": 0, "covered": 0, "percentage": 100 },
+      "P3": { "total": 0, "covered": 0, "percentage": 100 }
+    }
+  },
+  "gap_analysis": {
+    "critical_gaps": [],
+    "high_gaps": [],
+    "medium_gaps": [],
+    "low_gaps": [],
+    "partial_coverage_items": [],
+    "unit_only_items": []
+  },
+  "coverage_heuristics": {
+    "endpoint_gaps": [],
+    "auth_negative_path_gaps": [],
+    "happy_path_only_gaps": [],
+    "ui_journey_gaps": [],
+    "ui_state_gaps": [],
+    "counts": {
+      "endpoints_without_tests": 0,
+      "auth_missing_negative_paths": 0,
+      "happy_path_only_criteria": 0,
+      "ui_journeys_without_e2e": 0,
+      "ui_states_missing_coverage": 0
+    }
+  },
+  "test_inventory": {
+    "summary": {
+      "files": 4,
+      "cases": 5,
+      "skipped_cases": 0,
+      "fixme_cases": 0,
+      "pending_cases": 0,
+      "by_level": {
+        "e2e": { "tests": 0, "criteria_covered": 0 },
+        "api": { "tests": 0, "criteria_covered": 0 },
+        "component": { "tests": 0, "criteria_covered": 0 },
+        "unit": { "tests": 0, "criteria_covered": 0 },
+        "other": { "tests": 5, "criteria_covered": 3 }
+      }
+    },
+    "tests": [
+      {
+        "id": "CuratorTests/BuildConfigurationTests.swift:testXcodeProjectBuildsSuccessfully",
+        "file": "CuratorTests/BuildConfigurationTests.swift",
+        "line": 14,
+        "title": "testXcodeProjectBuildsSuccessfully",
+        "level": "integration",
+        "status": "active",
+        "skipped": false,
+        "fixme": false,
+        "pending": false,
+        "blocker_reason": ""
+      },
+      {
+        "id": "CuratorTests/SPMDependencyTests.swift:testOpenAgentSDKSwiftDependencyResolved",
+        "file": "CuratorTests/SPMDependencyTests.swift",
+        "line": 12,
+        "title": "testOpenAgentSDKSwiftDependencyResolved",
+        "level": "integration",
+        "status": "active",
+        "skipped": false,
+        "fixme": false,
+        "pending": false,
+        "blocker_reason": ""
+      },
+      {
+        "id": "CuratorTests/SPMDependencyTests.swift:testSparkleDependencyResolved",
+        "file": "CuratorTests/SPMDependencyTests.swift",
+        "line": 25,
+        "title": "testSparkleDependencyResolved",
+        "level": "integration",
+        "status": "active",
+        "skipped": false,
+        "fixme": false,
+        "pending": false,
+        "blocker_reason": ""
+      },
+      {
+        "id": "CuratorTests/EntitlementsTests.swift:testEntitlementsFileContainsRequiredKeys",
+        "file": "CuratorTests/EntitlementsTests.swift",
+        "line": 12,
+        "title": "testEntitlementsFileContainsRequiredKeys",
+        "level": "integration",
+        "status": "active",
+        "skipped": false,
+        "fixme": false,
+        "pending": false,
+        "blocker_reason": ""
+      },
+      {
+        "id": "CuratorTests/DirectoryStructureTests.swift:testFeatureBasedDirectoryStructureExists",
+        "file": "CuratorTests/DirectoryStructureTests.swift",
+        "line": 12,
+        "title": "testFeatureBasedDirectoryStructureExists",
+        "level": "integration",
+        "status": "active",
+        "skipped": false,
+        "fixme": false,
+        "pending": false,
+        "blocker_reason": ""
+      }
+    ],
+    "blockers": []
+  },
+  "blockers": [],
+  "recommendations": [
+    {
+      "priority": "LOW",
+      "action": "Run /bmad:tea:test-review to assess test quality",
+      "requirements": []
+    }
+  ]
+}

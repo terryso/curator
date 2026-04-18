@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "evaluated_at": "2026-04-18T22:25:00+08:00",
+  "repo": "curator",
+  "target": {
+    "type": "story",
+    "id": "1.4",
+    "label": "photo-library-browse-grid"
+  },
+  "collection_status": "COLLECTED",
+  "gate_basis": "priority_thresholds",
+  "gate_status": "PASS",
+  "rationale": "P0 coverage is 100% (19/19), P1 coverage is 100% (10/10), and overall coverage is 100% (28/28). All acceptance criteria have full test coverage. 118 total tests pass with 0 failures.",
+  "p0_status": "MET",
+  "p1_status": "MET",
+  "overall_status": "MET",
+  "critical_open": 0,
+  "links": {
+    "trace_report_path": "_bmad-output/test-artifacts/traceability-matrix-1-4.md",
+    "trace_report_url": "",
+    "artifact_url": "",
+    "journey_evidence_url": ""
+  }
+}

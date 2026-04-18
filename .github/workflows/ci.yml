@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    name: Test (macOS)
+  build-and-test:
+    name: Build & Test (macOS)
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -19,14 +19,23 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Cache SPM packages
+      - name: Cache DerivedData
         uses: actions/cache@v4
         with:
-          path: ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: spm-${{ runner.os }}-${{ hashFiles('Curator.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
-          restore-keys: spm-${{ runner.os }}-
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: xcode-${{ runner.os }}-${{ hashFiles('Curator.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved', 'project.yml') }}
+          restore-keys: xcode-${{ runner.os }}-
 
-      - name: Run tests with coverage
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project Curator.xcodeproj \
+            -scheme Curator \
+            -destination 'platform=macOS,arch=arm64' \
+            CODE_SIGN_IDENTITY="-" \
+            | xcpretty --color || true
+
+      - name: Run unit tests
         run: |
           xcodebuild test \
             -project Curator.xcodeproj \

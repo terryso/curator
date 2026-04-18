@@ -1,0 +1,538 @@
+{
+  "phase": "PHASE_1_COMPLETE",
+  "generated_at": "2026-04-18T15:31:03Z",
+  "trace_target": {
+    "type": "story",
+    "id": "1-5",
+    "label": "First Launch Onboarding Flow"
+  },
+  "collection_mode": "contract_static",
+  "allow_gate": true,
+  "coverage_basis": "acceptance_criteria",
+  "summary_confidence": "high",
+  "oracle": {
+    "resolution_mode": "formal_requirements",
+    "confidence": "high",
+    "sources": [
+      "_bmad-output/implementation-artifacts/1-5-first-launch-onboarding.md",
+      "_bmad-output/test-artifacts/atdd-checklist-1-5-first-launch-onboarding.md"
+    ],
+    "external_pointer_status": "not_used",
+    "synthetic": false
+  },
+  "requirements": [
+    {
+      "id": "AC1-R01",
+      "title": "OnboardingStep enum defines all 6 steps",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testOnboardingStepEnumHasAllCases",
+          "title": "OnboardingStep enum has all required cases",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 79,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R02",
+      "title": "OnboardingStep is Int-backed and CaseIterable",
+      "ac": "AC1",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testOnboardingStepIsIntBackedCaseIterable",
+          "title": "OnboardingStep is Int-backed and CaseIterable",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 94,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R03",
+      "title": "OnboardingViewModel exists as MainActor ObservableObject",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testOnboardingViewModelExists",
+          "title": "OnboardingViewModel exists",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 108,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R04",
+      "title": "ViewModel initializes with currentStep = welcome",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testViewModelInitializesWithWelcomeStep",
+          "title": "ViewModel initializes with welcome step",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 116,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R05",
+      "title": "ViewModel initializes with isOnboardingComplete = false",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testViewModelInitializesWithOnboardingIncomplete",
+          "title": "ViewModel initializes with onboarding incomplete",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 126,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R06",
+      "title": "Forward navigation: welcome -> privacy",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testGoToNextStepFromWelcomeGoesToPrivacy",
+          "title": "goToNextStep from welcome goes to privacy",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 138,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R07",
+      "title": "Forward navigation: privacy -> permission",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testGoToNextStepFromPrivacyGoesToPermission",
+          "title": "goToNextStep from privacy goes to permission",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 150,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R08",
+      "title": "Permission step triggers permission request (does not advance past 3 screens)",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testGoToNextStepFromPermissionTriggersPermissionRequest",
+          "title": "goToNextStep from permission triggers permission request",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 164,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R09",
+      "title": "Backward navigation: privacy -> welcome",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testGoToPreviousStepFromPrivacyGoesToWelcome",
+          "title": "goToPreviousStep from privacy goes to welcome",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 180,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R10",
+      "title": "Backward navigation: permission -> privacy",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testGoToPreviousStepFromPermissionGoesToPrivacy",
+          "title": "goToPreviousStep from permission goes to privacy",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 193,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R11",
+      "title": "Backward navigation: welcome is no-op",
+      "ac": "AC1",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testGoToPreviousStepAtWelcomeIsNoOp",
+          "title": "goToPreviousStep at welcome is no-op",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 207,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC1-R12",
+      "title": "canGoBack is true only on privacy and permission steps",
+      "ac": "AC1",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testCanGoBackIsTrueOnPrivacyAndPermissionSteps",
+          "title": "canGoBack is true on privacy and permission steps",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 219,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC2-R01",
+      "title": "Permission granted transitions to scanning",
+      "ac": "AC2",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testRequestPermissionGrantedTransitionsToScanning",
+          "title": "Permission granted transitions to scanning",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 236,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC2-R02",
+      "title": "Successful scan shows photo count summary",
+      "ac": "AC2",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testSuccessfulPermissionGrantShowsPhotoCountSummary",
+          "title": "Successful permission grant shows photo count summary",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 255,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC2-R03",
+      "title": "Scan with empty library shows zero count",
+      "ac": "AC2",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testScanWithEmptyLibraryShowsZeroCount",
+          "title": "Scan with empty library shows zero count",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 273,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC2-R04",
+      "title": "Scan with hasMore shows plus indicator",
+      "ac": "AC2",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testScanWithMorePhotosShowsPlusIndicator",
+          "title": "Scan with hasMore shows plus indicator",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 287,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC3-R01",
+      "title": "Permission denied transitions to denied state",
+      "ac": "AC3",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testPermissionDeniedTransitionsToDeniedState",
+          "title": "Permission denied transitions to denied state",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 302,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC3-R02",
+      "title": "Denied state allows continue with restricted access",
+      "ac": "AC3",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testDeniedStateAllowsContinueRestricted",
+          "title": "Denied state allows continue restricted",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 316,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "AC3-R03",
+      "title": "Denied state provides openSystemSettings action",
+      "ac": "AC3",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testDeniedStateProvidesOpenSystemSettingsAction",
+          "title": "Denied state provides openSystemSettings action",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 332,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "COMP-R01",
+      "title": "Completing onboarding sets isOnboardingComplete to true",
+      "ac": "AC2",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testCompletingOnboardingSetsFlagToTrue",
+          "title": "Completing onboarding sets flag to true",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 349,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "COMP-R02",
+      "title": "isOnboardingComplete is observable by SwiftUI views",
+      "ac": "AC2",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testIsOnboardingCompleteIsPublished",
+          "title": "isOnboardingComplete is Published",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 367,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "INJ-R01",
+      "title": "ViewModel accepts repository via init injection",
+      "ac": "AC1",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testViewModelAcceptsRepositoryInjection",
+          "title": "ViewModel accepts repository injection",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 382,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "INJ-R02",
+      "title": "ViewModel handles nil repository gracefully",
+      "ac": "AC3",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testViewModelHandlesNilRepository",
+          "title": "ViewModel handles nil repository",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 391,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "INJ-R03",
+      "title": "ViewModel uses injected repository for permission check",
+      "ac": "AC2",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testViewModelUsesInjectedRepositoryForPermission",
+          "title": "ViewModel uses injected repository for permission",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 405,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "STEP-R01",
+      "title": "currentStepIndex provides correct 0-based index",
+      "ac": "AC1",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testCurrentStepIndexProvidesCorrectIndex",
+          "title": "currentStepIndex provides correct index",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 420,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "STEP-R02",
+      "title": "totalOnboardingSteps returns 3",
+      "ac": "AC1",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "testTotalOnboardingStepsIsThree",
+          "title": "totalOnboardingSteps is three",
+          "file": "CuratorTests/Features/Onboarding/OnboardingViewModelTests.swift",
+          "line": 435,
+          "level": "unit",
+          "status": "active"
+        }
+      ]
+    }
+  ],
+  "coverage_statistics": {
+    "total_requirements": 26,
+    "fully_covered": 26,
+    "partially_covered": 0,
+    "uncovered": 0,
+    "overall_coverage_percentage": 100,
+    "priority_breakdown": {
+      "P0": { "total": 14, "covered": 14, "percentage": 100 },
+      "P1": { "total": 12, "covered": 12, "percentage": 100 },
+      "P2": { "total": 0, "covered": 0, "percentage": 100 },
+      "P3": { "total": 0, "covered": 0, "percentage": 100 }
+    }
+  },
+  "gap_analysis": {
+    "critical_gaps": [],
+    "high_gaps": [],
+    "medium_gaps": [],
+    "low_gaps": [],
+    "partial_coverage_items": [],
+    "unit_only_items": []
+  },
+  "coverage_heuristics": {
+    "endpoint_gaps": [],
+    "auth_negative_path_gaps": [],
+    "happy_path_only_gaps": [],
+    "ui_journey_gaps": [],
+    "ui_state_gaps": [],
+    "counts": {
+      "endpoints_without_tests": 0,
+      "auth_missing_negative_paths": 0,
+      "happy_path_only_criteria": 0,
+      "ui_journeys_without_e2e": 0,
+      "ui_states_missing_coverage": 0
+    }
+  },
+  "test_inventory": {
+    "summary": {
+      "files": 1,
+      "cases": 26,
+      "skipped_cases": 0,
+      "fixme_cases": 0,
+      "pending_cases": 0,
+      "by_level": {
+        "e2e": { "tests": 0, "criteria_covered": 0 },
+        "api": { "tests": 0, "criteria_covered": 0 },
+        "component": { "tests": 0, "criteria_covered": 0 },
+        "unit": { "tests": 26, "criteria_covered": 26 },
+        "other": { "tests": 0, "criteria_covered": 0 }
+      }
+    },
+    "tests": [],
+    "blockers": []
+  },
+  "blockers": [],
+  "recommendations": [
+    {
+      "priority": "LOW",
+      "action": "Run /bmad:tea:test-review to assess test quality",
+      "requirements": []
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Consider adding SwiftUI View tests for OnboardingContainerView and sub-views if XCUITest or ViewInspector becomes available",
+      "requirements": []
+    },
+    {
+      "priority": "LOW",
+      "action": "Full test suite: 144 tests, 0 failures, 2 skipped — verify skipped tests are intentional",
+      "requirements": []
+    }
+  ]
+}

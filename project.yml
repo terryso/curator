@@ -33,8 +33,8 @@ targets:
         SWIFT_STRICT_CONCURRENCY: complete
         ENABLE_PREVIEWS: YES
     dependencies:
-      - package: OpenAgentSDKSwift
-        product: OpenAgentSDKSwift
+      - package: OpenAgentSDK
+        product: OpenAgentSDK
       - package: Sparkle
         product: Sparkle
 
@@ -65,9 +65,23 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         ARCHS: arm64
 
+schemes:
+  Curator:
+    build:
+      targets:
+        Curator: all
+        CuratorTests: [test]
+    test:
+      targets:
+        - CuratorTests
+      gatherCoverageData: true
+      coverageTargets:
+        - Curator
+
 packages:
-  OpenAgentSDKSwift:
-    path: Packages/OpenAgentSDKSwift
+  OpenAgentSDK:
+    url: https://github.com/terryso/open-agent-sdk-swift
+    branch: main
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
     from: "2.0.0"

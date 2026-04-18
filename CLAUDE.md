@@ -1,6 +1,6 @@
 ## Project: Curator
 
-AI-powered macOS photo management agent. Built on [OpenAgentSDKSwift](https://github.com/nick/open-agent-sdk-swift).
+AI-powered macOS photo management agent. Built on [OpenAgentSDKSwift](https://github.com/terryso/open-agent-sdk-swift).
 
 ## Architecture
 

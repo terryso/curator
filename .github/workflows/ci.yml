@@ -23,7 +23,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: xcode-${{ runner.os }}-${{ hashFiles('Package.resolved', 'project.yml') }}
+          key: xcode-${{ runner.os }}-${{ hashFiles('Curator.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved', 'project.yml') }}
           restore-keys: xcode-${{ runner.os }}-
 
       - name: Build
@@ -41,20 +41,35 @@ jobs:
             -project Curator.xcodeproj \
             -scheme Curator \
             -destination 'platform=macOS,arch=arm64' \
+            -enableCodeCoverage YES \
             -only-testing:CuratorTests \
             CODE_SIGN_IDENTITY="-" \
             | xcpretty --color || true
 
       - name: Extract coverage percentage
         run: |
-          RESULT_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" -path "*/Test*" -type d | head -1)
+          RESULT_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" -path "*Curator*Test*" -type d | sort -r | head -1)
           if [ -z "$RESULT_PATH" ]; then
             echo "No test results found, skipping coverage"
             exit 0
           fi
 
-          COVERAGE=$(xcrun xccov view --report "$RESULT_PATH" 2>/dev/null | tail -1 | awk '{print $NF}' | sed 's/%//')
+          COVERAGE=$(xcrun xccov view --report "$RESULT_PATH" 2>/dev/null | grep -E '^Curator\.app\s' | awk '{print $NF}' | sed 's/(//;s/)//;s/%//' | cut -d/ -f1 | awk '{printf "%.1f", $1}')
           if [ -z "$COVERAGE" ]; then
             COVERAGE="0.0"
           fi
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
           echo "Coverage: ${COVERAGE}%"
+
+      - name: Update coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: Schneegans/dynamic-badges-action@v1.8.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ secrets.GIST_ID }}
+          filename: coverage.json
+          label: coverage
+          message: ${{ env.COVERAGE }}%
+          valColorRange: ${{ env.COVERAGE }}
+          maxColorRange: 100
+          minColorRange: 0

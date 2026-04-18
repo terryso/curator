@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test (macOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: xcode-${{ runner.os }}-${{ hashFiles('Package.resolved', 'project.yml') }}
+          restore-keys: xcode-${{ runner.os }}-
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project Curator.xcodeproj \
+            -scheme Curator \
+            -destination 'platform=macOS,arch=arm64' \
+            CODE_SIGN_IDENTITY="-" \
+            | xcpretty --color || true
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project Curator.xcodeproj \
+            -scheme Curator \
+            -destination 'platform=macOS,arch=arm64' \
+            -only-testing:CuratorTests \
+            CODE_SIGN_IDENTITY="-" \
+            | xcpretty --color || true
+
+      - name: Extract coverage percentage
+        run: |
+          RESULT_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" -path "*/Test*" -type d | head -1)
+          if [ -z "$RESULT_PATH" ]; then
+            echo "No test results found, skipping coverage"
+            echo "COVERAGE=0.0" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          COVERAGE=$(xcrun xccov view --report "$RESULT_PATH" 2>/dev/null | tail -1 | awk '{print $NF}' | sed 's/%//')
+          if [ -z "$COVERAGE" ]; then
+            COVERAGE="0.0"
+          fi
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+          echo "Coverage: ${COVERAGE}%"
+
+      - name: Update coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: Schneegans/dynamic-badges-action@v1.8.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ secrets.GIST_ID }}
+          filename: coverage.json
+          label: coverage
+          message: ${{ env.COVERAGE }}%
+          valColorRange: ${{ env.COVERAGE }}
+          maxColorRange: 100
+          minColorRange: 0

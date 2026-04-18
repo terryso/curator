@@ -8,6 +8,6 @@ import Foundation
 protocol PhotoLibraryRepository: Sendable {
     func requestReadAccess() async throws -> Bool
     func requestWriteAccess() async throws -> Bool
-    func fetchAssets(predicate: PhotoPredicate, pageSize: Int) async throws -> AssetPage
+    func fetchAssets(predicate: PhotoPredicate, pageSize: Int, pageOffset: Int) async throws -> AssetPage
     func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data
 }

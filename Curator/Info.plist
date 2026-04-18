@@ -14,5 +14,7 @@
 	<string>0.1.0</string>
 	<key>SRCROOT</key>
 	<string>$(SRCROOT)</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Curator needs access to your photo library to browse and manage your photos.</string>
 </dict>
 </plist>

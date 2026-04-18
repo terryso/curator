@@ -149,7 +149,7 @@ private struct MockPhotoLibraryRepository: PhotoLibraryRepository {
         return true
     }
 
-    func fetchAssets(predicate: PhotoPredicate, pageSize: Int) async throws -> AssetPage {
+    func fetchAssets(predicate: PhotoPredicate, pageSize: Int, pageOffset: Int = 0) async throws -> AssetPage {
         return AssetPage(assets: [], hasMore: false)
     }
 

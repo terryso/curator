@@ -124,7 +124,7 @@ Curator 是原生 macOS 应用，不适用传统 Web 框架启动模板（如 Ne
 # 目标：macOS App, SwiftUI Lifecycle, Swift 6, arm64 only
 
 # 2. 添加 SPM 依赖
-# OpenAgentSDKSwift: https://github.com/nick/open-agent-sdk-swift
+# OpenAgentSDKSwift: https://github.com/terryso/open-agent-sdk-swift
 # Sparkle 2: https://github.com/sparkle-project/Sparkle
 
 # 3. 配置 Entitlements

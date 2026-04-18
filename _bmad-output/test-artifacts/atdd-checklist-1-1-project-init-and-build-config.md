@@ -151,7 +151,7 @@ N/A — 本 Story 不涉及 UI 组件。
 
 **Tasks to make this test pass:**
 
-- [ ] 添加 OpenAgentSDKSwift SPM 依赖：`https://github.com/nick/open-agent-sdk-swift`，branch: main
+- [ ] 添加 OpenAgentSDKSwift SPM 依赖：`https://github.com/terryso/open-agent-sdk-swift`，branch: main
 - [ ] 在项目 target 中链接依赖
 - [ ] 验证 Package.resolved 正确生成
 - [ ] 运行测试: `xcodebuild test -scheme Curator -destination 'platform=macOS,arch=arm64' -only-testing:CuratorTests/SPMDependencyTests`

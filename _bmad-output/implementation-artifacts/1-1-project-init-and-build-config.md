@@ -37,7 +37,7 @@ So that 项目可以成功构建并运行在 macOS 15+ Apple Silicon 上。
   - [x] 1.5 验证项目编译通过：`xcodebuild build -scheme Curator -destination 'platform=macOS,arch=arm64'`
 
 - [x] Task 2: 配置 SPM 依赖 (AC: #2)
-  - [x] 2.1 添加 OpenAgentSDKSwift 依赖：`https://github.com/nick/open-agent-sdk-swift`，branch: main（或具体 release 版本）
+  - [x] 2.1 添加 OpenAgentSDKSwift 依赖：`https://github.com/terryso/open-agent-sdk-swift`，branch: main（或具体 release 版本）
   - [x] 2.2 添加 Sparkle 2 依赖：`https://github.com/sparkle-project/Sparkle`，版本规则：`from: "2.0.0"` 到 `"3.0.0"`
   - [x] 2.3 在项目 target 的 Frameworks, Libraries, and Embedded Content 中链接两个依赖
   - [x] 2.4 验证 Package.resolved 正确生成，两个依赖均已解析
@@ -75,7 +75,7 @@ So that 项目可以成功构建并运行在 macOS 15+ Apple Silicon 上。
 
 ### SPM 依赖注意事项
 
-- **OpenAgentSDKSwift**：`https://github.com/nick/open-agent-sdk-swift`，这是项目所有者自己的 SDK，使用 branch: main 或最新 release tag。SDK 提供 Agent 循环、工具执行、会话管理、流式传输能力。[来源: PRD - SDK 集成架构]
+- **OpenAgentSDKSwift**：`https://github.com/terryso/open-agent-sdk-swift`，这是项目所有者自己的 SDK，使用 branch: main 或最新 release tag。SDK 提供 Agent 循环、工具执行、会话管理、流式传输能力。[来源: PRD - SDK 集成架构]
 - **Sparkle 2**：`https://github.com/sparkle-project/Sparkle`，版本范围 `2.0.0..<3.0.0`（当前最新稳定版约 2.9.x）。SPM 集成方式：File → Add Packages，链接到 app target。Sparkle 提供非 App Store macOS 应用的自动更新能力。[来源: Architecture - 更新策略]
 - 两个依赖均为 SPM 原生支持，无需 CocoaPods 或 Carthage
 
@@ -164,7 +164,7 @@ Claude (GLM-5.1 via Claude Code)
 
 ### Debug Log References
 
-- OpenAgentSDKSwift remote repo (https://github.com/nick/open-agent-sdk-swift) not publicly accessible; created local package stub at `Packages/OpenAgentSDKSwift/` to unblock build
+- OpenAgentSDKSwift remote repo (https://github.com/terryso/open-agent-sdk-swift) not publicly accessible; created local package stub at `Packages/OpenAgentSDKSwift/` to unblock build
 - xcodegen overwrites entitlements file content when `CODE_SIGN_ENTITLEMENTS` is in global settings; removed from global settings and only kept in target-level settings
 - Test runner crashed initially due to sandbox entitlements on host app; created `CuratorTestsHost.entitlements` (no sandbox) for test runs via `CODE_SIGN_ENTITLEMENTS` override
 - `Bundle.main.bundleURL` path navigation from test bundle doesn't reach source root (DerivedData is in `/Users/nick/Library/` not in project dir); embedded `$(SRCROOT)` in `Info.plist` for runtime source root discovery

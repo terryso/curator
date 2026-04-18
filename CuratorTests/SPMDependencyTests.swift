@@ -11,14 +11,27 @@ final class SPMDependencyTests: XCTestCase {
     /// [P0] 验证 OpenAgentSDKSwift 依赖已正确解析
     func testOpenAgentSDKSwiftDependencyResolved() throws {
         let sourceRoot = try BuildConfigurationTests.getSourceRoot()
-        let localPackageURL = sourceRoot
-            .appendingPathComponent("Packages")
-            .appendingPathComponent("OpenAgentSDKSwift")
-            .appendingPathComponent("Package.swift")
+        let packageResolvedURL = sourceRoot
+            .appendingPathComponent("Curator.xcodeproj")
+            .appendingPathComponent("project.xcworkspace")
+            .appendingPathComponent("xcshareddata")
+            .appendingPathComponent("swiftpm")
+            .appendingPathComponent("Package.resolved")
 
-        let localPackageExists = FileManager.default.fileExists(atPath: localPackageURL.path)
-        XCTAssertTrue(localPackageExists,
-            "OpenAgentSDKSwift 本地包应存在于 Packages/OpenAgentSDKSwift/ 目录下")
+        XCTAssertTrue(
+            FileManager.default.fileExists(atPath: packageResolvedURL.path),
+            "Package.resolved 文件应存在"
+        )
+
+        let packageData = try Data(contentsOf: packageResolvedURL)
+        let packageJSON = try JSONSerialization.jsonObject(with: packageData) as? [String: Any]
+        let pins = packageJSON?["pins"] as? [[String: Any]] ?? []
+
+        let hasOpenAgentSDK = pins.contains { pin in
+            (pin["location"] as? String)?.contains("terryso/open-agent-sdk-swift") == true
+                || (pin["identity"] as? String) == "open-agent-sdk-swift"
+        }
+        XCTAssertTrue(hasOpenAgentSDK, "Package.resolved 应包含 OpenAgentSDKSwift 依赖（来自 https://github.com/terryso/open-agent-sdk-swift）")
     }
 
     /// [P0] 验证 Sparkle 2 依赖已正确解析
@@ -46,7 +59,6 @@ final class SPMDependencyTests: XCTestCase {
         }
         XCTAssertTrue(hasSparkle, "Package.resolved 应包含 Sparkle 依赖")
 
-        // 验证 Sparkle 版本在 2.0.0..<3.0.0 范围内
         let sparklePin = pins.first { pin in
             (pin["identity"] as? String) == "sparkle"
                 || (pin["location"] as? String)?.contains("sparkle-project/Sparkle") == true

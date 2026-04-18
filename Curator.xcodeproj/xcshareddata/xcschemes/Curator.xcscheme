@@ -35,6 +35,20 @@
                ReferencedContainer = "container:Curator.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "198641E80F0161385A2BB3D5"
+               BuildableName = "CuratorUITests.xctest"
+               BlueprintName = "CuratorUITests"
+               ReferencedContainer = "container:Curator.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -62,6 +76,17 @@
                BlueprintIdentifier = "EB229EDF3D4211BD78E436DF"
                BuildableName = "CuratorTests.xctest"
                BlueprintName = "CuratorTests"
+               ReferencedContainer = "container:Curator.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "198641E80F0161385A2BB3D5"
+               BuildableName = "CuratorUITests.xctest"
+               BlueprintName = "CuratorUITests"
                ReferencedContainer = "container:Curator.xcodeproj">
             </BuildableReference>
          </TestableReference>

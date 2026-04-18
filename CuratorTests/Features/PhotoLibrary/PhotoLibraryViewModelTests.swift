@@ -430,4 +430,9 @@ private actor MockPhotoLibraryRepository: PhotoLibraryRepository {
         if let error { throw error }
         return Data()
     }
+
+    func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data {
+        if let error { throw error }
+        return Data()
+    }
 }

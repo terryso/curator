@@ -486,4 +486,8 @@ private actor MockOnboardingRepository: PhotoLibraryRepository {
     func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data {
         return Data()
     }
+
+    func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data {
+        return Data()
+    }
 }

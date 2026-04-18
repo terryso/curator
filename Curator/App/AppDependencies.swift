@@ -18,10 +18,12 @@ final class AppDependencies: ObservableObject {
     @Published var llmProvider: (any LLMProvider)?
 
     /// Registers the PhotoKit-backed photo library repository.
-    ///
-    /// Called during app startup to bind the concrete PhotoKitRepository
-    /// implementation to the photoRepository protocol property.
     func registerPhotoKitRepository() {
         photoRepository = PhotoKitRepository()
+    }
+
+    /// Registers a mock repository for UI testing.
+    func registerMockRepository() {
+        photoRepository = MockPhotoLibraryRepository()
     }
 }

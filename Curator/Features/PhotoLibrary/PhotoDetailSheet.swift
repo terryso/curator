@@ -10,10 +10,19 @@ struct PhotoDetailSheet: View {
     /// The photo asset whose details are displayed.
     let photo: PhotoAsset
 
+    /// ViewModel for loading preview images.
+    @ObservedObject var viewModel: PhotoLibraryViewModel
+
+    /// Dismiss action provided by the sheet environment.
+    @Environment(\.dismiss) private var dismiss
+
+    /// Loaded preview image data (larger than grid thumbnail).
+    @State private var previewData: Data?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Thumbnail image (enlarged)
-            if let data = photo.thumbnailData, let nsImage = NSImage(data: data) {
+            // Preview image
+            if let data = previewData ?? photo.thumbnailData, let nsImage = NSImage(data: data) {
                 Image(nsImage: nsImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -44,6 +53,17 @@ struct PhotoDetailSheet: View {
         }
         .padding(24)
         .frame(minWidth: 400, minHeight: 450)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Close") {
+                    dismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+        }
+        .task {
+            previewData = await viewModel.loadPreview(for: photo)
+        }
     }
 
     // MARK: - Formatted Values

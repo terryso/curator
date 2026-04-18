@@ -7,5 +7,5 @@ import Foundation
 struct PhotoAsset: Sendable, Identifiable {
     let id: AssetID
     let metadata: AssetMetadata
-    let thumbnailData: Data?
+    var thumbnailData: Data?
 }

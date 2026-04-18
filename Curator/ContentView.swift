@@ -36,7 +36,11 @@ struct ContentView: View {
             )
             .frame(minWidth: 900, minHeight: 600)
             .task {
-                dependencies.registerPhotoKitRepository()
+                if CommandLine.arguments.contains("--uitest-mock-photos") {
+                    dependencies.registerMockRepository()
+                } else {
+                    dependencies.registerPhotoKitRepository()
+                }
             }
             .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in
                 if hasRepo, let repo = dependencies.photoRepository {
@@ -47,7 +51,11 @@ struct ContentView: View {
             OnboardingContainerView(viewModel: onboardingViewModel)
                 .frame(minWidth: 900, minHeight: 600)
                 .task {
-                    dependencies.registerPhotoKitRepository()
+                    if CommandLine.arguments.contains("--uitest-mock-photos") {
+                        dependencies.registerMockRepository()
+                    } else {
+                        dependencies.registerPhotoKitRepository()
+                    }
                 }
                 .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in
                     if hasRepo, let repo = dependencies.photoRepository {

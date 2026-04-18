@@ -66,11 +66,17 @@ final class PhotoLibraryViewModel: ObservableObject {
 
     /// Updates the repository reference (used after PhotoKit registration).
     ///
-    /// If the current state is idle, triggers initial page load automatically.
+    /// Triggers initial page load when state is idle or failed (e.g. from a
+    /// previous attempt before the repository was available).
     /// Transitions state to loading immediately to prevent duplicate load triggers.
     func updateRepository(_ repository: any PhotoLibraryRepository) {
         self.repository = repository
-        if case .idle = loadingState {
+        let shouldLoad: Bool
+        if case .idle = loadingState { shouldLoad = true }
+        else if case .failed = loadingState { shouldLoad = true }
+        else { shouldLoad = false }
+
+        if shouldLoad {
             loadingState = .loading
             Task {
                 await self.loadInitialPage()
@@ -83,6 +89,7 @@ final class PhotoLibraryViewModel: ObservableObject {
     /// Loads the initial page of photos.
     ///
     /// Transitions state: idle -> loading -> loaded/failed.
+    /// Requests photo permission if not already granted before fetching.
     /// Resets pagination state (photos, offset) before fetching.
     func loadInitialPage() async {
         guard let repository = repository else {
@@ -97,6 +104,9 @@ final class PhotoLibraryViewModel: ObservableObject {
         isLoadingPage = false
 
         do {
+            // Ensure permission is granted before fetching
+            _ = try await repository.requestReadAccess()
+
             let page = try await repository.fetchAssets(
                 predicate: .all,
                 pageSize: pageSize,
@@ -143,6 +153,45 @@ final class PhotoLibraryViewModel: ObservableObject {
         }
 
         isLoadingPage = false
+    }
+
+    // MARK: - Thumbnail Loading
+
+    /// Thumbnail size in points (matches PhotoThumbnailView).
+    let thumbnailSize: CGFloat = 120
+
+    /// Loads a thumbnail for the given photo and updates the photos array.
+    ///
+    /// No-op if thumbnail is already loaded or repository is unavailable.
+    func loadThumbnail(for photo: PhotoAsset) async {
+        guard photo.thumbnailData == nil else { return }
+        guard let repository = repository else { return }
+
+        do {
+            let data = try await repository.fetchThumbnail(
+                for: photo.id,
+                size: CGSize(width: thumbnailSize, height: thumbnailSize)
+            )
+            // Update the matching photo in the array
+            if let index = photos.firstIndex(where: { $0.id == photo.id }) {
+                photos[index].thumbnailData = data
+            }
+        } catch {
+            // Silently fail — placeholder remains visible
+        }
+    }
+
+    /// Loads a larger preview image for the detail sheet.
+    func loadPreview(for photo: PhotoAsset) async -> Data? {
+        guard let repository = repository else { return nil }
+        do {
+            return try await repository.fetchThumbnail(
+                for: photo.id,
+                size: CGSize(width: 400, height: 400)
+            )
+        } catch {
+            return nil
+        }
     }
 
     // MARK: - Selection

@@ -36,13 +36,8 @@ struct PhotoGridView: View {
                 }
             }
         }
-        .task {
-            if case .idle = viewModel.loadingState {
-                await viewModel.loadInitialPage()
-            }
-        }
         .sheet(item: $viewModel.selectedPhoto) { photo in
-            PhotoDetailSheet(photo: photo)
+            PhotoDetailSheet(photo: photo, viewModel: viewModel)
         }
     }
 
@@ -56,9 +51,9 @@ struct PhotoGridView: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: GridColumnCalculator.spacing) {
                     ForEach(viewModel.photos) { photo in
-                        PhotoThumbnailView(photo: photo) {
+                        PhotoThumbnailView(photo: photo, onTap: {
                             viewModel.selectPhoto(photo)
-                        }
+                        }, viewModel: viewModel)
                         .onAppear {
                             if photo.id == viewModel.photos.last?.id && viewModel.hasMorePages {
                                 Task {

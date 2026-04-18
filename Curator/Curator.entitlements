@@ -4,11 +4,11 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
-	<key>com.apple.security.personal-information.photos</key>
+	<key>com.apple.security.keychain</key>
 	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
-	<key>com.apple.security.keychain</key>
+	<key>com.apple.security.personal-information.photos</key>
 	<true/>
 </dict>
 </plist>

@@ -1,5 +1,15 @@
 import Foundation
+import AppKit
 import Photos
+
+extension NSImage {
+    func jpegData(compression: CGFloat = 0.85) -> Data? {
+        guard let tiff = tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiff)
+        else { return nil }
+        return bitmap.representation(using: .jpeg, properties: [.compressionFactor: compression])
+    }
+}
 
 /// Concrete implementation of PhotoLibraryRepository using PhotoKit.
 ///
@@ -14,6 +24,13 @@ actor PhotoKitRepository: PhotoLibraryRepository {
     /// Marked `nonisolated(unsafe)` because PhotoPermissionManager is a
     /// Sendable value type — safe to access from any isolation domain.
     nonisolated(unsafe) var permissionManager: PhotoPermissionManager
+
+    /// In-memory thumbnail cache. 100MB limit per UX-DR13 / Story 1.4 AC.
+    private let thumbnailCache: NSCache<NSString, NSData> = {
+        let cache = NSCache<NSString, NSData>()
+        cache.totalCostLimit = 100 * 1024 * 1024 // 100 MB
+        return cache
+    }()
 
     // MARK: - Initialization
 
@@ -153,7 +170,77 @@ actor PhotoKitRepository: PhotoLibraryRepository {
         return imageData
     }
 
+    /// Fetches a thumbnail image for a given asset at the specified size.
+    ///
+    /// Uses an in-memory NSCache (100MB) to avoid redundant PHImageManager calls.
+    /// Returns a downscaled JPEG suitable for grid display.
+    ///
+    /// - Parameters:
+    ///   - assetID: The identifier of the asset.
+    ///   - size: Target thumbnail size in points.
+    /// - Returns: JPEG image data for the thumbnail.
+    /// - Throws: `DomainError.assetNotFound` or `DomainError.invalidState`.
+    func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data {
+        let cacheKey = "\(assetID.rawValue)-\(Int(size.width))x\(Int(size.height))" as NSString
+
+        // Check cache first
+        if let cached = thumbnailCache.object(forKey: cacheKey) as? Data {
+            return cached
+        }
+
+        // Fetch PHAsset
+        let fetchResult = PHAsset.fetchAssets(
+            withLocalIdentifiers: [assetID.rawValue],
+            options: nil
+        )
+        guard let phAsset = fetchResult.firstObject else {
+            throw DomainError.assetNotFound(assetID)
+        }
+
+        // Request thumbnail from PHImageManager
+        let image = try await requestThumbnailImage(for: phAsset, targetSize: size)
+
+        guard let data = image?.jpegData() else {
+            throw DomainError.invalidState(reason: "Failed to generate thumbnail")
+        }
+
+        // Store in cache
+        thumbnailCache.setObject(data as NSData, forKey: cacheKey, cost: data.count)
+
+        return data
+    }
+
     // MARK: - Private PHImageManager Async Wrappers
+
+    /// Wraps PHImageManager thumbnail request in async/await.
+    private func requestThumbnailImage(for asset: PHAsset, targetSize: CGSize) async throws -> NSImage? {
+        try await withCheckedThrowingContinuation { continuation in
+            let options = PHImageRequestOptions()
+            options.deliveryMode = .highQualityFormat
+            options.isNetworkAccessAllowed = false
+            options.isSynchronous = false
+
+            var hasResumed = false
+            let lock = NSLock()
+
+            PHImageManager.default().requestImage(
+                for: asset,
+                targetSize: CGSize(
+                    width: targetSize.width * 3,  // 3x for crisp Retina
+                    height: targetSize.height * 3
+                ),
+                contentMode: .aspectFill,
+                options: options
+            ) { image, _ in
+                lock.lock()
+                defer { lock.unlock() }
+
+                guard !hasResumed else { return }
+                hasResumed = true
+                continuation.resume(returning: image)
+            }
+        }
+    }
 
     /// Wraps PHImageManager image data request in async/await.
     ///

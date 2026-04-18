@@ -156,9 +156,11 @@ private struct MockPhotoLibraryRepository: PhotoLibraryRepository {
     func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data {
         return Data()
     }
-}
 
-/// Mock LLMProvider for testing dependency injection.
+    func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data {
+        return Data()
+    }
+}
 /// Implements all required protocol methods with stub responses.
 private struct MockLLMProvider: LLMProvider {
     let name: String = "MockLLM"

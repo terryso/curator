@@ -66,6 +66,11 @@ struct MainWorkspaceView: View {
             minWidth: navigationModel.minimumWindowWidth,
             minHeight: navigationModel.minimumWindowHeight
         )
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResizeNotification)) { notification in
+            guard let window = notification.object as? NSWindow else { return }
+            navigationModel.windowWidth = Double(window.frame.width)
+            navigationModel.windowHeight = Double(window.frame.height)
+        }
     }
 }
 
@@ -76,7 +81,7 @@ struct MainWorkspaceView: View {
 private struct InputBarPlaceholder: View {
     var body: some View {
         HStack {
-            Text("Ask Curator to manage your photos...")
+            Text("Try \"Find all duplicate photos\"...")
                 .foregroundStyle(.tertiary)
             Spacer()
         }

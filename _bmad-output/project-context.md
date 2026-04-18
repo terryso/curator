@@ -5,7 +5,7 @@ date: '2026-04-18'
 sections_completed:
   ['technology_stack', 'implementation_rules', 'code_patterns', 'testing_rules', 'architecture_boundaries', 'usage_guidelines']
 status: 'complete'
-rule_count: 28
+rule_count: 30
 optimized_for_llm: true
 ---
 
@@ -263,6 +263,33 @@ private struct MockPhotoLibraryRepository: PhotoLibraryRepository {
 }
 ```
 
+### UI 测试约定
+
+- **目录**：`CuratorUITests/`，文件命名 `XxxUITests.swift`
+- **基类**：所有 UI 测试继承 `CuratorUITestBase`
+- **Happy-path 必须覆盖**：每个 Story 开发完成后必须补充至少一条 happy-path UI 测试
+- **元素查询**：使用 `accessibilityLabel` 查找元素，不依赖原始文本
+- **状态重置**：通过 launch arguments 控制应用状态（如 `--uitest-reset-onboarding`）
+- **环境依赖跳过**：权限不可用时使用 `throw XCTSkip()` 优雅跳过，不标记为失败
+- **运行 UI 测试**：`xcodebuild test -only-testing:CuratorUITests`
+
+```swift
+// UI 测试结构示例
+final class SomeFeatureUITests: CuratorUITestBase {
+    override func setUp() {
+        super.setUp()
+        launchApp(resetOnboarding: false)  // 或 true，取决于测试场景
+    }
+
+    func testHappyPath() throws {
+        guard somePrecondition else {
+            throw XCTSkip("前置条件不满足")
+        }
+        // 测试逻辑
+    }
+}
+```
+
 ### 构建验证测试
 
 项目包含 ATDD 测试验证项目结构：
@@ -344,6 +371,7 @@ com.apple.security.keychain                       → API Key 安全存储
 - [ ] 协议是否定义在 Domain 层？
 - [ ] 跨层数据是否使用值类型（struct + Sendable）？
 - [ ] 是否有对应的 ATDD 测试？
+- [ ] 是否有对应的 UI 测试 happy-path 覆盖？
 
 ---
 
@@ -361,4 +389,4 @@ com.apple.security.keychain                       → API Key 安全存储
 - 季度审查过时规则
 - 移除已成为常识的规则
 
-Last Updated: 2026-04-18
+Last Updated: 2026-04-19

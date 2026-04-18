@@ -12,6 +12,9 @@ struct PhotoThumbnailView: View {
     /// Callback when the thumbnail is tapped.
     let onTap: () -> Void
 
+    /// ViewModel for loading thumbnails.
+    @ObservedObject var viewModel: PhotoLibraryViewModel
+
     /// Target thumbnail size.
     private let thumbnailSize: CGFloat = 120
 
@@ -36,6 +39,9 @@ struct PhotoThumbnailView: View {
         .contentShape(Rectangle())
         .onTapGesture {
             onTap()
+        }
+        .task(id: photo.id) {
+            await viewModel.loadThumbnail(for: photo)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)

@@ -10,4 +10,5 @@ protocol PhotoLibraryRepository: Sendable {
     func requestWriteAccess() async throws -> Bool
     func fetchAssets(predicate: PhotoPredicate, pageSize: Int, pageOffset: Int) async throws -> AssetPage
     func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data
+    func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data
 }

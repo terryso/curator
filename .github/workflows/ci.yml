@@ -13,15 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache xcodegen
-        uses: actions/cache@v4
-        with:
-          path: /opt/homebrew/Cellar/xcodegen
-          key: xcodegen-${{ runner.os }}
-        id: cache-xcodegen
-
       - name: Install xcodegen
-        if: steps.cache-xcodegen.outputs.cache-hit != 'true'
         run: brew install xcodegen
 
       - name: Generate Xcode project

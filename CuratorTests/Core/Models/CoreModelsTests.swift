@@ -225,4 +225,13 @@ final class CoreModelsTests: XCTestCase {
             XCTFail("LoadingState should work with Optional<Int>")
         }
     }
+
+    // MARK: - PhotoPredicate
+
+    /// PhotoPredicate.all returns a predicate with empty rawValue
+    func testPhotoPredicateAllReturnsEmptyRawValue() throws {
+        let predicate = PhotoPredicate.all
+        XCTAssertTrue(predicate.rawValue.isEmpty,
+            "PhotoPredicate.all should have an empty rawValue")
+    }
 }

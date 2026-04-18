@@ -257,4 +257,85 @@ final class ErrorTypeTests: XCTestCase {
             XCTFail("photoKitAccessDenied should map to DomainError.insufficientPermission, got \(domainError)")
         }
     }
+
+    // MARK: - Complete Infra→Domain mapping coverage
+
+    /// Verify all InfrastructureError cases map to valid DomainError cases
+    func testAllInfrastructureErrorsMapToDomainError() throws {
+        let mappings: [(InfrastructureError, DomainError)] = [
+            (.photoKitAccessDenied, .insufficientPermission(required: .read)),
+            (.photoKitFetchFailed(reason: "test"), .invalidState(reason: "")),
+            (.llmProviderUnavailable(provider: "test"), .analysisFailed(reason: "")),
+            (.llmProviderError(provider: "test", statusCode: 500, message: "err"), .analysisFailed(reason: "")),
+            (.networkError(underlying: NSError(domain: "t", code: 0)), .analysisFailed(reason: "")),
+            (.rateLimitExceeded(provider: "test", retryAfter: 30), .analysisFailed(reason: "")),
+            (.keychainError(status: -1), .invalidState(reason: "")),
+            (.cacheError(reason: "test"), .invalidState(reason: "")),
+        ]
+
+        for (infraError, expectedBase) in mappings {
+            let result = infraError.toDomainError()
+            // Verify the mapped error matches the expected case pattern
+            switch (result, expectedBase) {
+            case (.insufficientPermission, .insufficientPermission),
+                 (.invalidState, .invalidState),
+                 (.analysisFailed, .analysisFailed):
+                break
+            default:
+                XCTFail("\(infraError) mapped to \(result), expected pattern matching \(expectedBase)")
+            }
+        }
+    }
+
+    // MARK: - Complete Domain→UserFacing mapping coverage
+
+    /// Verify all DomainError cases map to user-friendly messages
+    func testAllDomainErrorsMapToUserFacingError() throws {
+        let domainErrors: [DomainError] = [
+            .assetNotFound(AssetID(rawValue: "test")),
+            .analysisFailed(reason: "test"),
+            .insufficientPermission(required: .read),
+            .operationCancelled,
+            .invalidState(reason: "test"),
+        ]
+
+        for error in domainErrors {
+            let userError = error.toUserFacingError()
+            switch userError {
+            case .readOnly(let title, let message):
+                XCTAssertFalse(title.isEmpty)
+                XCTAssertFalse(message.isEmpty)
+            case .retryable(let title, let message):
+                XCTAssertFalse(title.isEmpty)
+                XCTAssertFalse(message.isEmpty)
+            case .permissionRequired(let title, let action):
+                XCTAssertFalse(title.isEmpty)
+                XCTAssertFalse(action.isEmpty)
+            }
+        }
+    }
+
+    /// DomainError.assetNotFound maps to readOnly user error
+    func testAssetNotFoundMapsToReadOnly() throws {
+        let error = DomainError.assetNotFound(AssetID(rawValue: "id"))
+        let userError = error.toUserFacingError()
+
+        if case .readOnly(let title, _) = userError {
+            XCTAssertEqual(title, "Photo Not Found")
+        } else {
+            XCTFail("assetNotFound should map to readOnly, got \(userError)")
+        }
+    }
+
+    /// DomainError.operationCancelled maps to readOnly with cancelled message
+    func testOperationCancelledMapsToReadOnly() throws {
+        let error = DomainError.operationCancelled
+        let userError = error.toUserFacingError()
+
+        if case .readOnly(let title, _) = userError {
+            XCTAssertEqual(title, "Cancelled")
+        } else {
+            XCTFail("operationCancelled should map to readOnly, got \(userError)")
+        }
+    }
 }

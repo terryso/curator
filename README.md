@@ -8,6 +8,8 @@
 
 AI-powered macOS photo management agent built on [OpenAgentSDKSwift](https://github.com/terryso/open-agent-sdk-swift).
 
+[中文文档](./README_CN.md)
+
 ## Overview
 
 Curator is a native macOS application that uses AI agents to help you organize, rename, deduplicate, and manage your photo library through natural language commands.

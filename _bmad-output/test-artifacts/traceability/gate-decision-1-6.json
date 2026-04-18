@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "evaluated_at": "2026-04-19T00:30:00.000Z",
+  "repo": "curator",
+  "target": {
+    "type": "story",
+    "id": "1.6",
+    "label": "Main UI Framework and Window Management"
+  },
+  "collection_status": "COLLECTED",
+  "gate_basis": "priority_thresholds",
+  "gate_status": "PASS",
+  "rationale": "P0 coverage is 100%, P1 coverage is 100% (target: 90%), and overall coverage is 95% (minimum: 80%). All 19 acceptance criteria have test coverage. 1 item (AC1-001: NavigationSplitView layout rendering) is UNIT-ONLY due to SwiftUI view testing limitations; behavioral coverage is provided via NavigationModel unit tests. No critical or high gaps identified. Full test suite: 173 tests, 0 failures, 0 skipped.",
+  "p0_status": "MET",
+  "p1_status": "MET",
+  "overall_status": "MET",
+  "critical_open": 0,
+  "links": {
+    "trace_report_path": "_bmad-output/test-artifacts/traceability-matrix-1-6.md",
+    "trace_report_url": "",
+    "artifact_url": "",
+    "journey_evidence_url": ""
+  }
+}

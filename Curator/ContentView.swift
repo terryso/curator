@@ -3,13 +3,15 @@ import SwiftUI
 /// Main content view for the Curator application.
 ///
 /// Checks whether the user has completed the first-launch onboarding flow.
-/// If not, displays OnboardingContainerView; otherwise displays PhotoGridView.
+/// If not, displays OnboardingContainerView; otherwise displays MainWorkspaceView
+/// which provides the full Agent workspace with photo library sidebar.
 /// Uses @AppStorage to persist the onboarding completion state.
 struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @StateObject private var dependencies = AppDependencies()
     @StateObject private var viewModel: PhotoLibraryViewModel
     @StateObject private var onboardingViewModel: OnboardingViewModel
+    @StateObject private var navigationModel = NavigationModel()
 
     init() {
         let deps = AppDependencies()
@@ -27,18 +29,23 @@ struct ContentView: View {
 
     var body: some View {
         if hasCompletedOnboarding {
-            PhotoGridView(viewModel: viewModel)
-                .frame(minWidth: 800, minHeight: 600)
-                .task {
-                    dependencies.registerPhotoKitRepository()
+            MainWorkspaceView(
+                photoViewModel: viewModel,
+                dependencies: dependencies,
+                navigationModel: navigationModel
+            )
+            .frame(minWidth: 900, minHeight: 600)
+            .task {
+                dependencies.registerPhotoKitRepository()
+            }
+            .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in
+                if hasRepo, let repo = dependencies.photoRepository {
+                    viewModel.updateRepository(repo)
                 }
-                .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in
-                    if hasRepo, let repo = dependencies.photoRepository {
-                        viewModel.updateRepository(repo)
-                    }
-                }
+            }
         } else {
             OnboardingContainerView(viewModel: onboardingViewModel)
+                .frame(minWidth: 900, minHeight: 600)
                 .task {
                     dependencies.registerPhotoKitRepository()
                 }

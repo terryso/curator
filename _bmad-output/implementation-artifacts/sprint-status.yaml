@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-18
-last_updated: 2026-04-18
+last_updated: 2026-04-19
 project: curator
 project_key: NOKEY
 tracking_system: file-system
@@ -49,7 +49,7 @@ development_status:
   1-3-photokit-read-service: done
   1-4-photo-library-browse-grid: done
   1-5-first-launch-onboarding: done
-  1-6-main-ui-framework-and-window: backlog
+  1-6-main-ui-framework-and-window: done
   epic-1-retrospective: optional
 
   # === Epic 2: "Your AI Setup" — AI 供应商配置与成本管理 ===

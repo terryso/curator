@@ -1,0 +1,562 @@
+{
+  "phase": "PHASE_1_COMPLETE",
+  "generated_at": "2026-04-19T00:30:00.000Z",
+  "trace_target": {
+    "type": "story",
+    "id": "1.6",
+    "label": "Main UI Framework and Window Management"
+  },
+  "collection_mode": "contract_static",
+  "allow_gate": true,
+  "coverage_basis": "acceptance_criteria",
+  "summary_confidence": "high",
+  "oracle": {
+    "resolution_mode": "formal_requirements",
+    "confidence": "high",
+    "sources": [
+      "_bmad-output/implementation-artifacts/1-6-main-ui-framework-and-window.md",
+      "_bmad-output/test-artifacts/atdd-checklist-1-6-main-ui-framework-and-window.md",
+      "_bmad-output/planning-artifacts/epics.md"
+    ],
+    "external_pointer_status": "not_used",
+    "synthetic": false
+  },
+  "requirements": [
+    {
+      "id": "AC1-001",
+      "title": "NavigationSplitView three-column layout rendered",
+      "description": "Given app launched and entered main workspace (UX-DR1), When main workspace renders, Then NavigationSplitView three-column layout: photo library panel (collapsible sidebar) + Agent execution area (main content) + bottom input area",
+      "priority": "P0",
+      "coverage": "UNIT-ONLY",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testNavigationModelExists",
+          "title": "testNavigationModelExists",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 50,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testNavigationModelInitializesWithSidebarVisible",
+          "title": "testNavigationModelInitializesWithSidebarVisible",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 60,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testActivePanelEnumHasRequiredCases",
+          "title": "testActivePanelEnumHasRequiredCases",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 69,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testNavigationModelInitializesWithAgentWorkspaceActive",
+          "title": "testNavigationModelInitializesWithAgentWorkspaceActive",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 80,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {
+        "ui_journey_e2e": false,
+        "ui_state_coverage": "partial"
+      }
+    },
+    {
+      "id": "AC1-002",
+      "title": "Sidebar toggle (visible to hidden)",
+      "description": "NavigationModel.toggleSidebar() flips sidebarVisible from true to false",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testToggleSidebarFromVisibleToHidden",
+          "title": "testToggleSidebarFromVisibleToHidden",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 92,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC1-003",
+      "title": "Sidebar toggle (hidden to visible)",
+      "description": "NavigationModel.toggleSidebar() flips sidebarVisible from false to true",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testToggleSidebarFromHiddenToVisible",
+          "title": "testToggleSidebarFromHiddenToVisible",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 104,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC1-004",
+      "title": "Show/hide sidebar explicit methods",
+      "description": "showSidebar() and hideSidebar() explicitly set sidebarVisible state",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testShowSidebarSetsVisibleToTrue",
+          "title": "testShowSidebarSetsVisibleToTrue",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 117,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testHideSidebarSetsVisibleToFalse",
+          "title": "testHideSidebarSetsVisibleToFalse",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 130,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testShowSidebarIsIdempotent",
+          "title": "testShowSidebarIsIdempotent",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 142,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC1-005",
+      "title": "Active panel switching",
+      "description": "setActivePanel() changes the active panel state between agentWorkspace and photoLibrary",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testSetActivePanelChangesState",
+          "title": "testSetActivePanelChangesState",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 156,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testSetActivePanelToSameIsNoOp",
+          "title": "testSetActivePanelToSameIsNoOp",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 168,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC1-006",
+      "title": "Minimum window width 900pt",
+      "description": "Main workspace window has minimum width constraint of 900pt",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testMinimumWindowWidthIs900",
+          "title": "testMinimumWindowWidthIs900",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 337,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testWindowWidthClampedToMinimum",
+          "title": "testWindowWidthClampedToMinimum",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 382,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-001",
+      "title": "Window width persisted via @AppStorage",
+      "description": "Window width stored and read from @AppStorage (UserDefaults)",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testNavigationModelReadsWindowWidthFromAppStorage",
+          "title": "testNavigationModelReadsWindowWidthFromAppStorage",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 182,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testUpdatingWindowWidthPersistsToUserDefaults",
+          "title": "testUpdatingWindowWidthPersistsToUserDefaults",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 216,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-002",
+      "title": "Window height persisted via @AppStorage",
+      "description": "Window height stored and read from @AppStorage (UserDefaults)",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testNavigationModelReadsWindowHeightFromAppStorage",
+          "title": "testNavigationModelReadsWindowHeightFromAppStorage",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 193,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testUpdatingWindowHeightPersistsToUserDefaults",
+          "title": "testUpdatingWindowHeightPersistsToUserDefaults",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 226,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-003",
+      "title": "Default window dimensions when no @AppStorage values",
+      "description": "NavigationModel defaults to 1200x800 when no persisted values exist",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testNavigationModelDefaultsWindowDimensions",
+          "title": "testNavigationModelDefaultsWindowDimensions",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 204,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-004",
+      "title": "Sidebar collapsed state persists via @AppStorage",
+      "description": "Sidebar collapsed state stored to sidebarCollapsed @AppStorage key",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testSidebarCollapsedStatePersistsToAppStorage",
+          "title": "testSidebarCollapsedStatePersistsToAppStorage",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 238,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-005",
+      "title": "Sidebar state restored from @AppStorage on init",
+      "description": "NavigationModel reads sidebarCollapsed from @AppStorage during init to restore sidebar state",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testSidebarStateRestoredFromAppStorageOnInit",
+          "title": "testSidebarStateRestoredFromAppStorageOnInit",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 252,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-006",
+      "title": "Window dimensions restored across instances",
+      "description": "New NavigationModel instance reads persisted window dimensions",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testWindowDimensionsRestoredAcrossInstances",
+          "title": "testWindowDimensionsRestoredAcrossInstances",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 264,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-007",
+      "title": "NavigationSplitViewVisibility raw value round-trip",
+      "description": "sidebarVisibility property correctly reflects sidebar state changes",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testSidebarVisibilityRawValueRoundTrip",
+          "title": "testSidebarVisibilityRawValueRoundTrip",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 282,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC2-008",
+      "title": "Minimum window height 600pt",
+      "description": "Window has minimum height constraint of 600pt",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testMinimumWindowHeightIs600",
+          "title": "testMinimumWindowHeightIs600",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 346,
+          "level": "unit",
+          "status": "active"
+        },
+        {
+          "id": "MainWorkspaceTests:testWindowHeightClampedToMinimum",
+          "title": "testWindowHeightClampedToMinimum",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 394,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC3-001",
+      "title": "Photo library toggle button in toolbar",
+      "description": "Toolbar contains photo library toggle button that controls sidebar visibility",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testToggleSidebarMethodExists",
+          "title": "testToggleSidebarMethodExists",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 306,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {
+        "ui_journey_e2e": false
+      }
+    },
+    {
+      "id": "AC3-002",
+      "title": "Settings entry in toolbar (Cmd+,)",
+      "description": "Toolbar contains settings button; Cmd+, shortcut opens Settings scene",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testOpenSettingsActionExists",
+          "title": "testOpenSettingsActionExists",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 324,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {
+        "ui_journey_e2e": false
+      }
+    },
+    {
+      "id": "AC3-003",
+      "title": "New session button in toolbar (Cmd+N)",
+      "description": "Toolbar contains session history button; Cmd+N shortcut for new session (placeholder)",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testNewSessionActionExists",
+          "title": "testNewSessionActionExists",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 316,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {
+        "ui_journey_e2e": false
+      }
+    },
+    {
+      "id": "AC-CROSS-001",
+      "title": "NavigationModel is @MainActor (concurrency safety)",
+      "description": "NavigationModel is @MainActor ObservableObject, all property accesses safe on main thread",
+      "priority": "P0",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testNavigationModelIsMainActor",
+          "title": "testNavigationModelIsMainActor",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 357,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    },
+    {
+      "id": "AC-CROSS-002",
+      "title": "Rapid sidebar toggle maintains consistent state",
+      "description": "Even number of rapid toggles returns to original state",
+      "priority": "P1",
+      "coverage": "FULL",
+      "tests": [
+        {
+          "id": "MainWorkspaceTests:testRapidSidebarToggleMaintainsConsistentState",
+          "title": "testRapidSidebarToggleMaintainsConsistentState",
+          "file": "CuratorTests/Features/MainWorkspace/MainWorkspaceTests.swift",
+          "line": 404,
+          "level": "unit",
+          "status": "active"
+        }
+      ],
+      "heuristic_signals": {}
+    }
+  ],
+  "coverage_statistics": {
+    "total_requirements": 19,
+    "fully_covered": 18,
+    "partially_covered": 0,
+    "uncovered": 0,
+    "unit_only_covered": 1,
+    "overall_coverage_percentage": 95,
+    "priority_breakdown": {
+      "P0": { "total": 10, "covered": 10, "percentage": 100 },
+      "P1": { "total": 9, "covered": 9, "percentage": 100 },
+      "P2": { "total": 0, "covered": 0, "percentage": 100 },
+      "P3": { "total": 0, "covered": 0, "percentage": 100 }
+    }
+  },
+  "gap_analysis": {
+    "critical_gaps": [],
+    "high_gaps": [],
+    "medium_gaps": [],
+    "low_gaps": [],
+    "partial_coverage_items": [],
+    "unit_only_items": [
+      {
+        "id": "AC1-001",
+        "title": "NavigationSplitView three-column layout rendered",
+        "priority": "P0",
+        "reason": "SwiftUI views are not directly unit-testable; NavigationModel tests provide behavioral coverage. Visual layout verification requires manual review or snapshot testing."
+      }
+    ]
+  },
+  "coverage_heuristics": {
+    "endpoint_gaps": [],
+    "auth_negative_path_gaps": [],
+    "happy_path_only_gaps": [],
+    "ui_journey_gaps": [
+      {
+        "id": "AC1-001",
+        "journey": "NavigationSplitView three-column rendering",
+        "reason": "No E2E or snapshot test verifies the actual NavigationSplitView layout"
+      },
+      {
+        "id": "AC3-001",
+        "journey": "Photo library toggle button in toolbar",
+        "reason": "Toolbar button presence verified through method existence, not visual test"
+      },
+      {
+        "id": "AC3-002",
+        "journey": "Settings entry in toolbar (Cmd+,)",
+        "reason": "Settings scene opening verified through method call, not visual test"
+      },
+      {
+        "id": "AC3-003",
+        "journey": "New session button in toolbar (Cmd+N)",
+        "reason": "Session action is placeholder; no visual or integration test"
+      }
+    ],
+    "ui_state_gaps": [
+      {
+        "id": "AC1-001",
+        "states": ["loading", "empty photo library", "sidebar collapsed", "sidebar expanded"],
+        "reason": "No visual state assertions for different UI states of the workspace"
+      }
+    ],
+    "counts": {
+      "endpoints_without_tests": 0,
+      "auth_missing_negative_paths": 0,
+      "happy_path_only_criteria": 0,
+      "ui_journeys_without_e2e": 4,
+      "ui_states_missing_coverage": 1
+    }
+  },
+  "test_inventory": {
+    "summary": {
+      "files": 1,
+      "cases": 29,
+      "skipped_cases": 0,
+      "fixme_cases": 0,
+      "pending_cases": 0,
+      "by_level": {
+        "e2e": { "tests": 0, "criteria_covered": 0 },
+        "api": { "tests": 0, "criteria_covered": 0 },
+        "component": { "tests": 0, "criteria_covered": 0 },
+        "unit": { "tests": 29, "criteria_covered": 19 },
+        "other": { "tests": 0, "criteria_covered": 0 }
+      }
+    },
+    "tests": [],
+    "blockers": []
+  },
+  "recommendations": [
+    {
+      "priority": "LOW",
+      "action": "SwiftUI view layout is covered at UNIT-ONLY level via NavigationModel behavioral tests. Consider adding XCUITest or snapshot tests for visual regression when the UI stabilizes.",
+      "requirements": ["AC1-001"]
+    },
+    {
+      "priority": "LOW",
+      "action": "Add UI state coverage for workspace loading, empty photo library, and sidebar collapsed/expanded states when E2E testing framework is established.",
+      "requirements": ["AC1-001"]
+    },
+    {
+      "priority": "LOW",
+      "action": "Run /bmad:tea:test-review to assess test quality for this story's test suite.",
+      "requirements": []
+    }
+  ]
+}

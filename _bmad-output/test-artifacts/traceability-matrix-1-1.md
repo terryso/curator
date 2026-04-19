@@ -102,7 +102,7 @@ Executed 5 tests, with 0 failures (0 unexpected) in 0.012 (0.016) seconds
 - OpenAgentSDKSwift 本地包存在于 `Packages/OpenAgentSDKSwift/` 目录
 - Package.resolved 文件存在且包含 Sparkle 依赖
 - Sparkle 主版本号为 2（版本范围 2.0.0..<3.0.0）
-- 以下目录全部存在：App, Core, Features, Infrastructure, Resources, Core/Agent, Core/Operations, Core/Models, Core/Errors, Core/Extensions, Infrastructure/PhotoKit, Infrastructure/LLM, Infrastructure/Analysis, Infrastructure/Storage, Infrastructure/SDKTools, Infrastructure/Update
+- 以下目录全部存在：App, Core, Features, Infrastructure, Resources, Core/Agent, Core/Operations, Core/Models, Core/Errors, Core/Extensions, Infrastructure/PhotoSource, Infrastructure/LLM, Infrastructure/Analysis, Infrastructure/Storage, Infrastructure/SDKTools, Infrastructure/Update
 
 ---
 
@@ -118,7 +118,7 @@ Executed 5 tests, with 0 failures (0 unexpected) in 0.012 (0.016) seconds
 
 测试验证：
 - `com.apple.security.app-sandbox` = YES
-- `com.apple.security.personal-information.photos` = YES
+- `com.apple.security.files.user-selected.read-write` = YES
 - `com.apple.security.network.client` = YES
 - `com.apple.security.keychain` = YES
 

@@ -25,7 +25,7 @@ So that 项目可以成功构建并运行在 macOS 15+ Apple Silicon 上。
 3. **AC3: Entitlements 文件配置正确**
    **Given** Entitlements 文件已配置
    **When** 检查 Curator.entitlements
-   **Then** 包含 app-sandbox、personal-information.photos、network.client、keychain 权限声明
+   **Then** 包含 app-sandbox、com.apple.security.files.user-selected.read-write、network.client、keychain 权限声明
 
 ## Tasks / Subtasks
 
@@ -46,14 +46,14 @@ So that 项目可以成功构建并运行在 macOS 15+ Apple Silicon 上。
   - [x] 3.1 创建 `Curator/App/` 目录（应用层：AppDelegate, AppDependencies, NavigationModel 占位文件）
   - [x] 3.2 创建 `Curator/Core/` 目录（核心共享组件，含子目录 Agent/, Operations/, Models/, Errors/, Extensions/）
   - [x] 3.3 创建 `Curator/Features/` 目录（功能模块占位）
-  - [x] 3.4 创建 `Curator/Infrastructure/` 目录（基础设施层，含子目录 PhotoKit/, LLM/, Analysis/, Storage/, SDKTools/, Update/）
+  - [x] 3.4 创建 `Curator/Infrastructure/` 目录（基础设施层，含子目录 PhotoSource/, LLM/, Analysis/, Storage/, SDKTools/, Update/）
   - [x] 3.5 创建 `Curator/Resources/` 目录（Assets.xcassets, Localizable.strings 占位）
   - [x] 3.6 创建 `CuratorTests/` 和 `CuratorUITests/` 测试 target 目录
 
 - [x] Task 4: 配置 Entitlements 和权限 (AC: #3)
   - [x] 4.1 创建 `Curator.entitlements` 文件
   - [x] 4.2 添加 `com.apple.security.app-sandbox`（布尔值 YES）
-  - [x] 4.3 添加 `com.apple.security.personal-information.photos`（布尔值 YES）
+  - [x] 4.3 添加 `com.apple.security.files.user-selected.read-write`（布尔值 YES——security-scoped bookmark 访问用户选择的文件夹）
   - [x] 4.4 添加 `com.apple.security.network.client`（布尔值 YES——LLM API 调用需要）
   - [x] 4.5 添加 `com.apple.security.keychain`（布尔值 YES——API Key 存储需要）
   - [x] 4.6 在 Build Settings 中配置 Code Signing Entitlements 指向该文件
@@ -84,7 +84,7 @@ So that 项目可以成功构建并运行在 macOS 15+ Apple Silicon 上。
 | 权限 | Key | 原因 |
 |------|-----|------|
 | 沙盒 | `com.apple.security.app-sandbox` | macOS App 分发要求，安全隔离 |
-| 照片读取 | `com.apple.security.personal-information.photos` | PhotoKit 访问照片图库 |
+| 文件夹访问 | `com.apple.security.files.user-selected.read-write` | Security-scoped bookmark 访问用户选择的文件夹 (渐进授权: 默认只读, 写入时升级) |
 | 网络客户端 | `com.apple.security.network.client` | LLM API HTTPS 调用（Anthropic/OpenAI） |
 | 钥匙串 | `com.apple.security.keychain` | API Key 安全存储 |
 
@@ -108,7 +108,7 @@ Curator/
 │   └── Extensions/
 ├── Features/
 ├── Infrastructure/
-│   ├── PhotoKit/
+│   ├── PhotoSource/
 │   ├── LLM/
 │   ├── Analysis/
 │   ├── Storage/
@@ -173,8 +173,8 @@ Claude (GLM-5.1 via Claude Code)
 
 - Task 1: Xcode project created via xcodegen (project.yml) with macOS App target, SwiftUI Lifecycle, Swift 6, arm64 only, deployment target macOS 15.0. BUILD SUCCEEDED.
 - Task 2: SPM dependencies configured - Sparkle 2.9.1 resolved from remote, OpenAgentSDKSwift configured as local package (remote repo not yet public). Both linked to Curator target.
-- Task 3: Feature-based directory structure created with all required subdirectories (App, Core/Agent|Operations|Models|Errors|Extensions, Features, Infrastructure/PhotoKit|LLM|Analysis|Storage|SDKTools|Update, Resources/Assets.xcassets). CuratorTests and CuratorUITests targets created. .gitkeep files in placeholder dirs.
-- Task 4: Curator.entitlements created with all 4 required permissions (app-sandbox, personal-information.photos, network.client, keychain). CODE_SIGN_ENTITLEMENTS build setting configured.
+- Task 3: Feature-based directory structure created with all required subdirectories (App, Core/Agent|Operations|Models|Errors|Extensions, Features, Infrastructure/PhotoSource|LLM|Analysis|Storage|SDKTools|Update, Resources/Assets.xcassets). CuratorTests and CuratorUITests targets created. .gitkeep files in placeholder dirs.
+- Task 4: Curator.entitlements created with all 4 required permissions (app-sandbox, com.apple.security.files.user-selected.read-write, network.client, keychain). CODE_SIGN_ENTITLEMENTS build setting configured.
 - Task 5: Full build verification passed. Directory structure matches architecture doc. All entitlements confirmed. Info.plist has LSMinimumSystemVersion: 15.0.
 - ATDD Tests: All 5 tests activated (XCTSkip removed) and passing: testXcodeProjectBuildsSuccessfully, testFeatureBasedDirectoryStructureExists, testOpenAgentSDKSwiftDependencyResolved, testSparkleDependencyResolved, testEntitlementsFileContainsRequiredKeys
 
@@ -198,7 +198,7 @@ Claude (GLM-5.1 via Claude Code)
 - Curator/Core/Errors/.gitkeep - Directory placeholder
 - Curator/Core/Extensions/.gitkeep - Directory placeholder
 - Curator/Features/.gitkeep - Directory placeholder
-- Curator/Infrastructure/PhotoKit/.gitkeep - Directory placeholder
+- Curator/Infrastructure/PhotoSource/.gitkeep - Directory placeholder
 - Curator/Infrastructure/LLM/.gitkeep - Directory placeholder
 - Curator/Infrastructure/Analysis/.gitkeep - Directory placeholder
 - Curator/Infrastructure/Storage/.gitkeep - Directory placeholder
@@ -232,3 +232,6 @@ Claude (GLM-5.1 via Claude Code)
 - [x] [Review][Patch] Sparkle identity check too loose (`.contains("sparkle")`) [CuratorTests/SPMDependencyTests.swift:43-46] -- FIXED: changed to exact match `== "sparkle"` plus URL check
 - [x] [Review][Patch] AppDelegate.swift has unnecessary `import AppKit` [Curator/App/AppDelegate.swift:1] -- FIXED: removed unused import
 - [x] [Review][Patch] SRCROOT in Info.plist noted as development-only coupling [Curator/Info.plist] -- Kept with documentation: required for ATDD tests to locate project files; will be removed before distribution
+
+- 2026-04-20: Story 1.1 updated to align with Epic 1 changes (MVP 照片来源从 PhotoKit 切换为本地文件夹). Changed entitlement from `com.apple.security.personal-information.photos` to `com.apple.security.files.user-selected.read-write` (security-scoped bookmark). Updated: Curator.entitlements, EntitlementsTests.swift, story AC3/tasks/dev notes table.
+- 2026-04-20: Story 1.1 re-implemented to fully align with architecture doc. Removed `NSPhotoLibraryUsageDescription` from Info.plist (PhotoKit remnant). Updated all PhotoKit → PhotoSource references in story doc, ATDD checklist, and traceability matrix. Verified: project.yml, entitlements, directory structure, ATDD tests all match design. 232 unit tests pass, 0 failures.

@@ -12,7 +12,7 @@ final class EntitlementsTests: XCTestCase {
     func testEntitlementsFileContainsRequiredKeys() throws {
         let requiredEntitlements: [String] = [
             "com.apple.security.app-sandbox",
-            "com.apple.security.personal-information.photos",
+            "com.apple.security.files.user-selected.read-write",
             "com.apple.security.network.client",
         ]
 

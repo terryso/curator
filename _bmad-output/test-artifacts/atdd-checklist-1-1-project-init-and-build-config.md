@@ -185,7 +185,7 @@ N/A — 本 Story 不涉及 UI 组件。
 
 - [ ] 创建 `Curator.entitlements` 文件
 - [ ] 添加 `com.apple.security.app-sandbox`（YES）
-- [ ] 添加 `com.apple.security.personal-information.photos`（YES）
+- [ ] 添加 `com.apple.security.files.user-selected.read-write`（YES）
 - [ ] 添加 `com.apple.security.network.client`（YES）
 - [ ] 添加 `com.apple.security.keychain`（YES）
 - [ ] 在 Build Settings 中配置 Code Signing Entitlements
@@ -205,7 +205,7 @@ N/A — 本 Story 不涉及 UI 组件。
 - [ ] 创建 `Curator/App/` 目录
 - [ ] 创建 `Curator/Core/` 及子目录 (Agent/, Operations/, Models/, Errors/, Extensions/)
 - [ ] 创建 `Curator/Features/` 目录
-- [ ] 创建 `Curator/Infrastructure/` 及子目录 (PhotoKit/, LLM/, Analysis/, Storage/, SDKTools/, Update/)
+- [ ] 创建 `Curator/Infrastructure/` 及子目录 (PhotoSource/, LLM/, Analysis/, Storage/, SDKTools/, Update/)
 - [ ] 创建 `Curator/Resources/` 目录
 - [ ] 创建 `CuratorTests/` 和 `CuratorUITests/` 测试 target 目录
 - [ ] 每个子目录添加 `.gitkeep` 或占位文件

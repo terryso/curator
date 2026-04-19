@@ -43,7 +43,7 @@ xcodebuild test -project Curator.xcodeproj -scheme Curator -destination 'platfor
 ### 1. Swift 6 严格并发 — 必须遵守
 
 - **所有跨并发域的类型必须 `Sendable`**：模型（struct）、错误（enum）、事件（enum）
-- **Service 用 `actor` 隔离**：PhotoKit 操作、LLM 网关、操作管理器
+- **Service 用 `actor` 隔离**：照片来源（文件夹/PhotoKit）操作、LLM 网关、操作管理器
 - **ViewModel 用 `@MainActor`**：所有 UI 状态更新必须在主线程
 - **永不从后台线程直接更新 UI**：通过 `@MainActor` 标记 ViewModel
 - **跨层数据传递只用值类型**：`struct` + `Sendable`，不用 class
@@ -55,7 +55,8 @@ enum DomainError: Error, Sendable { ... }
 protocol PhotoLibraryRepository: Sendable { ... }
 
 // 正确：Actor 隔离的 Service
-actor PhotoKitRepository: PhotoLibraryRepository { ... }
+actor LocalFolderRepository: PhotoLibraryRepository { ... }
+// MVP 后：actor PhotoKitRepository: PhotoLibraryRepository { ... }
 
 // 正确：@MainActor ViewModel
 @MainActor
@@ -74,7 +75,7 @@ final class SomeViewModel: ObservableObject { ... }
 InfrastructureError → DomainError → UserFacingError
 ```
 
-- **InfrastructureError**：PhotoKit、网络、Keychain、缓存等技术错误
+- **InfrastructureError**：文件系统、网络、Keychain、缓存等技术错误
 - **DomainError**：业务规则错误（资产未找到、权限不足等）
 - **UserFacingError**：用户可见错误（永不暴露技术细节）
 
@@ -98,7 +99,7 @@ Application Layer (Agent 编排、操作管理)
     ↓ 可调用
 Domain Layer (业务模型、协议)
     ↑ 实现
-Infrastructure Layer (PhotoKit、LLM、Storage)
+Infrastructure Layer (PhotoSource、LLM、Storage)
 ```
 
 **禁止：**
@@ -114,7 +115,7 @@ protocol PhotoLibraryRepository: Sendable { ... }
 protocol LLMProvider: Sendable { ... }
 
 // Infrastructure 层：具体实现
-actor PhotoKitRepository: PhotoLibraryRepository { ... }
+actor LocalFolderRepository: PhotoLibraryRepository { ... }
 class AnthropicProvider: LLMProvider { ... }
 ```
 
@@ -323,7 +324,7 @@ Curator/
 │   ├── Onboarding/
 │   └── ResultSummary/
 ├── Infrastructure/          → Infrastructure 层
-│   ├── PhotoKit/           → PhotoKit 集成（actor 隔离）
+│   ├── PhotoSource/        → 照片来源集成（actor 隔离，MVP: 本地文件夹，MVP后: PhotoKit）
 │   ├── LLM/                → LLM 网关（actor 隔离、多 Provider）
 │   ├── Analysis/           → 图像分析（pHash、管线）
 │   ├── Storage/            → 数据持久化（缓存、Keychain、SwiftData）
@@ -350,7 +351,8 @@ CuratorTests/
 
 ```xml
 com.apple.security.app-sandbox                    → 沙盒模式
-com.apple.security.personal-information.photos    → PhotoKit 访问
+com.apple.security.files.user-selected.read-write  → 文件夹访问（MVP）
+com.apple.security.personal-information.photos    → PhotoKit 访问（MVP 后）
 com.apple.security.network.client                 → LLM API 网络请求
 com.apple.security.keychain                       → API Key 安全存储
 ```

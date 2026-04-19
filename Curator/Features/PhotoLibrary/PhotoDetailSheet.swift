@@ -2,9 +2,8 @@ import SwiftUI
 
 /// Detail sheet for viewing photo metadata.
 ///
-/// Displays the photo thumbnail (enlarged) along with all available metadata:
-/// creation date, title, description, keywords, and location.
-/// Missing fields show a dash placeholder for clarity.
+/// Displays the photo thumbnail (enlarged) along with file system and EXIF metadata:
+/// file name, creation date, camera model, dimensions, file size, and GPS location.
 struct PhotoDetailSheet: View {
 
     /// The photo asset whose details are displayed.
@@ -42,10 +41,11 @@ struct PhotoDetailSheet: View {
 
             // Metadata fields
             VStack(alignment: .leading, spacing: 10) {
+                MetadataRow(label: String(localized: "File Name"), value: photo.metadata.fileName)
                 MetadataRow(label: String(localized: "Date"), value: formattedDate)
-                MetadataRow(label: String(localized: "Title"), value: photo.metadata.title ?? "-")
-                MetadataRow(label: String(localized: "Description"), value: photo.metadata.description ?? "-")
-                MetadataRow(label: String(localized: "Keywords"), value: formattedKeywords)
+                MetadataRow(label: String(localized: "Camera"), value: photo.metadata.cameraModel ?? "-")
+                MetadataRow(label: String(localized: "Dimensions"), value: formattedDimensions)
+                MetadataRow(label: String(localized: "File Size"), value: formattedFileSize)
                 MetadataRow(label: String(localized: "Location"), value: formattedLocation)
             }
 
@@ -55,7 +55,7 @@ struct PhotoDetailSheet: View {
         .frame(minWidth: 400, minHeight: 450)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Close") {
+                Button(String(localized: "Close")) {
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
@@ -73,7 +73,6 @@ struct PhotoDetailSheet: View {
         return Self.dateFormatter.string(from: date)
     }
 
-    /// Shared DateFormatter to avoid expensive per-view-body creation.
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
@@ -81,13 +80,24 @@ struct PhotoDetailSheet: View {
         return formatter
     }()
 
-    private var formattedKeywords: String {
-        let keywords = photo.metadata.keywords
-        return keywords.isEmpty ? "-" : keywords.joined(separator: ", ")
+    private var formattedDimensions: String {
+        guard let w = photo.metadata.imageWidth, let h = photo.metadata.imageHeight else { return "-" }
+        return "\(w) × \(h)"
     }
 
+    private var formattedFileSize: String {
+        guard let size = photo.metadata.fileSize else { return "-" }
+        return Self.byteCountFormatter.string(fromByteCount: size)
+    }
+
+    private static let byteCountFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
+
     private var formattedLocation: String {
-        guard let location = photo.metadata.location else { return "-" }
+        guard let location = photo.metadata.gpsLocation else { return "-" }
         return String(format: "%.4f, %.4f", location.latitude, location.longitude)
     }
 }

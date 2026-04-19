@@ -4,26 +4,28 @@ import Foundation
 
 extension InfrastructureError {
     /// Maps an infrastructure-layer error to a domain-layer error.
-    ///
-    /// Infrastructure errors must be converted to DomainError before
-    /// propagating upward. This ensures the Domain layer remains
-    /// independent of infrastructure concerns.
     func toDomainError() -> DomainError {
         switch self {
-        case .photoKitAccessDenied:
+        case .folderAccessDenied:
             return .insufficientPermission(required: .read)
-        case .photoKitFetchFailed:
-            return .invalidState(reason: "Unable to fetch photo library data")
+        case .folderScanFailed(let reason):
+            return .invalidState(reason: reason)
+        case .fileNotFound(let path):
+            return .assetNotFound(AssetID(rawValue: path))
+        case .fileWriteFailed(_, let reason):
+            return .invalidState(reason: reason)
+        case .bookmarkAccessFailed:
+            return .insufficientPermission(required: .read)
         case .llmProviderUnavailable:
-            return .analysisFailed(reason: "AI service is currently unavailable")
+            return .analysisFailed(reason: "AI 服务暂时不可用")
         case .llmProviderError:
-            return .analysisFailed(reason: "AI analysis failed")
+            return .analysisFailed(reason: "AI 分析失败")
         case .networkError:
-            return .analysisFailed(reason: "Network connection failed")
+            return .analysisFailed(reason: "网络连接失败")
         case .rateLimitExceeded:
-            return .analysisFailed(reason: "AI service rate limit reached")
-        case .cacheError:
-            return .invalidState(reason: "Cache operation failed")
+            return .analysisFailed(reason: "AI 服务请求频率超限")
+        case .cacheError(let reason):
+            return .invalidState(reason: reason)
         }
     }
 }
@@ -39,28 +41,28 @@ extension DomainError {
         switch self {
         case .assetNotFound:
             return .readOnly(
-                title: "Photo Not Found",
-                message: "The requested photo could not be found in your library."
+                title: "未找到照片",
+                message: "请求的照片无法找到，可能已被移动或删除。"
             )
         case .analysisFailed:
             return .retryable(
-                title: "Analysis Unavailable",
-                message: "Unable to analyze the photo. Please try again later."
+                title: "分析不可用",
+                message: "无法分析照片，请稍后重试。"
             )
         case .insufficientPermission:
             return .permissionRequired(
-                title: "Access Required",
-                action: "Please grant access in System Settings"
+                title: "需要访问权限",
+                action: "请选择照片文件夹以授予访问权限"
             )
         case .operationCancelled:
             return .readOnly(
-                title: "Cancelled",
-                message: "The operation was cancelled."
+                title: "已取消",
+                message: "操作已取消。"
             )
         case .invalidState:
             return .retryable(
-                title: "Something Went Wrong",
-                message: "An unexpected error occurred. Please try again."
+                title: "出了点问题",
+                message: "发生了意外错误，请重试。"
             )
         }
     }

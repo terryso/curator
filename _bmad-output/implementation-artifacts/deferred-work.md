@@ -27,3 +27,20 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - API key stored as plain `String` in `AnthropicProvider`. Swift `String` values are interned and may persist in memory. No zeroing after use. Acceptable for now — Story 2.2 will introduce KeychainManager for secure key storage.
 - Unrelated `PhotoPermissionManager` change (early return on already-authorized status) included in Story 2-1 diff. Should be a separate commit for clean git history.
+
+## Deferred from: code review of 1-2-layered-architecture-skeleton.md (2026-04-20, rewrite review)
+
+- `registerLocalFolderRepository()` 空实现 — 设计如此，Story 1.3 填充具体绑定
+- `ErrorMapping.toDomainError()` 丢弃关联值（reason/provider/retryAfter）— 设计选择，完整错误链在基础设施层可用
+- Mock 从 actor 改为 struct — 有意为之，解决 AsyncStream Sendable 隔离问题
+- `AsyncStream` 无背压控制 — 架构决策，大量文件变化时可能导致内存增长，后续考虑
+- `AssetID` 无路径规范化，同一文件可产生多个 ID — Story 1.3 实现细节
+- `FileFormat` 缺少 WebP/GIF — 未来增强
+- `SourceChange` 空数组未校验 — 实现层处理
+- `AssetMetadata` 值域校验缺失（fileSize≤0, width/height≤0, fileName 空）— 后续优化
+- `DateRange` 反向范围未校验 — 实现层处理
+- `supportedExtensions` 仅小写，调用方需注意 `.lowercased()` — 文档层面
+- `deleteAssets`/`moveAssets` 空数组行为未定义 — 实现层处理
+- `LocationData` 纬度/经度无范围校验 — 后续优化
+- UI 测试 `testClickPhotoOpensDetailSheet` 失败 — 环境相关，非本 Story 范围
+- `FolderBookmarkManaging` accessBookmark/releaseBookmark 非异步 — API 设计由实现层关注

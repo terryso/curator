@@ -31,7 +31,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 | 类别 | 需求范围 | 架构影响 |
 |------|---------|---------|
-| 照片图库访问 | FR1-FR7 | PhotoKit 服务层——读写权限分离、分页、资源管理 |
+| 照片来源访问 | FR1-FR7 | 照片来源服务层——本地文件夹（MVP）+ 可插拔来源 + 分页 + 资源管理 |
 | 自然语言交互 | FR8-FR12 | Agent 指令解析层——意图识别、多轮对话、会话管理 |
 | Agent 执行与可视化 | FR13-FR17 | Agent 执行引擎——状态机、流式传输、进度追踪 |
 | 去重分析 | FR18-FR23 | 图像分析管线——pHash + LLM 双阶段处理 |
@@ -56,7 +56,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 **复杂度驱动因素：**
 1. Agent 执行引擎——多步状态机 + 流式通信 + 取消支持
-2. PhotoKit 集成——权限管理 + 大规模数据分页 + 线程安全
+2. 多来源文件系统集成——security-scoped bookmark + 大规模目录扫描 + 线程安全
 3. 双阶段图像分析——本地计算与远程 API 的协调
 4. 操作可逆性——快照/回滚/事务系统
 5. 多供应商 LLM 网关——统一抽象 + 故障转移 + 成本追踪
@@ -66,12 +66,13 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 **硬约束：**
 - macOS 15+（Sequoia）、Apple Silicon（arm64）仅限
 - OpenAgentSDKSwift 作为 Agent 基础设施（Swift Package Manager）
-- PhotoKit 作为唯一的照片图库访问方式
+- 本地文件夹作为 MVP 照片来源（security-scoped bookmark 持久化访问）
 - App Store 外分发——需 Apple Developer ID 签名 + 公证
 
 **技术依赖：**
 - OpenAgentSDKSwift：Agent 循环、工具执行、会话管理、流式传输
-- PhotoKit：图库读写、资源访问、变更监听
+- FileManager + security-scoped bookmark：文件夹读写、资源访问
+- PhotoKit（MVP 后）：图库读写、资源访问、变更监听
 - Sparkle 2：自动更新（最新稳定版 2.9.x，支持 SPM）
 - SwiftUI + AppKit：UI 层 + 系统集成
 
@@ -83,11 +84,11 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 ### 已识别的跨切关注点
 
-1. **权限管理** — 只读/写入渐进授权，贯穿 PhotoKit 服务、Agent 工具、UI 层
+1. **权限管理** — 只读/写入渐进授权，贯穿文件系统服务、Agent 工具、UI 层
 2. **操作可逆性** — 快照创建、回滚机制，影响所有写操作
 3. **成本追踪** — API 调用计量和费用展示，贯穿 LLM 网关和 UI
 4. **错误恢复** — API 故障转移、崩溃恢复、部分完成回滚
-5. **后台执行** — 所有 PhotoKit、图像处理、API 调用需后台线程
+5. **后台执行** — 所有文件系统、图像处理、API 调用需后台线程
 6. **流式通信** — Agent 状态 → UI 的实时更新，贯穿执行引擎和视图层
 7. **审计与透明** — 记录哪些数据发送到 LLM、为什么，贯穿整个数据流
 
@@ -129,7 +130,8 @@ Curator 是原生 macOS 应用，不适用传统 Web 框架启动模板（如 Ne
 
 # 3. 配置 Entitlements
 # - com.apple.security.app-sandbox
-# - com.apple.security.personal-information.photos
+# - com.apple.security.files.user-selected.read-write（MVP 文件夹访问）
+# - com.apple.security.personal-information.photos（MVP 后 PhotoKit）
 # - com.apple.security.network.client (LLM API)
 # - com.apple.security.keychain (API Key 存储)
 ```
@@ -157,7 +159,7 @@ Curator 是原生 macOS 应用，不适用传统 Web 框架启动模板（如 Ne
 **关键决策（阻塞实现）：**
 1. 应用整体架构模式
 2. Agent 执行引擎设计
-3. PhotoKit 服务层设计
+3. 照片来源服务层设计
 4. LLM 网关抽象层
 5. 数据持久化策略
 
@@ -184,7 +186,7 @@ Curator 是原生 macOS 应用，不适用传统 Web 框架启动模板（如 Ne
 ├─────────────────────────────────┤
 │         Domain Layer             │  业务模型、分析算法、去重逻辑
 ├─────────────────────────────────┤
-│         Infrastructure Layer     │  PhotoKit、LLM Gateway、Keychain、Cache
+│         Infrastructure Layer     │  LocalFolder、PhotoKit（MVP后）、LLM Gateway、Keychain、Cache
 └─────────────────────────────────┘
 ```
 
@@ -225,9 +227,9 @@ AgentJob (状态机)
 - 支持 `Task` 取消——用户随时可中断
 - 所有步骤通过 `OpenAgentSDKSwift` 的工具系统注册为 SDK Tool
 
-### 决策 3：PhotoKit 服务层
+### 决策 3：照片来源服务层
 
-**选择：Repository 模式 + Actor 隔离**
+**选择：Repository 模式 + Actor 隔离 + 可插拔来源**
 
 ```swift
 protocol PhotoLibraryRepository: Sendable {
@@ -237,18 +239,24 @@ protocol PhotoLibraryRepository: Sendable {
     func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data
     func updateAsset(_ assetID: AssetID, title: String?) async throws
     func deleteAssets(_ assetIDs: [AssetID]) async throws
-    func createAlbum(name: String) async throws -> AlbumID
-    func observeLibraryChanges() -> AsyncStream<LibraryChange>
+    func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws
+    func observeSourceChanges() -> AsyncStream<SourceChange>
 }
 
-actor PhotoKitRepository: PhotoLibraryRepository {
-    // 所有 PhotoKit 操作在此 actor 内串行化执行
-    // 确保线程安全和权限一致性
+// MVP 实现：本地文件夹
+actor LocalFolderRepository: PhotoLibraryRepository {
+    // 通过 security-scoped bookmark 持久化文件夹访问
+    // 所有文件系统操作在此 actor 内串行化执行
+    // 支持递归扫描、EXIF 读取、文件重命名/移动
 }
+
+// MVP 后实现：Apple 照片图库
+// actor PhotoKitRepository: PhotoLibraryRepository { ... }
 ```
 
 **理由：**
-- Actor 隔离确保所有 PhotoKit 操作线程安全
+- Repository 协议抽象照片来源，MVP 用文件夹、后续可加 PhotoKit
+- Actor 隔离确保所有文件系统操作线程安全
 - Repository 协议使测试可用 mock 替换
 - 分页模型（`AssetPage`）控制内存使用
 - 权限检查集中在 Repository 内，不泄露到上层
@@ -385,7 +393,7 @@ enum UserFacingError {
 
 **错误恢复策略：**
 - LLM API：指数退避重试 3 次 → 故障转移备用供应商 → 报告失败
-- PhotoKit：检测权限变更 → 引导用户到系统设置 → 优雅降级
+- 文件系统：检测书签失效 → 引导用户重新选择文件夹 → 降级为只读
 - 批量操作：单项失败不中断批次 → 失败项收集 → 部分完成报告
 
 ## 实现模式与一致性规则
@@ -471,7 +479,7 @@ enum LoadingState<T> {
 ```
 
 **后台执行规则：**
-- 所有 PhotoKit 操作在 `actor` 内执行
+- 所有文件系统操作在 `actor` 内执行
 - LLM API 调用在 `Task` 中执行，支持取消
 - 图像处理（pHash、缩略图）在 `Task` 中分批执行
 - UI 线程（`@MainActor`）只做视图更新
@@ -497,7 +505,7 @@ Curator/
 ├── Curator/
 │   ├── CuratorApp.swift                    # SwiftUI App 入口
 │   ├── Info.plist
-│   ├── Curator.entitlements                # 沙盒 + PhotoKit 权限
+│   ├── Curator.entitlements                # 沙盒 + 文件访问书签权限
 │   │
 │   ├── App/                                # 应用层
 │   │   ├── AppDelegate.swift               # AppKit 代理（如需要）
@@ -577,11 +585,11 @@ Curator/
 │   │       └── ResultSummaryViewModel.swift
 │   │
 │   ├── Infrastructure/                     # 基础设施层
-│   │   ├── PhotoKit/                       # PhotoKit 集成
-│   │   │   ├── PhotoKitRepository.swift    # Repository 实现（actor）
-│   │   │   ├── PhotoPermissionManager.swift
-│   │   │   ├── PHAssetMapper.swift         # PHAsset → 领域模型映射
-│   │   │   └── LibraryChangeObserver.swift
+│   │   ├── PhotoSource/                    # 照片来源集成（可插拔）
+│   │   │   ├── LocalFolderRepository.swift # 本地文件夹 Repository（actor，MVP）
+│   │   │   ├── FolderBookmarkManager.swift # security-scoped bookmark 管理
+│   │   │   ├── ExifMetadataReader.swift    # ImageIO EXIF 读取
+│   │   │   └── FileSystemWatcher.swift     # DispatchSource 文件变更监控
 │   │   │
 │   │   ├── LLM/                            # LLM 网关
 │   │   │   ├── LLMGateway.swift            # 统一网关（actor）
@@ -624,7 +632,7 @@ Curator/
 │   │   ├── DeduplicationTests.swift
 │   │   └── RenameTests.swift
 │   └── Infrastructure/
-│       ├── PhotoKitRepositoryTests.swift
+│       ├── PhotoSourceRepositoryTests.swift
 │       ├── LLMGatewayTests.swift
 │       └── KeychainManagerTests.swift
 │
@@ -658,7 +666,7 @@ Curator/
     → ViewModel（@MainActor）
         → AgentJob（状态机）
             → SDKTool（OpenAgentSDKSwift）
-                → PhotoKitRepository（actor）
+                → LocalFolderRepository（actor）
                 → LLMGateway（actor）
                 → ImageAnalysisPipeline
             ← AsyncStream<AgentEvent>
@@ -672,7 +680,7 @@ Curator/
 
 | FR 类别 | 目录 |
 |---------|------|
-| 照片图库访问 (FR1-FR7) | `Infrastructure/PhotoKit/` |
+| 照片来源访问 (FR1-FR7) | `Infrastructure/PhotoSource/` |
 | 自然语言交互 (FR8-FR12) | `Core/Agent/` + `Features/ChatInput/` |
 | Agent 执行与可视化 (FR13-FR17) | `Core/Agent/` + `Features/AgentExecution/` |
 | 去重分析 (FR18-FR23) | `Infrastructure/Analysis/` + `Features/Deduplication/` |
@@ -686,7 +694,7 @@ Curator/
 
 | 关注点 | 实现位置 |
 |-------|---------|
-| 权限管理 | `Infrastructure/PhotoKit/PhotoPermissionManager.swift` |
+| 权限管理 | `Infrastructure/PhotoSource/FolderBookmarkManager.swift` |
 | 操作回滚 | `Core/Operations/OperationManager.swift` |
 | 成本追踪 | `Infrastructure/LLM/CostTracker.swift` |
 | 错误恢复 | `Core/Errors/` + 各层错误处理 |
@@ -708,7 +716,7 @@ Curator/
 
 | FR 类别 | 架构支持 | 状态 |
 |---------|---------|------|
-| 照片图库访问 (FR1-FR7) | PhotoKitRepository + PhotoPermissionManager | 完全覆盖 |
+| 照片来源访问 (FR1-FR7) | LocalFolderRepository + FolderBookmarkManager | 完全覆盖 |
 | 自然语言交互 (FR8-FR12) | AgentJob + OpenAgentSDKSwift 工具系统 | 完全覆盖 |
 | Agent 执行与可视化 (FR13-FR17) | AgentJob 状态机 + AsyncStream + AgentExecutionPanel | 完全覆盖 |
 | 去重分析 (FR18-FR23) | PerceptualHasher + LLMGateway + PhotoComparisonCard | 完全覆盖 |
@@ -725,7 +733,7 @@ Curator/
 | 性能 (NFR1-NFR8) | Actor 隔离 + 分页 + 两级缓存 + 后台 Task | 完全覆盖 |
 | 安全 (NFR9-NFR14) | KeychainManager + TLS（URLSession 默认）+ 沙盒 | 完全覆盖 |
 | 数据完整性 (NFR15-NFR18) | OperationManager 快照 + 回滚 + 只修改元数据 | 完全覆盖 |
-| 集成质量 (NFR19-NFR23) | LLMGateway 重试/故障转移 + PhotoKit 权限监听 | 完全覆盖 |
+| 集成质量 (NFR19-NFR23) | LLMGateway 重试/故障转移 + 文件系统变更监听 | 完全覆盖 |
 
 ### 实现就绪验证
 
@@ -769,7 +777,7 @@ Curator/
 
 **关键优势：**
 - 分层架构 + Actor 隔离确保线程安全和可测试性
-- OpenAgentSDKSwift 工具系统将 PhotoKit 和 LLM 操作统一为 Agent 可调用的工具
+- OpenAgentSDKSwift 工具系统将照片来源和 LLM 操作统一为 Agent 可调用的工具
 - 状态机驱动的 AgentJob 提供清晰的执行生命周期和 UI 同步机制
 - 快照 + 回滚系统满足严格的数据完整性要求
 - 多供应商 LLM 网关支持灵活的成本和可靠性管理
@@ -790,7 +798,7 @@ Curator/
 
 **首个实现优先级：**
 1. 初始化 Xcode 项目 + SPM 依赖配置
-2. 实现 `PhotoLibraryRepository` 协议和 `PhotoKitRepository`
+2. 实现 `PhotoLibraryRepository` 协议和 `LocalFolderRepository`（MVP），`PhotoKitRepository`（MVP 后）
 3. 实现 `LLMGateway` 和 `AnthropicProvider`
 4. 实现 `AgentJob` 状态机和事件流
 5. 实现基础 UI 框架（Agent 工作空间三栏布局）

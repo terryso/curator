@@ -4,21 +4,17 @@ import XCTest
 /// ATDD Tests for Story 1.2 - AC1: 错误类型体系
 ///
 /// Tests verify:
-/// - DomainError enum exists with required cases
-/// - InfrastructureError enum exists with required cases
-/// - UserFacingError enum exists with required cases
-/// - Error mapping rules between layers
-/// - All error types conform to Error protocol
-/// - Sendable conformance for strict concurrency
+/// - DomainError 枚举存在且包含所需 case
+/// - InfrastructureError 枚举包含文件系统错误变体
+/// - UserFacingError 枚举存在且包含所需 case
+/// - 错误映射规则正确
+/// - 所有错误类型遵循 Error 协议和 Sendable
 final class ErrorTypeTests: XCTestCase {
 
     // MARK: - AC1: DomainError
 
     /// [P0] DomainError exists and conforms to Error
     func testDomainErrorConformsToError() throws {
-        // Given: DomainError enum is defined in Core/Errors/
-        // When: Creating instances of each case
-        // Then: Each case compiles and conforms to Error
         let errors: [DomainError] = [
             .assetNotFound(AssetID(rawValue: "test-id")),
             .analysisFailed(reason: "test reason"),
@@ -27,7 +23,6 @@ final class ErrorTypeTests: XCTestCase {
             .invalidState(reason: "test state"),
         ]
 
-        // Then: All errors conform to Error
         for error in errors {
             XCTAssertNotNil(error as Error, "DomainError.\(error) should conform to Error")
         }
@@ -35,11 +30,11 @@ final class ErrorTypeTests: XCTestCase {
 
     /// [P0] DomainError.assetNotFound carries AssetID
     func testDomainErrorAssetNotFoundCarriesAssetID() throws {
-        let assetID = AssetID(rawValue: "PHAsset-local-identifier-123")
+        let assetID = AssetID(rawValue: "/Users/mock/Photos/photo_1.jpg")
         let error = DomainError.assetNotFound(assetID)
 
         if case .assetNotFound(let id) = error {
-            XCTAssertEqual(id.rawValue, "PHAsset-local-identifier-123",
+            XCTAssertEqual(id.rawValue, "/Users/mock/Photos/photo_1.jpg",
                 "assetNotFound should carry the provided AssetID")
         } else {
             XCTFail("Expected assetNotFound case, got \(error)")
@@ -51,8 +46,7 @@ final class ErrorTypeTests: XCTestCase {
         let error = DomainError.analysisFailed(reason: "LLM timeout")
 
         if case .analysisFailed(let reason) = error {
-            XCTAssertEqual(reason, "LLM timeout",
-                "analysisFailed should carry the provided reason")
+            XCTAssertEqual(reason, "LLM timeout")
         } else {
             XCTFail("Expected analysisFailed case, got \(error)")
         }
@@ -63,8 +57,7 @@ final class ErrorTypeTests: XCTestCase {
         let error = DomainError.insufficientPermission(required: .write)
 
         if case .insufficientPermission(let level) = error {
-            XCTAssertEqual(level, .write,
-                "insufficientPermission should carry the required permission level")
+            XCTAssertEqual(level, .write)
         } else {
             XCTFail("Expected insufficientPermission case, got \(error)")
         }
@@ -73,8 +66,7 @@ final class ErrorTypeTests: XCTestCase {
     /// [P1] DomainError.operationCancelled case exists
     func testDomainErrorOperationCancelledExists() throws {
         let error = DomainError.operationCancelled
-        XCTAssertNotNil(error as Error,
-            "operationCancelled should be a valid DomainError case")
+        XCTAssertNotNil(error as Error)
     }
 
     /// [P1] DomainError.invalidState carries reason string
@@ -82,20 +74,22 @@ final class ErrorTypeTests: XCTestCase {
         let error = DomainError.invalidState(reason: "not loaded")
 
         if case .invalidState(let reason) = error {
-            XCTAssertEqual(reason, "not loaded",
-                "invalidState should carry the provided reason")
+            XCTAssertEqual(reason, "not loaded")
         } else {
             XCTFail("Expected invalidState case, got \(error)")
         }
     }
 
-    // MARK: - AC1: InfrastructureError
+    // MARK: - AC1: InfrastructureError (文件系统)
 
-    /// [P0] InfrastructureError exists and conforms to Error
+    /// [P0] InfrastructureError exists with file system error variants
     func testInfrastructureErrorConformsToError() throws {
         let errors: [InfrastructureError] = [
-            .photoKitAccessDenied,
-            .photoKitFetchFailed(reason: "fetch error"),
+            .folderAccessDenied(reason: "权限被拒绝"),
+            .folderScanFailed(reason: "扫描失败"),
+            .fileNotFound(path: "/tmp/missing.jpg"),
+            .fileWriteFailed(path: "/tmp/test.jpg", reason: "磁盘满"),
+            .bookmarkAccessFailed(reason: "书签失效"),
             .llmProviderUnavailable(provider: "OpenAI"),
             .llmProviderError(provider: "OpenAI", statusCode: 429, message: "rate limited"),
             .networkError(underlying: NSError(domain: "NSURLErrorDomain", code: -1009)),
@@ -109,14 +103,18 @@ final class ErrorTypeTests: XCTestCase {
         }
     }
 
-    /// [P0] InfrastructureError.photoKitAccessDenied exists
-    func testInfrastructureErrorPhotoKitAccessDenied() throws {
-        let error = InfrastructureError.photoKitAccessDenied
-        XCTAssertNotNil(error as Error,
-            "photoKitAccessDenied should be a valid InfrastructureError case")
+    /// [P0] InfrastructureError.fileNotFound carries path
+    func testInfrastructureErrorFileNotFoundCarriesPath() throws {
+        let error = InfrastructureError.fileNotFound(path: "/Users/test/photo.jpg")
+
+        if case .fileNotFound(let path) = error {
+            XCTAssertEqual(path, "/Users/test/photo.jpg")
+        } else {
+            XCTFail("Expected fileNotFound case, got \(error)")
+        }
     }
 
-    /// [P1] InfrastructureError.llmProviderError carries provider, statusCode, message
+    /// [P1] InfrastructureError.llmProviderError carries details
     func testInfrastructureErrorLLMProviderErrorCarriesDetails() throws {
         let error = InfrastructureError.llmProviderError(
             provider: "OpenAI",
@@ -133,7 +131,7 @@ final class ErrorTypeTests: XCTestCase {
         }
     }
 
-    /// [P1] InfrastructureError.rateLimitExceeded carries retryAfter interval
+    /// [P1] InfrastructureError.rateLimitExceeded carries retryAfter
     func testInfrastructureErrorRateLimitExceededCarriesRetryAfter() throws {
         let error = InfrastructureError.rateLimitExceeded(provider: "Anthropic", retryAfter: 30.0)
 
@@ -155,9 +153,7 @@ final class ErrorTypeTests: XCTestCase {
             .permissionRequired(title: "Access Denied", action: "Open Settings"),
         ]
 
-        // Then: All cases should be valid
-        XCTAssertEqual(errors.count, 3,
-            "UserFacingError should have at least readOnly, retryable, permissionRequired cases")
+        XCTAssertEqual(errors.count, 3)
     }
 
     /// [P1] UserFacingError.readOnly carries title and message
@@ -176,12 +172,12 @@ final class ErrorTypeTests: XCTestCase {
     func testUserFacingErrorPermissionRequiredCarriesAction() throws {
         let error = UserFacingError.permissionRequired(
             title: "Photo Access",
-            action: "Grant in System Settings"
+            action: "选择照片文件夹"
         )
 
         if case .permissionRequired(let title, let action) = error {
             XCTAssertEqual(title, "Photo Access")
-            XCTAssertEqual(action, "Grant in System Settings")
+            XCTAssertEqual(action, "选择照片文件夹")
         } else {
             XCTFail("Expected permissionRequired case, got \(error)")
         }
@@ -191,69 +187,76 @@ final class ErrorTypeTests: XCTestCase {
 
     /// [P0] InfrastructureError can be mapped to DomainError
     func testInfrastructureErrorMapsToDomainError() throws {
-        // Given: An infrastructure-level error
-        let infraError = InfrastructureError.photoKitFetchFailed(reason: "access denied")
-
-        // When: Mapping to domain error
+        let infraError = InfrastructureError.folderScanFailed(reason: "扫描失败")
         let domainError = infraError.toDomainError()
 
-        // Then: Result should be a DomainError
-        XCTAssertNotNil(domainError as DomainError,
-            "InfrastructureError should be mappable to DomainError")
+        XCTAssertNotNil(domainError as DomainError)
     }
 
     /// [P0] DomainError can be mapped to UserFacingError
     func testDomainErrorMapsToUserFacingError() throws {
-        // Given: A domain-level error
         let domainError = DomainError.insufficientPermission(required: .read)
-
-        // When: Mapping to user-facing error
         let userError = domainError.toUserFacingError()
 
-        // Then: Result should be a UserFacingError
-        XCTAssertNotNil(userError as UserFacingError,
-            "DomainError should be mappable to UserFacingError")
+        XCTAssertNotNil(userError as UserFacingError)
     }
 
-    /// [P1] Infrastructure error mapping never exposes technical details
+    /// [P1] Error mapping never exposes technical details
     func testErrorMappingNeverExposesTechnicalDetails() throws {
-        // Given: A technical infrastructure error
         let infraError = InfrastructureError.llmProviderError(
             provider: "OpenAI",
             statusCode: 500,
             message: "PHImageErrorDomain error -1004"
         )
 
-        // When: Mapping through the full chain
         let domainError = infraError.toDomainError()
         let userError = domainError.toUserFacingError()
 
-        // Then: User-facing error should not contain technical strings
-        if case .readOnly(_, let message) = userError {
-            XCTAssertFalse(message.contains("PHImageErrorDomain"),
-                "User-facing errors must never expose technical error domains")
-            XCTAssertFalse(message.contains("500"),
-                "User-facing errors must never expose HTTP status codes")
-        } else if case .retryable(_, let message) = userError {
-            XCTAssertFalse(message.contains("PHImageErrorDomain"),
-                "User-facing errors must never expose technical error domains")
-        } else if case .permissionRequired(_, _) = userError {
-            // permissionRequired case - acceptable mapping
-        } else {
-            // UserFacingError is valid, no technical strings to check
+        switch userError {
+        case .readOnly(_, let message):
+            XCTAssertFalse(message.contains("PHImageErrorDomain"))
+            XCTAssertFalse(message.contains("500"))
+        case .retryable(_, let message):
+            XCTAssertFalse(message.contains("PHImageErrorDomain"))
+        case .permissionRequired:
+            break
         }
     }
 
-    /// [P1] photoKitAccessDenied maps to permission-related domain error
-    func testPhotoKitAccessDeniedMapsCorrectly() throws {
-        let infraError = InfrastructureError.photoKitAccessDenied
+    /// [P0] folderAccessDenied maps to insufficientPermission
+    func testFolderAccessDeniedMapsCorrectly() throws {
+        let infraError = InfrastructureError.folderAccessDenied(reason: "权限被拒绝")
         let domainError = infraError.toDomainError()
 
-        // Should map to insufficientPermission, not some generic error
         if case .insufficientPermission = domainError {
             // Correct mapping
         } else {
-            XCTFail("photoKitAccessDenied should map to DomainError.insufficientPermission, got \(domainError)")
+            XCTFail("folderAccessDenied should map to DomainError.insufficientPermission, got \(domainError)")
+        }
+    }
+
+    /// [P0] fileNotFound maps to assetNotFound
+    func testFileNotFoundMapsCorrectly() throws {
+        let path = "/Users/test/photo.jpg"
+        let infraError = InfrastructureError.fileNotFound(path: path)
+        let domainError = infraError.toDomainError()
+
+        if case .assetNotFound(let id) = domainError {
+            XCTAssertEqual(id.rawValue, path)
+        } else {
+            XCTFail("fileNotFound should map to DomainError.assetNotFound, got \(domainError)")
+        }
+    }
+
+    /// [P0] bookmarkAccessFailed maps to insufficientPermission
+    func testBookmarkAccessFailedMapsCorrectly() throws {
+        let infraError = InfrastructureError.bookmarkAccessFailed(reason: "书签过期")
+        let domainError = infraError.toDomainError()
+
+        if case .insufficientPermission = domainError {
+            // Correct mapping
+        } else {
+            XCTFail("bookmarkAccessFailed should map to DomainError.insufficientPermission, got \(domainError)")
         }
     }
 
@@ -262,8 +265,11 @@ final class ErrorTypeTests: XCTestCase {
     /// Verify all InfrastructureError cases map to valid DomainError cases
     func testAllInfrastructureErrorsMapToDomainError() throws {
         let mappings: [(InfrastructureError, DomainError)] = [
-            (.photoKitAccessDenied, .insufficientPermission(required: .read)),
-            (.photoKitFetchFailed(reason: "test"), .invalidState(reason: "")),
+            (.folderAccessDenied(reason: "test"), .insufficientPermission(required: .read)),
+            (.folderScanFailed(reason: "test"), .invalidState(reason: "")),
+            (.fileNotFound(path: "/t"), .assetNotFound(AssetID(rawValue: ""))),
+            (.fileWriteFailed(path: "/t", reason: "test"), .invalidState(reason: "")),
+            (.bookmarkAccessFailed(reason: "test"), .insufficientPermission(required: .read)),
             (.llmProviderUnavailable(provider: "test"), .analysisFailed(reason: "")),
             (.llmProviderError(provider: "test", statusCode: 500, message: "err"), .analysisFailed(reason: "")),
             (.networkError(underlying: NSError(domain: "t", code: 0)), .analysisFailed(reason: "")),
@@ -273,11 +279,11 @@ final class ErrorTypeTests: XCTestCase {
 
         for (infraError, expectedBase) in mappings {
             let result = infraError.toDomainError()
-            // Verify the mapped error matches the expected case pattern
             switch (result, expectedBase) {
             case (.insufficientPermission, .insufficientPermission),
                  (.invalidState, .invalidState),
-                 (.analysisFailed, .analysisFailed):
+                 (.analysisFailed, .analysisFailed),
+                 (.assetNotFound, .assetNotFound):
                 break
             default:
                 XCTFail("\(infraError) mapped to \(result), expected pattern matching \(expectedBase)")
@@ -319,19 +325,19 @@ final class ErrorTypeTests: XCTestCase {
         let userError = error.toUserFacingError()
 
         if case .readOnly(let title, _) = userError {
-            XCTAssertEqual(title, "Photo Not Found")
+            XCTAssertEqual(title, "未找到照片")
         } else {
             XCTFail("assetNotFound should map to readOnly, got \(userError)")
         }
     }
 
-    /// DomainError.operationCancelled maps to readOnly with cancelled message
+    /// DomainError.operationCancelled maps to readOnly
     func testOperationCancelledMapsToReadOnly() throws {
         let error = DomainError.operationCancelled
         let userError = error.toUserFacingError()
 
         if case .readOnly(let title, _) = userError {
-            XCTAssertEqual(title, "Cancelled")
+            XCTAssertEqual(title, "已取消")
         } else {
             XCTFail("operationCancelled should map to readOnly, got \(userError)")
         }

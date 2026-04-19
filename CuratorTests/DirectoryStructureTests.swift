@@ -25,7 +25,7 @@ final class DirectoryStructureTests: XCTestCase {
             "Core/Models",
             "Core/Errors",
             "Core/Extensions",
-            "Infrastructure/PhotoKit",
+            "Infrastructure/PhotoSource",
             "Infrastructure/LLM",
             "Infrastructure/Analysis",
             "Infrastructure/Storage",

@@ -10,6 +10,10 @@ inputDocuments:
   - _bmad-output/planning-artifacts/ux-design-specification.md
 status: complete
 completedAt: '2026-04-18'
+lastEdited: '2026-04-19'
+editHistory:
+  - date: '2026-04-19'
+    changes: 'MVP 照片来源策略从 PhotoKit 切换为本地文件夹；Epic 1 标题/描述/Story 1.1-1.5 全面重写；Epic 4 Story 4.1 权限模型调整；Epic 7 Story 7.1 从 PHPhotoLibraryChangeObserver 改为 DispatchSourceFileSystemObject；FR/NFR 清单同步更新'
 validation:
   frCoverage: complete
   uxDrCoverage: complete
@@ -27,13 +31,13 @@ This document provides the complete epic and story breakdown for Curator, decomp
 
 ### Functional Requirements
 
-FR1: 用户可以授予应用 Apple 照片图库的读取权限
-FR2: 用户可以浏览完整的照片图库，包括相册、智能相册和文件夹
-FR3: 用户可以查看照片缩略图和元数据（日期、标题、描述、关键词、位置）
-FR4: 系统可以检测照片图库的外部变更（如从 iPhone 同步的新照片）
-FR5: 系统可以分页浏览大型照片图库而不阻塞 UI
-FR6: 用户可以授予应用写入权限以修改照片元数据和创建/删除相册
-FR7: 系统可以访问全分辨率照片资源用于 AI 分析
+FR1: 用户可以选择本地文件夹作为照片来源，访问权限通过 security-scoped bookmark 持久化
+FR2: 用户可以浏览所选文件夹中的照片，支持子目录递归和常见格式（JPEG、PNG、HEIC、TIFF、RAW）
+FR3: 用户可以查看照片缩略图和 EXIF 元数据（日期、相机型号、尺寸、GPS 位置等）
+FR4: 系统可以检测照片文件夹的外部变更（新增、删除、修改文件）
+FR5: 系统可以分页浏览照片集（每页 100 张）而不阻塞 UI
+FR6: 用户可以授予应用写入权限以重命名文件、移动文件和修改元数据
+FR7: 系统可以访问全分辨率照片文件用于 AI 分析
 FR8: 用户可以输入自然语言指令指导 Agent（如"找出所有重复照片"）
 FR9: 系统可以将自然语言指令解析为可执行的 Agent 任务
 FR10: 系统可以在用户意图不明确时提出澄清问题
@@ -44,13 +48,13 @@ FR14: 用户可以实时查看 Agent 执行进度（当前步骤、已处理照�
 FR15: 用户可以查看 Agent 每个决策的推理过程（为什么标记为重复、为什么建议这个名称）
 FR16: 系统可以将 Agent 执行更新流式传输到 UI 而不阻塞用户交互
 FR17: 用户可以随时取消进行中的 Agent 任务
-FR18: 用户可以请求对整个图库进行重复照片检测
+FR18: 用户可以请求对所有照片进行重复照片检测
 FR19: 系统可以使用本地感知哈希算法检测视觉相似的照片
 FR20: 系统可以使用基于 LLM 的分析确认视觉相似的照片是否为真正重复
 FR21: 用户可以审核重复分组，包含并排对比和每个匹配的 AI 说明
 FR22: 用户可以在任何删除操作前批准或拒绝单个重复分组
 FR23: 用户可以批量批准或批量拒绝所有建议的重复移除
-FR24: 用户可以请求对选定照片或整个相册进行 AI 驱动重命名
+FR24: 用户可以请求对选定照片或整个文件夹进行 AI 驱动重命名
 FR25: 系统可以分析照片内容并以用户偏好语言生成描述性标题
 FR26: 用户可以在应用建议名称前进行审核
 FR27: 用户可以在批准前修改单个建议名称
@@ -65,28 +69,28 @@ FR35: 系统在任何批量修改前创建元数据快照用于回滚
 FR36: 系统在批量操作中途失败时自动回滚已完成的项目
 FR37: 用户可以在只读分析模式下操作，不执行任何写操作
 FR38: 系统绝不修改原始图像文件——仅操作元数据和组织结构
-FR39: 系统展示清晰的隐私声明，说明发送了什么数据到 LLM API
+FR39: 系统展示隐私声明，列出发送到 LLM API 的具体数据类型和用途
 FR40: 用户可以查看哪些具体照片被发送到 LLM 分析以及原因
 FR41: 系统不在任何第三方服务器上存储用户照片（除 LLM API 调用外）
 FR42: 所有本地缓存（缩略图、分析结果）仅存储在设备上
 FR43: 用户可以配置多个 LLM 供应商的 API Key（Anthropic、OpenAI 兼容）
 FR44: 用户可以选择照片分析任务的默认供应商
 FR45: 用户可以配置备用供应商，在主供应商不可用时自动故障转移
-FR46: 系统在大规模分析任务执行前展示费用预估
+FR46: 系统在分析任务执行前展示费用预估（基于照片数量 × 所选模型单价）
 FR47: 系统追踪并展示累计 API 支出（按会话和按月）
-FR48: 系统通过排队、重试或回退来优雅处理 API 速率限制
+FR48: 系统通过排队等待、指数退避重试和回退到备用供应商来处理 API 速率限制
 FR49: 系统通过 Sparkle 框架自动检查并安装应用更新
-FR50: 系统可以在离线时启动并展示缓存的照片图库数据
+FR50: 系统可以在离线时启动并展示缓存的照片数据
 FR51: 系统在 LLM 相关功能因无网络不可用时明确提示
 FR52: 本地操作（浏览、感知哈希、元数据分析）无需网络即可工作
 
 ### NonFunctional Requirements
 
 NFR1: 应用在 Apple Silicon Mac 上 3 秒内启动到可交互状态
-NFR2: 照片图库浏览在缩略图网格视图中以 60fps 滚动
+NFR2: 照片浏览在缩略图网格视图中以 60fps 滚动
 NFR3: Agent 执行进度更新在事件发生后 500ms 内出现在 UI 中
 NFR4: 感知哈希在 Apple Silicon 上每分钟处理 100 张照片
-NFR5: 10,000 张照片的图库扫描在 60 秒内完成初始元数据索引
+NFR5: 10,000 张照片的文件夹扫描在 60 秒内完成初始元数据索引
 NFR6: 照片处理操作期间内存使用保持在 500MB 以下
 NFR7: 所有后台 Agent 任务期间 UI 保持响应（无旋转光标）
 NFR8: 照片缩略图网格滚动时下一页在 200ms 内加载
@@ -98,22 +102,22 @@ NFR13: 用户可以从设置中清除所有本地缓存和分析历史
 NFR14: 应用二进制文件使用 Apple Developer ID 签名并通过 Apple 公证
 NFR15: 对照片文件损坏零容忍——应用绝不写入原始图像文件
 NFR16: 批量操作执行前创建元数据备份；回滚在 5 秒内完成
-NFR17: 应用优雅处理意外终止（崩溃、强制退出）而不丢失进行中的元数据变更
-NFR18: 图库扫描检测并报告照片图库状态的不一致
-NFR19: PhotoKit 操作优雅处理权限变更（用户在会话中途撤销访问）
+NFR17: 应用在意外终止（崩溃、强制退出）时不丢失进行中的元数据变更，通过持久化快照恢复
+NFR18: 照片扫描检测并报告照片数据状态的不一致
+NFR19: 文件系统操作在权限变更时（文件夹书签失效、用户在系统设置中撤销访问）提示用户重新授权，不崩溃不丢失数据
 NFR20: LLM API 调用实现指数退避，最多 3 次重试后报告失败
 NFR21: 供应商故障转移在主供应商失败后 10 秒内完成
 NFR22: Sparkle 自动更新每天检查一次，不中断活跃的 Agent 任务
-NFR23: 当 PhotoKit 返回部分结果时（如 iCloud 照片尚未下载）应用保持功能正常
+NFR23: 当部分文件不可访问时（权限变更、文件被占用、格式不支持）应用保持功能正常
 
 ### Additional Requirements
 
 - **项目初始化:** 使用 Xcode 项目 + SPM（无第三方启动模板），macOS App 目标，SwiftUI Lifecycle，Swift 6，arm64 only
 - **SPM 依赖:** OpenAgentSDKSwift（Agent 基础设施）+ Sparkle 2（自动更新）
-- **Entitlements 配置:** 沙盒、PhotoKit 权限、网络客户端、Keychain
+- **Entitlements 配置:** 沙盒、文件访问书签权限、网络客户端、Keychain
 - **架构模式:** 分层架构（Presentation → Application → Domain → Infrastructure）+ 依赖注入
 - **Agent 执行引擎:** 状态机驱动（Planning → Running → Review → Confirm → Completed/Cancelled），AsyncStream 流式输出
-- **PhotoKit 服务层:** Repository 模式 + Actor 隔离，所有 PhotoKit 操作串行化
+- **照片来源服务层:** Repository 模式 + Actor 隔离，LocalFolderRepository（MVP），PhotoKitRepository（MVP 后）
 - **LLM 网关:** Provider 协议 + 故障转移链 + 成本追踪，AnthropicProvider + OpenAICompatibleProvider
 - **数据持久化:** SwiftData（元数据缓存、分析结果、操作历史）+ 文件系统（缩略图、pHash 索引）+ Keychain（API Key）
 - **状态管理:** @Observable + Observation 框架（Swift 原生），不引入 TCA
@@ -146,13 +150,13 @@ UX-DR18: 实现导航模式——无传统侧边栏、窗口工具栏含照片�
 
 ### FR Coverage Map
 
-FR1: Epic 1 — 授予照片图库读取权限
-FR2: Epic 1 — 浏览照片图库（相册、智能相册、文件夹）
-FR3: Epic 1 — 查看照片缩略图和元数据
-FR4: Epic 7 — 检测照片图库外部变更
-FR5: Epic 1 — 分页浏览大型照片图库
+FR1: Epic 1 — 选择本地文件夹并持久化访问权限
+FR2: Epic 1 — 浏览文件夹中的照片
+FR3: Epic 1 — 查看照片缩略图和 EXIF 元数据
+FR4: Epic 7 — 检测照片文件夹外部变更
+FR5: Epic 1 — 分页浏览照片集
 FR6: Epic 4 — 授予写入权限（渐进授权）
-FR7: Epic 1 — 访问全分辨率照片资源
+FR7: Epic 1 — 访问全分辨率照片文件
 FR8: Epic 3 — 输入自然语言指令
 FR9: Epic 3 — 解析自然语言为 Agent 任务
 FR10: Epic 3 — 意图不明确时提出澄清
@@ -191,9 +195,9 @@ FR42: Epic 7 — 本地缓存仅存储在设备上
 FR43: Epic 2 — 配置多个 LLM 供应商 API Key
 FR44: Epic 2 — 选择默认供应商
 FR45: Epic 2 — 配置备用供应商自动故障转移
-FR46: Epic 2 — 大规模操作前展示费用预估
+FR46: Epic 2 — 分析任务执行前展示费用预估
 FR47: Epic 2 — 追踪并展示累计 API 支出
-FR48: Epic 2 — 优雅处理 API 速率限制
+FR48: Epic 2 — 处理 API 速率限制
 FR49: Epic 7 — Sparkle 自动更新
 FR50: Epic 7 — 离线启动并展示缓存数据
 FR51: Epic 7 — 无网络时明确提示
@@ -201,11 +205,11 @@ FR52: Epic 7 — 本地操作无需网络
 
 ## Epic List
 
-### Epic 1: "Hello Curator" — 首次启动与照片图库访问
-用户首次打开 Curator，授予照片库读取权限，浏览照片缩略图和元数据。应用以原生 macOS 体验呈现图库，为后续 Agent 功能奠定基础。
+### Epic 1: "Hello Curator" — 首次启动与照片文件夹访问
+用户首次打开 Curator，选择照片文件夹，浏览照片缩略图和元数据。应用以原生 macOS 体验呈现照片集，为后续 Agent 功能奠定基础。
 **FRs covered:** FR1, FR2, FR3, FR5, FR7
 **UX-DRs covered:** UX-DR8, UX-DR9, UX-DR13, UX-DR15, UX-DR16
-**Architecture:** 项目脚手架、Xcode 配置、SPM 依赖、Entitlements、分层目录结构、PhotoKitRepository（actor）、PhotoPermissionManager、SwiftData 初始化、基础 UI 框架
+**Architecture:** 项目脚手架、Xcode 配置、SPM 依赖、Entitlements、分层目录结构、LocalFolderRepository（actor）、FolderBookmarkManager、SwiftData 初始化、基础 UI 框架
 
 ### Epic 2: "Your AI Setup" — AI 供应商配置与成本管理
 用户配置 Anthropic 和 OpenAI 兼容的 API Key，选择默认模型和备用供应商，查看费用预估和累计支出。LLM 网关提供统一的供应商抽象、自动故障转移和成本追踪。
@@ -241,13 +245,13 @@ FR52: Epic 7 — 本地操作无需网络
 用户获得完整的隐私透明度——了解什么数据发送到 LLM、为什么发送。应用通过 Sparkle 自动更新，离线时仍可浏览图库和执行本地分析。图库变更监控确保数据始终同步。
 **FRs covered:** FR4, FR39, FR40, FR41, FR42, FR49, FR50, FR51, FR52
 **UX-DRs covered:** UX-DR14, UX-DR15
-**Architecture:** SparkleManager、LibraryChangeObserver、CacheManager（两级缓存）、SwiftDataManager、离线模式指示器、隐私审计日志、可达性监控
+**Architecture:** SparkleManager、FileSystemWatcher、CacheManager（两级缓存）、SwiftDataManager、离线模式指示器、隐私审计日志、可达性监控
 
 ---
 
-## Epic 1: "Hello Curator" — 首次启动与照片图库访问
+## Epic 1: "Hello Curator" — 首次启动与照片文件夹访问
 
-用户首次打开 Curator，授予照片库读取权限，浏览照片缩略图和元数据。应用以原生 macOS 体验呈现图库，为后续 Agent 功能奠定基础。
+用户首次打开 Curator，选择照片文件夹，浏览照片缩略图和元数据。应用以原生 macOS 体验呈现照片集，为后续 Agent 功能奠定基础。
 
 ### Story 1.1: 项目初始化与构建配置
 
@@ -269,7 +273,7 @@ So that 项目可以成功构建并运行在 macOS 15+ Apple Silicon 上。
 
 **Given** Entitlements 文件已配置
 **When** 检查 Curator.entitlements
-**Then** 包含 app-sandbox、personal-information.photos、network.client、keychain 权限声明
+**Then** 包含 app-sandbox、com.apple.security.files.user-selected.read-write、network.client、keychain 权限声明
 
 ### Story 1.2: 分层架构骨架
 
@@ -286,7 +290,7 @@ So that 后续功能模块可以遵循一致的架构模式开发。
 
 **Given** Core/Models/ 目录已创建
 **When** 检查领域模型
-**Then** PhotoAsset、AssetMetadata 值类型已定义（Sendable），包含日期、标题、描述、关键词、位置字段
+**Then** PhotoAsset、AssetMetadata 值类型已定义（Sendable），包含日期、文件名、EXIF 元数据字段
 **And** LoadingState<T> 枚举已定义（idle/loading/loaded/failed）
 
 **Given** App/AppDependencies.swift 已创建
@@ -294,38 +298,38 @@ So that 后续功能模块可以遵循一致的架构模式开发。
 **Then** AppDependencies 提供协议到具体实现的绑定
 **And** 支持测试时替换为 mock 实现
 
-### Story 1.3: PhotoKit 读取服务
+### Story 1.3: 本地文件夹读取服务
 
 As a 用户，
-I want 授予应用照片图库读取权限并浏览我的照片，
-So that 我可以在 Curator 中查看所有照片和相册。
+I want 选择照片文件夹并浏览其中的照片，
+So that 我可以在 Curator 中查看所有照片。
 
 **Acceptance Criteria:**
 
-**Given** 应用首次启动且未获得照片权限（FR1）
-**When** 请求读取权限
-**Then** 系统弹出权限对话框，用户授权后 PhotoKitRepository 可读取图库
-**And** 用户拒绝时返回友好的错误提示，引导至系统设置
+**Given** 应用首次启动（FR1）
+**When** 引导用户选择照片文件夹
+**Then** 通过 NSOpenPanel 让用户选择目录，访问权限通过 security-scoped bookmark 持久化
+**And** 应用重启后无需重新选择文件夹
 
-**Given** PhotoKitRepository 已获得读取权限（FR2, FR3）
+**Given** LocalFolderRepository 已获得文件夹访问权限（FR2, FR3）
 **When** 调用 fetchAssets()
-**Then** 返回照片列表，包含缩略图和元数据（日期、标题、描述、关键词、位置）
-**And** PHAssetMapper 正确将 PHAsset 映射为领域模型 PhotoAsset
+**Then** 递归扫描文件夹中的照片文件（JPEG、PNG、HEIC、TIFF、RAW），返回照片列表
+**And** 包含缩略图和 EXIF 元数据（日期、相机型号、尺寸、GPS 位置）
 
-**Given** 图库中有大量照片（10,000+）（FR5）
+**Given** 文件夹中有大量照片（10,000+）（FR5）
 **When** 使用分页参数调用 fetchAssets(pageSize: 100)
 **Then** 返回 AssetPage 包含当前页照片和下一页游标
-**And** 所有 PhotoKit 操作在 actor 内执行，不阻塞主线程
+**And** 所有文件系统操作在 actor 内执行，不阻塞主线程
 
 **Given** 需要访问照片全分辨率图像（FR7）
 **When** 调用 fetchFullResolutionImage(for: assetID)
 **Then** 返回该照片的全分辨率 Data，用于后续 AI 分析
 
-### Story 1.4: 照片图库浏览网格
+### Story 1.4: 照片网格浏览
 
 As a 用户，
 I want 在网格视图中浏览照片缩略图，
-So that 我可以快速浏览和管理我的照片库。
+So that 我可以快速浏览和管理我的照片。
 
 **Acceptance Criteria:**
 
@@ -341,30 +345,30 @@ So that 我可以快速浏览和管理我的照片库。
 
 **Given** 点击某张照片
 **When** 打开照片详情
-**Then** PhotoDetailSheet 展示完整元数据（日期、标题、描述、关键词、位置）
+**Then** PhotoDetailSheet 展示完整元数据（文件名、日期、EXIF 信息、文件大小）
 **And** 缩略图缓存（NSCache，100MB 上限）避免重复加载
 
 ### Story 1.5: 首次启动引导流程
 
 As a 新用户，
-I want 通过简洁的引导流程了解 Curator 并授权照片访问，
+I want 通过简洁的引导流程了解 Curator 并选择照片文件夹，
 So that 我可以快速开始使用应用。
 
 **Acceptance Criteria:**
 
 **Given** 用户首次打开 Curator（UX-DR8）
 **When** 进入引导流程
-**Then** 展示最多 3 屏：产品介绍、隐私说明、照片权限请求
+**Then** 展示最多 3 屏：产品介绍、隐私说明、文件夹选择
 **And** 隐私说明包含"照片仅在会话中分析，发送到 LLM API 用于理解"
 
-**Given** 用户授予照片读取权限
-**When** 权限授予成功
-**Then** 扫描照片库元数据，展示照片数量摘要（如"已发现 15,320 张照片"）
+**Given** 用户选择了照片文件夹
+**When** 文件夹访问权限获取成功
+**Then** 扫描文件夹元数据，展示照片数量摘要（如"已发现 15,320 张照片"）
 **And** 进入主界面时输入框 placeholder 展示示例指令（UX-DR15）
 
-**Given** 用户拒绝照片权限（UX-DR9）
-**When** 权限被拒绝
-**Then** 展示只读模式说明和引导至系统设置的按钮
+**Given** 用户未选择文件夹或取消（UX-DR9）
+**When** 无文件夹访问权限
+**Then** 展示说明和引导选择文件夹的按钮
 **And** 应用仍可启动，但照片功能不可用
 
 ### Story 1.6: 主界面框架与窗口管理
@@ -574,7 +578,7 @@ So that SDK Agent 循环可以调用 Curator 的图库和分析功能。
 **Then** SDK 解析意图并调用对应的注册工具
 **And** 工具执行在后台 Task 中进行，不阻塞 UI
 
-**Given** 工具执行需要访问 PhotoKit 或 LLM
+**Given** 工具执行需要访问文件系统或 LLM
 **When** 工具调用基础设施服务
 **Then** 通过依赖注入获取协议实现，不直接创建具体实例
 **And** 工具执行结果正确映射为 AgentEvent
@@ -687,12 +691,12 @@ So that 我对应用的操作权限有完全控制。
 
 **Given** 应用默认以只读权限启动（FR37）
 **When** 应用首次打开
-**Then** 仅请求照片图库读取权限
+**Then** 仅请求文件夹读取权限
 **And** 不主动请求写入权限
 
 **Given** Agent 需要执行写操作（FR6）
-**When** 触发删除、重命名或创建相册
-**Then** PhotoPermissionManager 弹出写入权限请求
+**When** 触发重命名、移动或元数据修改
+**Then** FolderBookmarkManager 请求写入权限（升级 security-scoped bookmark 为 read-write）
 **And** 用户授权后操作继续执行
 
 **Given** 用户拒绝写入权限（UX-DR9）
@@ -720,7 +724,7 @@ So that 所有修改都可以安全回滚。
 
 **Given** 批量操作执行完成（FR38）
 **When** 检查操作记录
-**Then** 原始图像文件未被修改，仅操作元数据和组织结构
+**Then** 原始图像文件未被修改，仅操作文件名、目录结构和元数据
 **And** NFR15（零文件损坏）得到保证
 
 ### Story 4.3: 批量回滚与撤销系统
@@ -792,7 +796,7 @@ So that 我可以先验证 Agent 能力再决定是否授予写入权限。
 **Then** 系统请求写入权限升级
 **And** 用户拒绝时建议保存结果供稍后执行
 
-**Given** PhotoKitRepository 收到写操作请求（FR38）
+**Given** LocalFolderRepository 收到写操作请求（FR38）
 **When** 检查权限
 **Then** 如果无写入权限，拒绝操作并返回 DomainError.insufficientPermission
 **And** 绝不直接修改原始图像文件
@@ -980,7 +984,7 @@ So that 在用户确认后可靠地完成重命名。
 
 **Given** 用户已审核并接受了重命名建议（FR28）
 **When** Agent 调用 RenameAssetsTool 执行批量重命名
-**Then** 工具通过 PhotoKit 执行重命名操作，保留原始文件的元数据
+**Then** 工具通过文件系统执行重命名操作，保留原始文件的元数据
 **And** 通过 OperationManager 执行以确保操作安全和可回滚
 
 **Given** Agent 需要估算重命名操作的 LLM 成本
@@ -1045,26 +1049,26 @@ So that 高效完成整个重命名流程。
 
 用户获得完整的隐私透明度、自动更新和离线能力。
 
-### Story 7.1: 图库变更监控
+### Story 7.1: 文件夹变更监控
 
 As a 用户，
-I want Curator 能自动检测外部对照片图库的修改，
+I want Curator 能自动检测外部对照片文件夹的修改，
 So that 应用中的数据始终保持最新。
 
 **Acceptance Criteria:**
 
 **Given** Curator 正在运行（FR4）
-**When** 用户在系统"照片"App 中新增、删除或修改了照片
-**Then** LibraryChangeObserver 通过 PHPhotoLibraryChangeObserver 检测到变更
+**When** 用户在 Finder 中新增、删除或修改了照片文件
+**Then** FileSystemWatcher 通过 DispatchSourceFileSystemObject 检测到变更
 **And** 自动使受影响照片的缓存元数据失效
 
-**Given** 图库变更已被检测到
+**Given** 文件夹变更已被检测到
 **When** 缓存失效处理完成
 **Then** 通知 UI 层刷新受影响的视图
 **And** 正在进行中的操作收到变更通知以避免数据冲突
 
-**Given** 外部发生大量照片变更
-**When** LibraryChangeObserver 接收到批量变更通知
+**Given** 外部发生大量文件变更
+**When** FileSystemWatcher 接收到批量变更通知
 **Then** 系统合并变更事件避免重复刷新，检测数据不一致性（NFR18）
 **And** 不影响应用性能
 
@@ -1086,7 +1090,7 @@ So that 在保持应用流畅的同时控制资源占用。
 **Then** CacheManager 自动淘汰最久未使用的内存缓存项
 **And** 磁盘缓存仅在沙盒存储目录中操作（NFR11）
 
-**Given** LibraryChangeObserver 检测到图库变更
+**Given** FileSystemWatcher 检测到文件夹变更
 **When** 变更涉及已缓存的照片
 **Then** CacheManager 使对应照片的内存缓存和磁盘缓存失效
 **And** 下次访问时重新生成最新的缓存数据

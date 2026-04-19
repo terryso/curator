@@ -31,9 +31,25 @@ struct MockPhotoLibraryRepository: PhotoLibraryRepository {
     }
 
     func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data {
-        if let photo = photos.first(where: { $0.id == assetID }) {
-            return photo.thumbnailData ?? Data()
+        guard let photo = photos.first(where: { $0.id == assetID }) else {
+            throw DomainError.assetNotFound(assetID)
         }
-        return Data()
+        return photo.thumbnailData ?? Data()
+    }
+
+    func updateAsset(_ assetID: AssetID, title: String?) async throws {
+        // Mock: no-op
+    }
+
+    func deleteAssets(_ assetIDs: [AssetID]) async throws {
+        // Mock: no-op
+    }
+
+    func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {
+        // Mock: no-op
+    }
+
+    func observeSourceChanges() -> AsyncStream<SourceChange> {
+        AsyncStream { _ in }
     }
 }

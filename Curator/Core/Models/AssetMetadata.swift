@@ -1,21 +1,23 @@
 import Foundation
 
-/// Location coordinates for a photo asset.
-///
-/// Wraps latitude and longitude as a simple Sendable value type.
+/// Location coordinates extracted from photo EXIF GPS data.
 struct LocationData: Sendable, Equatable {
     let latitude: Double
     let longitude: Double
 }
 
-/// Metadata associated with a photo asset.
+/// Metadata associated with a photo asset from file system / EXIF data.
 ///
-/// All fields are optional because metadata may not be available
-/// for all assets (e.g., photos without GPS data or titles).
+/// All fields are optional because metadata availability depends on
+/// the source file — camera model may not exist for screenshots,
+/// GPS may be stripped, etc.
 struct AssetMetadata: Sendable, Equatable {
+    let fileName: String
+    let fileSize: Int64?
     let creationDate: Date?
-    let title: String?
-    let description: String?
-    let keywords: [String]
-    let location: LocationData?
+    let cameraModel: String?
+    let imageWidth: Int?
+    let imageHeight: Int?
+    let gpsLocation: LocationData?
+    let fileFormat: FileFormat?
 }

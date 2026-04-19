@@ -39,7 +39,7 @@ struct ContentView: View {
                 if CommandLine.arguments.contains("--uitest-mock-photos") {
                     dependencies.registerMockRepository()
                 } else {
-                    dependencies.registerPhotoKitRepository()
+                    dependencies.registerLocalFolderRepository()
                 }
                 dependencies.registerLLMGateway()
             }
@@ -55,7 +55,7 @@ struct ContentView: View {
                     if CommandLine.arguments.contains("--uitest-mock-photos") {
                         dependencies.registerMockRepository()
                     } else {
-                        dependencies.registerPhotoKitRepository()
+                        dependencies.registerLocalFolderRepository()
                     }
                 }
                 .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in

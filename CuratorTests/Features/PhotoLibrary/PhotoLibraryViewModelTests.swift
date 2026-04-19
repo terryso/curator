@@ -17,11 +17,10 @@ final class PhotoLibraryViewModelTests: XCTestCase {
 
     /// Creates a sample PhotoAsset for testing.
     private func makePhotoAsset(
-        id: String = "test-asset-\(UUID().uuidString)",
+        id: String = "/Users/mock/Photos/test-\(UUID().uuidString).jpg",
         creationDate: Date? = Date(),
-        title: String? = "Test Photo",
-        description: String? = nil,
-        keywords: [String] = [],
+        fileName: String = "test.jpg",
+        cameraModel: String? = nil,
         latitude: Double? = nil,
         longitude: Double? = nil,
         thumbnailData: Data? = nil
@@ -32,11 +31,14 @@ final class PhotoLibraryViewModelTests: XCTestCase {
             nil
         }
         let metadata = AssetMetadata(
+            fileName: fileName,
+            fileSize: nil,
             creationDate: creationDate,
-            title: title,
-            description: description,
-            keywords: keywords,
-            location: location
+            cameraModel: cameraModel,
+            imageWidth: nil,
+            imageHeight: nil,
+            gpsLocation: location,
+            fileFormat: .jpeg
         )
         return PhotoAsset(
             id: AssetID(rawValue: id),
@@ -124,7 +126,7 @@ final class PhotoLibraryViewModelTests: XCTestCase {
         let page1Assets = (0..<5).map { makePhotoAsset(id: "page1-\($0)") }
         let page2Assets = (0..<3).map { makePhotoAsset(id: "page2-\($0)") }
         let repository = MockPhotoLibraryRepository(pages: [
-            AssetPage(assets: page1Assets, hasMore: true, nextOffset: 5),
+            AssetPage(assets: page1Assets, hasMore: true, nextOffset: 1),
             AssetPage(assets: page2Assets, hasMore: false, nextOffset: nil),
         ])
         let viewModel = PhotoLibraryViewModel(repository: repository)
@@ -242,22 +244,19 @@ final class PhotoLibraryViewModelTests: XCTestCase {
     @MainActor
     func testPhotoDetailSheetShowsMetadata() async throws {
         let asset = makePhotoAsset(
-            id: "meta-photo",
+            id: "/Users/mock/Photos/meta-photo.jpg",
             creationDate: Date(timeIntervalSince1970: 1700000000),
-            title: "Sunset Photo",
-            description: "A beautiful sunset",
-            keywords: ["sunset", "beach"],
+            fileName: "meta-photo.jpg",
+            cameraModel: "Canon EOS R5",
             latitude: 37.7749,
             longitude: -122.4194
         )
         // Verify the asset has all metadata fields populated
         XCTAssertNotNil(asset.metadata.creationDate)
-        XCTAssertEqual(asset.metadata.title, "Sunset Photo")
-        XCTAssertEqual(asset.metadata.description, "A beautiful sunset")
-        XCTAssertEqual(asset.metadata.keywords, ["sunset", "beach"])
-        XCTAssertNotNil(asset.metadata.location)
-        XCTAssertEqual(asset.metadata.location?.latitude, 37.7749)
-        XCTAssertEqual(asset.metadata.location?.longitude, -122.4194)
+        XCTAssertEqual(asset.metadata.fileName, "meta-photo.jpg")
+        XCTAssertNotNil(asset.metadata.gpsLocation)
+        XCTAssertEqual(asset.metadata.gpsLocation?.latitude, 37.7749)
+        XCTAssertEqual(asset.metadata.gpsLocation?.longitude, -122.4194)
     }
 
     // MARK: - Error Handling
@@ -289,7 +288,7 @@ final class PhotoLibraryViewModelTests: XCTestCase {
         let page1Assets = (0..<5).map { makePhotoAsset(id: "asset-\($0)") }
         let repository = MockPhotoLibraryRepository(
             pages: [
-                AssetPage(assets: page1Assets, hasMore: true, nextOffset: 5),
+                AssetPage(assets: page1Assets, hasMore: true, nextOffset: 1),
             ],
             secondPageError: DomainError.invalidState(reason: "fetch failed")
         )
@@ -375,12 +374,11 @@ final class PhotoLibraryViewModelTests: XCTestCase {
 /// Configurable to return specific pages, errors, or delays.
 /// Supports multi-page scenarios by serving pages sequentially.
 /// Uses actor isolation for thread-safe page index tracking.
-private actor MockPhotoLibraryRepository: PhotoLibraryRepository {
+private struct MockPhotoLibraryRepository: PhotoLibraryRepository {
     private let pages: [AssetPage]
     private let error: DomainError?
     private let secondPageError: DomainError?
     private let delay: TimeInterval
-    private var pageIndex = 0
 
     init(
         pages: [AssetPage] = [],
@@ -410,20 +408,18 @@ private actor MockPhotoLibraryRepository: PhotoLibraryRepository {
             try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
         }
 
-        let index = pageIndex
-        if index < pages.count {
-            pageIndex += 1
-        }
-
-        // Check for second page error (index 1)
-        if index == 1, let secondPageError {
+        // Second-page error: triggered when pageOffset > 0 (i.e., not first page)
+        if pageOffset > 0, let secondPageError {
             throw secondPageError
         }
 
-        guard index < pages.count else {
+        // Mock convention: pageOffset is used as direct array index into `pages`.
+        // Tests must set nextOffset values accordingly (0 for first page, 1 for second, etc.).
+        guard pageOffset < pages.count else {
             return AssetPage(assets: [], hasMore: false, nextOffset: nil)
         }
-        return pages[index]
+
+        return pages[pageOffset]
     }
 
     func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data {
@@ -435,4 +431,9 @@ private actor MockPhotoLibraryRepository: PhotoLibraryRepository {
         if let error { throw error }
         return Data()
     }
+
+    func updateAsset(_ assetID: AssetID, title: String?) async throws {}
+    func deleteAssets(_ assetIDs: [AssetID]) async throws {}
+    func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {}
+    func observeSourceChanges() -> AsyncStream<SourceChange> { AsyncStream { _ in } }
 }

@@ -44,11 +44,9 @@ final class OnboardingViewModelTests: XCTestCase {
 
     /// Creates a sample PhotoAsset for testing.
     private func makePhotoAsset(
-        id: String = "test-asset-\(UUID().uuidString)",
+        id: String = "/Users/mock/Photos/test-\(UUID().uuidString).jpg",
         creationDate: Date? = Date(),
-        title: String? = "Test Photo",
-        description: String? = nil,
-        keywords: [String] = [],
+        fileName: String = "test.jpg",
         latitude: Double? = nil,
         longitude: Double? = nil,
         thumbnailData: Data? = nil
@@ -59,11 +57,14 @@ final class OnboardingViewModelTests: XCTestCase {
             nil
         }
         let metadata = AssetMetadata(
+            fileName: fileName,
+            fileSize: nil,
             creationDate: creationDate,
-            title: title,
-            description: description,
-            keywords: keywords,
-            location: location
+            cameraModel: nil,
+            imageWidth: nil,
+            imageHeight: nil,
+            gpsLocation: location,
+            fileFormat: .jpeg
         )
         return PhotoAsset(
             id: AssetID(rawValue: id),
@@ -453,8 +454,8 @@ final class OnboardingViewModelTests: XCTestCase {
 /// Mock implementation of PhotoLibraryRepository for onboarding tests.
 ///
 /// Configurable to grant or deny permission, return specific asset counts,
-/// and simulate scanning delays. Uses actor isolation for thread safety.
-private actor MockOnboardingRepository: PhotoLibraryRepository {
+/// and simulate scanning delays.
+private struct MockOnboardingRepository: PhotoLibraryRepository {
     private let shouldGrantPermission: Bool
     private let assets: [PhotoAsset]
     private let hasMore: Bool
@@ -497,4 +498,9 @@ private actor MockOnboardingRepository: PhotoLibraryRepository {
     func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data {
         return Data()
     }
+
+    func updateAsset(_ assetID: AssetID, title: String?) async throws {}
+    func deleteAssets(_ assetIDs: [AssetID]) async throws {}
+    func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {}
+    func observeSourceChanges() -> AsyncStream<SourceChange> { AsyncStream { _ in } }
 }

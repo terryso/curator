@@ -5,7 +5,7 @@ import XCTest
 ///
 /// Tests verify:
 /// - AppDependencies exists as @MainActor ObservableObject
-/// - PhotoLibraryRepository protocol exists (Sendable)
+/// - PhotoLibraryRepository protocol exists (Sendable) with full method set
 /// - LLMProvider protocol exists (Sendable)
 /// - AppDependencies provides protocol-to-implementation binding
 /// - Test-time mock replacement is supported
@@ -18,8 +18,7 @@ final class DependencyInjectionTests: XCTestCase {
         let dependencies = await MainActor.run {
             AppDependencies()
         }
-        XCTAssertNotNil(dependencies,
-            "AppDependencies should be instantiable on MainActor")
+        XCTAssertNotNil(dependencies)
     }
 
     /// [P0] AppDependencies is a MainActor ObservableObject
@@ -27,9 +26,6 @@ final class DependencyInjectionTests: XCTestCase {
         let dependencies = await MainActor.run {
             AppDependencies()
         }
-
-        // Verify ObservableObject conformance by accessing objectWillChange
-        // (If this compiles, AppDependencies conforms to ObservableObject)
         let _ = dependencies.objectWillChange
     }
 
@@ -37,10 +33,7 @@ final class DependencyInjectionTests: XCTestCase {
     func testAppDependenciesHasPhotoRepositoryProperty() async throws {
         await MainActor.run {
             let dependencies = AppDependencies()
-
-            // Initially nil (no implementation registered yet)
-            XCTAssertNil(dependencies.photoRepository,
-                "photoRepository should be nil before registration")
+            XCTAssertNil(dependencies.photoRepository)
         }
     }
 
@@ -48,10 +41,7 @@ final class DependencyInjectionTests: XCTestCase {
     func testAppDependenciesHasLLMProviderProperty() async throws {
         await MainActor.run {
             let dependencies = AppDependencies()
-
-            // Initially nil (no implementation registered yet)
-            XCTAssertNil(dependencies.llmProvider,
-                "llmProvider should be nil before registration")
+            XCTAssertNil(dependencies.llmProvider)
         }
     }
 
@@ -59,13 +49,19 @@ final class DependencyInjectionTests: XCTestCase {
     func testRegisterLLMGatewayCreatesGatewayWithoutConfig() async throws {
         await MainActor.run {
             let dependencies = AppDependencies()
-
-            // When: Registering LLM gateway with no stored config
             dependencies.registerLLMGateway()
+            XCTAssertNotNil(dependencies.llmGateway)
+        }
+    }
 
-            // Then: Gateway is still created (with empty credentials)
-            XCTAssertNotNil(dependencies.llmGateway,
-                "llmGateway should be created even without stored config")
+    /// [P0] registerLocalFolderRepository() method exists
+    func testRegisterLocalFolderRepositoryMethodExists() async throws {
+        await MainActor.run {
+            let dependencies = AppDependencies()
+            // Method should be callable without crash (implementation deferred to Story 1.3)
+            dependencies.registerLocalFolderRepository()
+            XCTAssertNil(dependencies.photoRepository,
+                "registerLocalFolderRepository() should be a no-op until Story 1.3")
         }
     }
 
@@ -73,39 +69,51 @@ final class DependencyInjectionTests: XCTestCase {
 
     /// [P0] PhotoLibraryRepository protocol exists with Sendable conformance
     func testPhotoLibraryRepositoryProtocolExists() async throws {
-        let mock = MockPhotoLibraryRepository()
-        XCTAssertNotNil(mock as PhotoLibraryRepository,
-            "MockPhotoLibraryRepository should conform to PhotoLibraryRepository")
+        let mock = DITestMockPhotoLibraryRepository()
+        XCTAssertNotNil(mock as PhotoLibraryRepository)
     }
 
-    /// [P1] PhotoLibraryRepository has requestReadAccess() async throws -> Bool
+    /// [P1] PhotoLibraryRepository has requestReadAccess()
     func testPhotoLibraryRepositoryHasRequestReadAccess() async throws {
-        let mock = MockPhotoLibraryRepository()
+        let mock = DITestMockPhotoLibraryRepository()
         let result = try await mock.requestReadAccess()
-        XCTAssertTrue(result,
-            "PhotoLibraryRepository.requestReadAccess() should return Bool")
+        XCTAssertTrue(result)
     }
 
-    /// [P1] PhotoLibraryRepository has requestWriteAccess() async throws -> Bool
+    /// [P1] PhotoLibraryRepository has requestWriteAccess()
     func testPhotoLibraryRepositoryHasRequestWriteAccess() async throws {
-        let mock = MockPhotoLibraryRepository()
+        let mock = DITestMockPhotoLibraryRepository()
         let result = try await mock.requestWriteAccess()
-        XCTAssertTrue(result,
-            "PhotoLibraryRepository.requestWriteAccess() should return Bool")
+        XCTAssertTrue(result)
+    }
+
+    /// [P0] PhotoLibraryRepository has write operations
+    func testPhotoLibraryRepositoryHasWriteOperations() async throws {
+        let mock = DITestMockPhotoLibraryRepository()
+        // These should compile and not throw in mock
+        try await mock.updateAsset(AssetID(rawValue: "/t"), title: "test")
+        try await mock.deleteAssets([AssetID(rawValue: "/t")])
+        try await mock.moveAssets([AssetID(rawValue: "/t")], to: "/dest")
+    }
+
+    /// [P0] PhotoLibraryRepository has observeSourceChanges()
+    func testPhotoLibraryRepositoryHasObserveSourceChanges() async throws {
+        let mock = DITestMockPhotoLibraryRepository()
+        let stream = mock.observeSourceChanges()
+        // Stream should exist (empty in mock)
+        XCTAssertNotNil(stream)
     }
 
     /// [P0] LLMProvider protocol exists with Sendable conformance
     func testLLMProviderProtocolExists() throws {
-        let mock = MockLLMProvider()
-        XCTAssertNotNil(mock as LLMProvider,
-            "MockLLMProvider should conform to LLMProvider")
+        let mock = DITestMockLLMProvider()
+        XCTAssertNotNil(mock as LLMProvider)
     }
 
     /// [P1] LLMProvider has name property
     func testLLMProviderHasNameProperty() throws {
-        let mock = MockLLMProvider()
-        XCTAssertFalse(mock.name.isEmpty,
-            "LLMProvider.name should return a non-empty string")
+        let mock = DITestMockLLMProvider()
+        XCTAssertFalse(mock.name.isEmpty)
     }
 
     // MARK: - AC3: Mock Replacement (Testability)
@@ -114,11 +122,10 @@ final class DependencyInjectionTests: XCTestCase {
     func testAppDependenciesSupportsMockPhotoRepository() async throws {
         await MainActor.run {
             let dependencies = AppDependencies()
-            let mockPhotoRepo = MockPhotoLibraryRepository()
+            let mockPhotoRepo = DITestMockPhotoLibraryRepository()
             dependencies.photoRepository = mockPhotoRepo
 
-            XCTAssertTrue(dependencies.photoRepository is MockPhotoLibraryRepository,
-                "photoRepository should be replaceable with a mock for testing")
+            XCTAssertTrue(dependencies.photoRepository is DITestMockPhotoLibraryRepository)
         }
     }
 
@@ -126,11 +133,19 @@ final class DependencyInjectionTests: XCTestCase {
     func testAppDependenciesSupportsMockLLMProvider() async throws {
         await MainActor.run {
             let dependencies = AppDependencies()
-            let mockLLM = MockLLMProvider()
+            let mockLLM = DITestMockLLMProvider()
             dependencies.llmProvider = mockLLM
 
-            XCTAssertTrue(dependencies.llmProvider is MockLLMProvider,
-                "llmProvider should be replaceable with a mock for testing")
+            XCTAssertTrue(dependencies.llmProvider is DITestMockLLMProvider)
+        }
+    }
+
+    /// [P0] registerMockRepository() works
+    func testRegisterMockRepositoryWorks() async throws {
+        await MainActor.run {
+            let dependencies = AppDependencies()
+            dependencies.registerMockRepository()
+            XCTAssertNotNil(dependencies.photoRepository)
         }
     }
 
@@ -138,51 +153,37 @@ final class DependencyInjectionTests: XCTestCase {
     func testReplacedMockPhotoRepoIsCallable() async throws {
         let dependencies = await MainActor.run { AppDependencies() }
         await MainActor.run {
-            dependencies.photoRepository = MockPhotoLibraryRepository()
+            dependencies.photoRepository = DITestMockPhotoLibraryRepository()
         }
-        let optionalRepo = await MainActor.run { dependencies.photoRepository as? MockPhotoLibraryRepository }
-        let repo = try XCTUnwrap(optionalRepo,
-            "Should be able to cast to mock for testing"
-        )
+        let optionalRepo = await MainActor.run { dependencies.photoRepository as? DITestMockPhotoLibraryRepository }
+        let repo = try XCTUnwrap(optionalRepo)
         let result = try await repo.requestReadAccess()
-        XCTAssertTrue(result,
-            "Mock implementation should be callable through the protocol")
+        XCTAssertTrue(result)
     }
 }
 
-// MARK: - Mock Implementations for Testing
+// MARK: - Mock Implementations for DI Testing
 
-/// Mock PhotoLibraryRepository for testing dependency injection.
-/// Implements all required protocol methods with stub responses.
-private struct MockPhotoLibraryRepository: PhotoLibraryRepository {
-    func requestReadAccess() async throws -> Bool {
-        return true
-    }
-
-    func requestWriteAccess() async throws -> Bool {
-        return true
-    }
-
-    func fetchAssets(predicate: PhotoPredicate, pageSize: Int, pageOffset: Int = 0) async throws -> AssetPage {
+/// Mock PhotoLibraryRepository for DI testing with full protocol conformance.
+private struct DITestMockPhotoLibraryRepository: PhotoLibraryRepository {
+    func requestReadAccess() async throws -> Bool { true }
+    func requestWriteAccess() async throws -> Bool { true }
+    func fetchAssets(predicate: PhotoPredicate, pageSize: Int, pageOffset: Int) async throws -> AssetPage {
         return AssetPage(assets: [], hasMore: false)
     }
-
-    func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data {
-        return Data()
-    }
-
-    func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data {
-        return Data()
-    }
+    func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data { Data() }
+    func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data { Data() }
+    func updateAsset(_ assetID: AssetID, title: String?) async throws {}
+    func deleteAssets(_ assetIDs: [AssetID]) async throws {}
+    func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {}
+    func observeSourceChanges() -> AsyncStream<SourceChange> { AsyncStream { _ in } }
 }
-/// Implements all required protocol methods with stub responses.
-private struct MockLLMProvider: LLMProvider {
-    let name: String = "MockLLM"
 
+private struct DITestMockLLMProvider: LLMProvider {
+    let name: String = "MockLLM"
     func analyze(images: [Data], prompt: String, model: String) async throws -> LLMResponse {
         return LLMResponse(text: "mock analysis result", modelID: model, providerName: name, inputTokens: 0, outputTokens: 0)
     }
-
     func estimateCost(imageCount: Int, model: String) -> CostEstimate {
         return CostEstimate(estimatedTokens: 0, estimatedCost: 0.0, modelID: model, providerName: name)
     }

@@ -5,45 +5,44 @@ import XCTest
 ///
 /// Tests verify:
 /// - PhotoAsset value type exists (Sendable, Identifiable)
-/// - AssetMetadata value type exists (Sendable)
+/// - AssetMetadata value type with file system / EXIF fields (Sendable)
 /// - LoadingState<T> generic enum exists
 /// - AssetID type exists (Sendable, Hashable, Codable)
+/// - FileFormat enum exists with supported extensions
 /// - LocationData type exists (Sendable)
-/// - All value types conform to Sendable for Swift 6 strict concurrency
+/// - SourceChange enum exists
 final class CoreModelsTests: XCTestCase {
 
     // MARK: - AC2: AssetID
 
-    /// [P0] AssetID exists with rawValue string
+    /// [P0] AssetID exists with rawValue string (file path)
     func testAssetIDExistsWithRawValue() throws {
-        let id = AssetID(rawValue: "PHAsset://local-identifier-001")
+        let id = AssetID(rawValue: "/Users/mock/Photos/photo_1.jpg")
 
-        XCTAssertEqual(id.rawValue, "PHAsset://local-identifier-001",
-            "AssetID should wrap a rawValue string")
+        XCTAssertEqual(id.rawValue, "/Users/mock/Photos/photo_1.jpg",
+            "AssetID should wrap a file path rawValue")
     }
 
-    /// [P0] AssetID is Hashable (usable as dictionary key)
+    /// [P0] AssetID is Hashable
     func testAssetIDIsHashable() throws {
-        let id1 = AssetID(rawValue: "id-1")
-        let id2 = AssetID(rawValue: "id-2")
-        let id1Copy = AssetID(rawValue: "id-1")
+        let id1 = AssetID(rawValue: "/path/1.jpg")
+        let id2 = AssetID(rawValue: "/path/2.jpg")
+        let id1Copy = AssetID(rawValue: "/path/1.jpg")
 
-        XCTAssertEqual(id1, id1Copy, "Same rawValue AssetIDs should be equal")
-        XCTAssertNotEqual(id1, id2, "Different rawValue AssetIDs should not be equal")
+        XCTAssertEqual(id1, id1Copy)
+        XCTAssertNotEqual(id1, id2)
 
-        // Usable as Set element and Dictionary key
         let set: Set<AssetID> = [id1, id2, id1Copy]
-        XCTAssertEqual(set.count, 2, "Set should deduplicate equal AssetIDs")
+        XCTAssertEqual(set.count, 2)
     }
 
-    /// [P1] AssetID is Codable (serializable)
+    /// [P1] AssetID is Codable
     func testAssetIDIsCodable() throws {
-        let id = AssetID(rawValue: "test-id-for-coding")
+        let id = AssetID(rawValue: "/Users/test/photo.jpg")
         let encoded = try JSONEncoder().encode(id)
         let decoded = try JSONDecoder().decode(AssetID.self, from: encoded)
 
-        XCTAssertEqual(decoded, id,
-            "AssetID should round-trip through JSON encoding/decoding")
+        XCTAssertEqual(decoded, id)
     }
 
     // MARK: - AC2: LocationData
@@ -52,107 +51,153 @@ final class CoreModelsTests: XCTestCase {
     func testLocationDataExistsWithCoordinates() throws {
         let location = LocationData(latitude: 37.7749, longitude: -122.4194)
 
-        XCTAssertEqual(location.latitude, 37.7749, accuracy: 0.0001,
-            "LocationData should store latitude")
-        XCTAssertEqual(location.longitude, -122.4194, accuracy: 0.0001,
-            "LocationData should store longitude")
+        XCTAssertEqual(location.latitude, 37.7749, accuracy: 0.0001)
+        XCTAssertEqual(location.longitude, -122.4194, accuracy: 0.0001)
     }
 
-    // MARK: - AC2: AssetMetadata
+    // MARK: - AC2: FileFormat
 
-    /// [P0] AssetMetadata exists with all required fields
+    /// [P0] FileFormat exists and infers from path extension
+    func testFileFormatFromPathExtension() throws {
+        XCTAssertEqual(FileFormat.from(pathExtension: "jpg"), .jpeg)
+        XCTAssertEqual(FileFormat.from(pathExtension: "JPG"), .jpeg)
+        XCTAssertEqual(FileFormat.from(pathExtension: "jpeg"), .jpeg)
+        XCTAssertEqual(FileFormat.from(pathExtension: "png"), .png)
+        XCTAssertEqual(FileFormat.from(pathExtension: "heic"), .heic)
+        XCTAssertEqual(FileFormat.from(pathExtension: "tiff"), .tiff)
+        XCTAssertEqual(FileFormat.from(pathExtension: "tif"), .tiff)
+        XCTAssertEqual(FileFormat.from(pathExtension: "cr2"), .raw)
+        XCTAssertEqual(FileFormat.from(pathExtension: "nef"), .raw)
+        XCTAssertEqual(FileFormat.from(pathExtension: "dng"), .raw)
+        XCTAssertEqual(FileFormat.from(pathExtension: "xyz"), .unknown)
+    }
+
+    /// [P0] FileFormat.supportedExtensions contains expected formats
+    func testFileFormatSupportedExtensions() throws {
+        let exts = FileFormat.supportedExtensions
+        XCTAssertTrue(exts.contains("jpg"))
+        XCTAssertTrue(exts.contains("jpeg"))
+        XCTAssertTrue(exts.contains("png"))
+        XCTAssertTrue(exts.contains("heic"))
+        XCTAssertTrue(exts.contains("tiff"))
+        XCTAssertTrue(exts.contains("cr2"))
+        XCTAssertTrue(exts.contains("nef"))
+        XCTAssertTrue(exts.contains("dng"))
+    }
+
+    // MARK: - AC2: AssetMetadata (文件系统/EXIF 字段)
+
+    /// [P0] AssetMetadata exists with file system / EXIF fields
     func testAssetMetadataExistsWithAllFields() throws {
         let location = LocationData(latitude: 40.7128, longitude: -74.0060)
         let metadata = AssetMetadata(
-            creationDate: Date(timeIntervalSince1970: 1700000000),
-            title: "Sunset Photo",
-            description: "A beautiful sunset over the ocean",
-            keywords: ["sunset", "ocean", "landscape"],
-            location: location
+            fileName: "DSC_0001.jpg",
+            fileSize: 5_242_880,
+            creationDate: Date(timeIntervalSince1970: 1_700_000_000),
+            cameraModel: "Canon EOS R5",
+            imageWidth: 4032,
+            imageHeight: 3024,
+            gpsLocation: location,
+            fileFormat: .jpeg
         )
 
-        XCTAssertNotNil(metadata.creationDate,
-            "AssetMetadata should have a creationDate")
-        XCTAssertEqual(metadata.title, "Sunset Photo",
-            "AssetMetadata should have a title")
-        XCTAssertEqual(metadata.description, "A beautiful sunset over the ocean",
-            "AssetMetadata should have a description")
-        XCTAssertEqual(metadata.keywords, ["sunset", "ocean", "landscape"],
-            "AssetMetadata should have keywords")
-        XCTAssertNotNil(metadata.location,
-            "AssetMetadata should have a location")
-        XCTAssertEqual(metadata.location?.latitude, 40.7128)
+        XCTAssertEqual(metadata.fileName, "DSC_0001.jpg")
+        XCTAssertEqual(metadata.fileSize, 5_242_880)
+        XCTAssertNotNil(metadata.creationDate)
+        XCTAssertEqual(metadata.cameraModel, "Canon EOS R5")
+        XCTAssertEqual(metadata.imageWidth, 4032)
+        XCTAssertEqual(metadata.imageHeight, 3024)
+        XCTAssertEqual(metadata.gpsLocation?.latitude, 40.7128)
+        XCTAssertEqual(metadata.fileFormat, .jpeg)
     }
 
     /// [P1] AssetMetadata allows nil optional fields
     func testAssetMetadataAllowsNilOptionals() throws {
         let metadata = AssetMetadata(
+            fileName: "unknown.dat",
+            fileSize: nil,
             creationDate: nil,
-            title: nil,
-            description: nil,
-            keywords: [],
-            location: nil
+            cameraModel: nil,
+            imageWidth: nil,
+            imageHeight: nil,
+            gpsLocation: nil,
+            fileFormat: nil
         )
 
-        XCTAssertNil(metadata.creationDate,
-            "creationDate should be optional")
-        XCTAssertNil(metadata.title,
-            "title should be optional")
-        XCTAssertNil(metadata.description,
-            "description should be optional")
-        XCTAssertTrue(metadata.keywords.isEmpty,
-            "keywords should default to empty array")
-        XCTAssertNil(metadata.location,
-            "location should be optional")
+        XCTAssertEqual(metadata.fileName, "unknown.dat")
+        XCTAssertNil(metadata.fileSize)
+        XCTAssertNil(metadata.creationDate)
+        XCTAssertNil(metadata.cameraModel)
+        XCTAssertNil(metadata.imageWidth)
+        XCTAssertNil(metadata.imageHeight)
+        XCTAssertNil(metadata.gpsLocation)
+        XCTAssertNil(metadata.fileFormat)
+    }
+
+    /// [P1] AssetMetadata is Equatable
+    func testAssetMetadataIsEquatable() throws {
+        let meta1 = AssetMetadata(
+            fileName: "test.jpg", fileSize: 100, creationDate: nil,
+            cameraModel: nil, imageWidth: nil, imageHeight: nil,
+            gpsLocation: nil, fileFormat: .jpeg
+        )
+        let meta2 = AssetMetadata(
+            fileName: "test.jpg", fileSize: 100, creationDate: nil,
+            cameraModel: nil, imageWidth: nil, imageHeight: nil,
+            gpsLocation: nil, fileFormat: .jpeg
+        )
+        let meta3 = AssetMetadata(
+            fileName: "other.jpg", fileSize: 100, creationDate: nil,
+            cameraModel: nil, imageWidth: nil, imageHeight: nil,
+            gpsLocation: nil, fileFormat: .jpeg
+        )
+
+        XCTAssertEqual(meta1, meta2)
+        XCTAssertNotEqual(meta1, meta3)
     }
 
     // MARK: - AC2: PhotoAsset
 
-    /// [P0] PhotoAsset exists as value type (Sendable, Identifiable)
+    /// [P0] PhotoAsset exists as value type
     func testPhotoAssetExistsAsValueType() throws {
-        let id = AssetID(rawValue: "test-asset-id")
+        let id = AssetID(rawValue: "/Users/test/photo.jpg")
         let metadata = AssetMetadata(
-            creationDate: nil,
-            title: nil,
-            description: nil,
-            keywords: [],
-            location: nil
+            fileName: "photo.jpg", fileSize: nil, creationDate: nil,
+            cameraModel: nil, imageWidth: nil, imageHeight: nil,
+            gpsLocation: nil, fileFormat: nil
         )
         let asset = PhotoAsset(id: id, metadata: metadata, thumbnailData: nil)
 
-        XCTAssertEqual(asset.id, id,
-            "PhotoAsset should have the provided id")
-        XCTAssertEqual(asset.metadata.title, metadata.title,
-            "PhotoAsset should have the provided metadata")
-        XCTAssertNil(asset.thumbnailData,
-            "PhotoAsset thumbnailData should be optional")
+        XCTAssertEqual(asset.id, id)
+        XCTAssertEqual(asset.metadata.fileName, "photo.jpg")
+        XCTAssertNil(asset.thumbnailData)
     }
 
     /// [P0] PhotoAsset is Identifiable
     func testPhotoAssetIsIdentifiable() throws {
-        let id = AssetID(rawValue: "identifiable-test")
+        let id = AssetID(rawValue: "/path/photo.jpg")
         let metadata = AssetMetadata(
-            creationDate: nil, title: nil, description: nil,
-            keywords: [], location: nil
+            fileName: "photo.jpg", fileSize: nil, creationDate: nil,
+            cameraModel: nil, imageWidth: nil, imageHeight: nil,
+            gpsLocation: nil, fileFormat: nil
         )
         let asset = PhotoAsset(id: id, metadata: metadata, thumbnailData: nil)
 
-        XCTAssertEqual(asset.id, id,
-            "PhotoAsset.id should match the provided AssetID")
+        XCTAssertEqual(asset.id, id)
     }
 
     /// [P1] PhotoAsset supports thumbnail data
     func testPhotoAssetSupportsThumbnailData() throws {
-        let id = AssetID(rawValue: "thumb-test")
+        let id = AssetID(rawValue: "/path/thumb.jpg")
         let metadata = AssetMetadata(
-            creationDate: nil, title: nil, description: nil,
-            keywords: [], location: nil
+            fileName: "thumb.jpg", fileSize: nil, creationDate: nil,
+            cameraModel: nil, imageWidth: nil, imageHeight: nil,
+            gpsLocation: nil, fileFormat: nil
         )
         let thumbnailData = Data("fake-thumbnail".utf8)
         let asset = PhotoAsset(id: id, metadata: metadata, thumbnailData: thumbnailData)
 
-        XCTAssertEqual(asset.thumbnailData, thumbnailData,
-            "PhotoAsset should carry thumbnail data when provided")
+        XCTAssertEqual(asset.thumbnailData, thumbnailData)
     }
 
     // MARK: - AC2: LoadingState<T>
@@ -160,70 +205,72 @@ final class CoreModelsTests: XCTestCase {
     /// [P0] LoadingState has idle case
     func testLoadingStateIdleCase() throws {
         let state: LoadingState<String> = .idle
-
-        if case .idle = state {
-            // Expected
-        } else {
-            XCTFail("LoadingState should have an .idle case")
-        }
+        if case .idle = state {} else { XCTFail("Should be .idle") }
     }
 
     /// [P0] LoadingState has loading case
     func testLoadingStateLoadingCase() throws {
         let state: LoadingState<String> = .loading
-
-        if case .loading = state {
-            // Expected
-        } else {
-            XCTFail("LoadingState should have a .loading case")
-        }
+        if case .loading = state {} else { XCTFail("Should be .loading") }
     }
 
     /// [P0] LoadingState has loaded case with associated value
     func testLoadingStateLoadedCase() throws {
         let state: LoadingState<String> = .loaded("test-data")
-
         if case .loaded(let value) = state {
-            XCTAssertEqual(value, "test-data",
-                "LoadingState.loaded should carry the associated value")
-        } else {
-            XCTFail("LoadingState should have a .loaded(T) case")
-        }
+            XCTAssertEqual(value, "test-data")
+        } else { XCTFail("Should be .loaded") }
     }
 
     /// [P0] LoadingState has failed case with DomainError
     func testLoadingStateFailedCase() throws {
         let domainError = DomainError.analysisFailed(reason: "test failure")
         let state: LoadingState<String> = .failed(domainError)
-
         if case .failed(let error) = state {
             if case .analysisFailed(let reason) = error {
                 XCTAssertEqual(reason, "test failure")
-            } else {
-                XCTFail("LoadingState.failed should carry the DomainError")
-            }
-        } else {
-            XCTFail("LoadingState should have a .failed(DomainError) case")
-        }
+            } else { XCTFail("Should carry DomainError") }
+        } else { XCTFail("Should be .failed") }
     }
 
     /// [P1] LoadingState works with different generic types
     func testLoadingStateGenericOverDifferentTypes() throws {
-        // Array of PhotoAsset
         let arrayState: LoadingState<[PhotoAsset]> = .loaded([])
         if case .loaded(let assets) = arrayState {
             XCTAssertTrue(assets.isEmpty)
-        } else {
-            XCTFail("LoadingState should work with [PhotoAsset]")
-        }
+        } else { XCTFail("Should work with [PhotoAsset]") }
 
-        // Optional Int
         let optionalState: LoadingState<Int?> = .loaded(nil)
         if case .loaded(let value) = optionalState {
             XCTAssertNil(value)
-        } else {
-            XCTFail("LoadingState should work with Optional<Int>")
-        }
+        } else { XCTFail("Should work with Optional<Int>") }
+    }
+
+    // MARK: - SourceChange
+
+    /// [P0] SourceChange enum exists with required cases
+    func testSourceChangeExistsWithRequiredCases() throws {
+        let added = SourceChange.filesAdded([AssetID(rawValue: "/new.jpg")])
+        let removed = SourceChange.filesRemoved([AssetID(rawValue: "/old.jpg")])
+        let modified = SourceChange.filesModified([AssetID(rawValue: "/changed.jpg")])
+
+        if case .filesAdded(let ids) = added {
+            XCTAssertEqual(ids.count, 1)
+        } else { XCTFail("Should be .filesAdded") }
+
+        if case .filesRemoved = removed {} else { XCTFail("Should be .filesRemoved") }
+        if case .filesModified = modified {} else { XCTFail("Should be .filesModified") }
+    }
+
+    /// [P1] SourceChange is Equatable
+    func testSourceChangeIsEquatable() throws {
+        let id = AssetID(rawValue: "/test.jpg")
+        let c1 = SourceChange.filesAdded([id])
+        let c2 = SourceChange.filesAdded([id])
+        let c3 = SourceChange.filesRemoved([id])
+
+        XCTAssertEqual(c1, c2)
+        XCTAssertNotEqual(c1, c3)
     }
 
     // MARK: - PhotoPredicate
@@ -231,7 +278,32 @@ final class CoreModelsTests: XCTestCase {
     /// PhotoPredicate.all returns a predicate with empty rawValue
     func testPhotoPredicateAllReturnsEmptyRawValue() throws {
         let predicate = PhotoPredicate.all
-        XCTAssertTrue(predicate.rawValue.isEmpty,
-            "PhotoPredicate.all should have an empty rawValue")
+        XCTAssertTrue(predicate.rawValue.isEmpty)
     }
+
+    /// [P1] PhotoPredicate.filter with FileFormatFilter
+    func testPhotoPredicateFilterByFileFormat() throws {
+        let predicate = PhotoPredicate.filter(fileFormat: .heic)
+        XCTAssertEqual(predicate.fileFormat, .heic)
+    }
+
+    // MARK: - FolderBookmarkManaging
+
+    /// [P0] FolderBookmarkManaging protocol exists and is Sendable
+    func testFolderBookmarkManagingProtocolExists() throws {
+        // Verify the protocol is defined by checking we can create a mock
+        let mock = MockFolderBookmarkManager()
+        XCTAssertFalse(mock.hasValidBookmark)
+        XCTAssertNil(mock.currentFolderURL)
+    }
+}
+
+/// Mock implementation of FolderBookmarkManaging for testing.
+private struct MockFolderBookmarkManager: FolderBookmarkManaging {
+    var hasValidBookmark: Bool { false }
+    var currentFolderURL: URL? { nil }
+    func selectAndBookmarkFolder() async throws -> URL { URL(fileURLWithPath: "/mock/photos") }
+    func loadBookmark() async throws -> URL? { nil }
+    func accessBookmark(_ url: URL) throws -> Bool { true }
+    func releaseBookmark(_ url: URL) {}
 }

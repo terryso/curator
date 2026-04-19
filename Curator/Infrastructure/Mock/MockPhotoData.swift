@@ -9,13 +9,16 @@ enum MockPhotoData {
         let date = baseDate.addingTimeInterval(Double(i) * 86400 * 7)
 
         return PhotoAsset(
-            id: AssetID(rawValue: "mock-photo-\(i)"),
+            id: AssetID(rawValue: "/Users/mock/Photos/photo_\(i).jpg"),
             metadata: AssetMetadata(
+                fileName: "photo_\(i).jpg",
+                fileSize: Int64(1_500_000 + i * 100_000),
                 creationDate: date,
-                title: titles[i % titles.count],
-                description: "Sample photo \(i + 1) for UI testing",
-                keywords: Array(keywords[i % keywords.count]),
-                location: LocationData(latitude: 37.7749 + Double(i) * 0.01, longitude: -122.4194 + Double(i) * 0.01)
+                cameraModel: cameraModels[i % cameraModels.count],
+                imageWidth: 4032,
+                imageHeight: 3024,
+                gpsLocation: LocationData(latitude: 37.7749 + Double(i) * 0.01, longitude: -122.4194 + Double(i) * 0.01),
+                fileFormat: .jpeg
             ),
             thumbnailData: generateThumbnail(hue: CGFloat(i) / 20.0, size: 120)
         )
@@ -54,27 +57,12 @@ enum MockPhotoData {
         return pngData
     }
 
-    private static let titles = [
-        "Sunset at Beach",
-        "Mountain Hike",
-        "City Skyline",
-        "Coffee Morning",
-        "Garden Bloom",
+    // Intentionally includes nil to test missing camera model (every 5th photo)
+    private static let cameraModels: [String?] = [
+        "Canon EOS R5",
+        "Sony A7 IV",
+        "Nikon Z6 III",
+        "iPhone 16 Pro",
         nil,
-        "Family Dinner",
-        nil,
-        "Road Trip",
-        "Snowy Peak",
-    ]
-
-    private static let keywords: [[String]] = [
-        ["vacation", "beach"],
-        ["hiking", "nature"],
-        ["urban", "architecture"],
-        ["food", "morning"],
-        ["flowers", "garden"],
-        ["family", "dinner"],
-        ["travel", "car"],
-        ["winter", "mountain"],
     ]
 }

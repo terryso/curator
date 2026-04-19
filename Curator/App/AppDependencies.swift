@@ -33,17 +33,33 @@ final class AppDependencies: ObservableObject {
 
     /// Registers the LLM Gateway using stored LLMConfig.
     ///
-    /// Reads baseURL, apiKey, and modelID from UserDefaults via LLMConfig.
-    /// If no config is stored, creates the gateway with empty credentials
-    /// (the user will be prompted to configure via onboarding or settings).
+    /// Reads the multi-provider configuration from UserDefaults via LLMConfig.
+    /// Creates an AnthropicProvider for the primary provider and, if configured,
+    /// an OpenAICompatibleProvider for the fallback. If no config is stored,
+    /// creates the gateway with empty credentials (the user will be prompted
+    /// to configure via onboarding or settings).
     func registerLLMGateway() {
         let config = LLMConfig.load()
+
+        // Build primary provider from config.
         let apiKey = config?.apiKey ?? ""
         let baseURL = config?.baseURL ?? ""
+        let primaryProvider = AnthropicProvider(apiKey: apiKey, baseURL: baseURL)
 
-        let provider = AnthropicProvider(apiKey: apiKey, baseURL: baseURL)
-        let gateway = LLMGateway(providers: [provider])
+        var providers: [any LLMProvider] = [primaryProvider]
+
+        // Add fallback provider if configured.
+        if let fallbackConfig = config?.fallback, fallbackConfig.isConfigured {
+            let fallbackProvider = OpenAICompatibleProvider(
+                name: fallbackConfig.displayName ?? "Fallback",
+                apiKey: fallbackConfig.apiKey,
+                baseURL: fallbackConfig.baseURL
+            )
+            providers.append(fallbackProvider)
+        }
+
+        let gateway = LLMGateway(providers: providers)
         llmGateway = gateway
-        llmProvider = provider
+        llmProvider = primaryProvider
     }
 }

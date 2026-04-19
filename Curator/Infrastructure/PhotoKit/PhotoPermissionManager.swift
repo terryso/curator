@@ -6,7 +6,7 @@ import Photos
 /// Provides read/write permission checking and request methods.
 /// Errors are mapped to InfrastructureError for consistent error handling
 /// across the three-layer error chain (Infrastructure -> Domain -> UserFacing).
-struct PhotoPermissionManager: Sendable {
+struct PhotoPermissionManager: PhotoPermissionManaging, Sendable {
 
     /// Current authorization status for photo library access.
     var currentStatus: PHAuthorizationStatus {

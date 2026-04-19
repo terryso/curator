@@ -38,14 +38,34 @@ class CuratorUITestBase: XCTestCase {
                 alert.buttons["好"].tap()
                 return true
             }
-            // Input method permission: "允许" (Chinese)
+            // Input method / Keychain access: "允许" (Chinese)
             if alert.buttons["允许"].exists {
                 alert.buttons["允许"].tap()
                 return true
             }
-            // Input method permission: "Allow" (English)
+            // Input method / Keychain access: "Allow" (English)
             if alert.buttons["Allow"].exists {
                 alert.buttons["Allow"].tap()
+                return true
+            }
+            // Keychain: "始终允许" (Always Allow - Chinese)
+            if alert.buttons["始终允许"].exists {
+                alert.buttons["始终允许"].tap()
+                return true
+            }
+            // Keychain: "Always Allow" (English)
+            if alert.buttons["Always Allow"].exists {
+                alert.buttons["Always Allow"].tap()
+                return true
+            }
+            // System auth: "好" as confirm button in Chinese dialogs
+            if alert.buttons["好"].exists {
+                alert.buttons["好"].tap()
+                return true
+            }
+            // Developer tools: "Don't Allow" dismissal fallback
+            if alert.buttons["Don't Allow"].exists {
+                alert.buttons["Don't Allow"].tap()
                 return true
             }
             return false
@@ -61,16 +81,14 @@ class CuratorUITestBase: XCTestCase {
     }
 
     /// Triggers the interruption monitor to handle any pending system dialogs.
-    /// Uses a coordinate tap which works even when the app itself is not hittable.
+    /// Uses multiple passes with increasing delays to catch stacked dialogs.
     private func handleSystemDialogs() {
-        Thread.sleep(forTimeInterval: 1.5)
-        // Tap at a safe coordinate to trigger the interruption monitor
-        // without depending on the app being the frontmost element.
-        let coordinate = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        coordinate.tap()
-        // Second pass in case multiple dialogs stack
-        Thread.sleep(forTimeInterval: 0.5)
-        coordinate.tap()
+        // Multiple passes to handle stacked dialogs
+        for attempt in 0..<3 {
+            Thread.sleep(forTimeInterval: 1.0 + Double(attempt) * 0.5)
+            let coordinate = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            coordinate.tap()
+        }
     }
 
     // MARK: - App Launch

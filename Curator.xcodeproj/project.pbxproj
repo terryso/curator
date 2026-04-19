@@ -84,6 +84,12 @@
 		FA1589FDC9601BA5E6F3F45E /* AssetID.swift in Sources */ = {isa = PBXBuildFile; fileRef = B569A0482E5EF36A6D43FF0B /* AssetID.swift */; };
 		FC517B7DB18C59B049A82069 /* AssetMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0018A53DA04E04B8E9F90F /* AssetMetadata.swift */; };
 		FE7F63F5443EAAE3C88D3096 /* OpenAgentSDK in Frameworks */ = {isa = PBXBuildFile; productRef = B3881076E83BDB3B85432BDC /* OpenAgentSDK */; };
+		2A1534A8EE9004D95C528A2A /* PhotoPermissionManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCACE0E96EECF27947E9C00 /* PhotoPermissionManaging.swift */; };
+		3301C69CF1298A3F90780B6B /* LLMProviderConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2AB0C7ADA6D300C3F74905 /* LLMProviderConfig.swift */; };
+		DE0FB3313A5BDD7FBC42EC21 /* OpenAICompatibleProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF8E14964E9F1287B1D8052 /* OpenAICompatibleProvider.swift */; };
+		2ACCF58EE9376975A3EA235F /* LLMConfigMultiProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB30046994BAE449E6F1CDDF /* LLMConfigMultiProviderTests.swift */; };
+		FB859C16D98155233486FEA1 /* MultiProviderFailoverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707627BA993A6BA9AB3E3319 /* MultiProviderFailoverTests.swift */; };
+		0B4835EC14C7E3C98EE4E465 /* OpenAICompatibleProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346C932DCCAA0D90094C5E2C /* OpenAICompatibleProviderTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -196,6 +202,12 @@
 		EF633D948E424ACD3BCD728B /* LLMConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfigView.swift; sourceTree = "<group>"; };
 		F51DE8F3D766077D016A32EA /* PermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRequestView.swift; sourceTree = "<group>"; };
 		F80915BAB3A739CE29868B51 /* PhotoLibraryViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryViewModelTests.swift; sourceTree = "<group>"; };
+		3CCACE0E96EECF27947E9C00 /* PhotoPermissionManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPermissionManaging.swift; sourceTree = "<group>"; };
+		CE2AB0C7ADA6D300C3F74905 /* LLMProviderConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProviderConfig.swift; sourceTree = "<group>"; };
+		5FF8E14964E9F1287B1D8052 /* OpenAICompatibleProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAICompatibleProvider.swift; sourceTree = "<group>"; };
+		DB30046994BAE449E6F1CDDF /* LLMConfigMultiProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfigMultiProviderTests.swift; sourceTree = "<group>"; };
+		707627BA993A6BA9AB3E3319 /* MultiProviderFailoverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiProviderFailoverTests.swift; sourceTree = "<group>"; };
+		346C932DCCAA0D90094C5E2C /* OpenAICompatibleProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAICompatibleProviderTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -260,6 +272,8 @@
 			isa = PBXGroup;
 			children = (
 				DAAEA6A3456397C6EEF0C5F0 /* LLMGatewayTests.swift */,
+				707627BA993A6BA9AB3E3319 /* MultiProviderFailoverTests.swift */,
+				346C932DCCAA0D90094C5E2C /* OpenAICompatibleProviderTests.swift */,
 			);
 			path = LLM;
 			sourceTree = "<group>";
@@ -404,6 +418,8 @@
 				27B3DD3F550BD6BE5FEC1114 /* PhotoAsset.swift */,
 				671140177989A061D91DF01A /* PhotoLibraryRepository.swift */,
 				4B5292B3111A182E1AEF0E01 /* PhotoPredicate.swift */,
+				3CCACE0E96EECF27947E9C00 /* PhotoPermissionManaging.swift */,
+				CE2AB0C7ADA6D300C3F74905 /* LLMProviderConfig.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -495,6 +511,7 @@
 				D7302AE8995C7AE2E1603564 /* AnthropicProvider.swift */,
 				2B0AE80CB597C8329EA9FD71 /* LLMGateway.swift */,
 				4C1E584AA2F521FE4AF378CE /* LLMModels.swift */,
+				5FF8E14964E9F1287B1D8052 /* OpenAICompatibleProvider.swift */,
 			);
 			path = LLM;
 			sourceTree = "<group>";
@@ -530,6 +547,7 @@
 			children = (
 				325CF7CFA44763B4B95B8114 /* CoreModelsTests.swift */,
 				854F0919FC306FA88383A12A /* LLMConfigTests.swift */,
+				DB30046994BAE449E6F1CDDF /* LLMConfigMultiProviderTests.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -780,6 +798,9 @@
 				370122E402F4EAF3CB8D006E /* SettingsPlaceholderView.swift in Sources */,
 				783F7E05281023BBD2B1964E /* UserFacingError.swift in Sources */,
 				8755F073855E03FD452E371D /* WelcomeView.swift in Sources */,
+				2A1534A8EE9004D95C528A2A /* PhotoPermissionManaging.swift in Sources */,
+				3301C69CF1298A3F90780B6B /* LLMProviderConfig.swift in Sources */,
+				DE0FB3313A5BDD7FBC42EC21 /* OpenAICompatibleProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -804,6 +825,9 @@
 				43392B97CDD6E33CAA0E8BB2 /* PhotoPermissionManagerTests.swift in Sources */,
 				409582296F95E2DC61DCE1FA /* LLMConfigTests.swift in Sources */,
 				AA3DF9A01E0988DDF6EFAC85 /* SPMDependencyTests.swift in Sources */,
+				2ACCF58EE9376975A3EA235F /* LLMConfigMultiProviderTests.swift in Sources */,
+				FB859C16D98155233486FEA1 /* MultiProviderFailoverTests.swift in Sources */,
+				0B4835EC14C7E3C98EE4E465 /* OpenAICompatibleProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

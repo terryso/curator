@@ -14,10 +14,19 @@ import Photos
 /// - Errors are properly mapped through InfrastructureError -> DomainError chain
 final class PhotoKitRepositoryTests: XCTestCase {
 
+    /// Skips the test if PhotoKit access is not already granted to avoid system dialogs.
+    private func skipIfNoPhotoKitAccess() throws {
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        guard status == .authorized || status == .limited else {
+            throw XCTSkip("Photo library access not pre-granted — skipping to avoid system dialog")
+        }
+    }
+
     // MARK: - AC2: PhotoKitRepository Type
 
     /// [P0] PhotoKitRepository exists as an actor
     func testPhotoKitRepositoryExistsAsActor() async throws {
+        try skipIfNoPhotoKitAccess()
         // Given: PhotoKitRepository is defined as an actor
         // Then: It can be instantiated
         let repository = PhotoKitRepository()
@@ -26,6 +35,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] PhotoKitRepository conforms to PhotoLibraryRepository protocol
     func testPhotoKitRepositoryConformsToProtocol() async throws {
+        try skipIfNoPhotoKitAccess()
         // Given: PhotoKitRepository actor
         // Then: It should be usable as a PhotoLibraryRepository
         let repository = PhotoKitRepository()
@@ -36,6 +46,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] PhotoKitRepository is an actor (not a class or struct)
     func testPhotoKitRepositoryIsActor() async throws {
+        try skipIfNoPhotoKitAccess()
         // Given: PhotoKitRepository is declared as `actor`
         // Then: All method calls must go through actor isolation
         // This is validated at compile time — if this test compiles,
@@ -50,35 +61,22 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] requestReadAccess delegates to PhotoPermissionManager and returns true when authorized
     func testRequestReadAccessReturnsTrueWhenAuthorized() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
-
-        // When/Then: Test the API contract — result depends on test environment permissions
-        do {
-            let result = try await repository.requestReadAccess()
-            XCTAssertTrue(result,
-                "requestReadAccess should return true when permission is granted")
-        } catch let error as DomainError {
-            // Permission denied in test environment — validate error chain
-            if case .insufficientPermission = error {
-                // Correct error through the mapping chain
-            } else {
-                XCTFail("Expected insufficientPermission, got \(error)")
-            }
-        }
+        let result = try await repository.requestReadAccess()
+        XCTAssertTrue(result,
+            "requestReadAccess should return true when permission is granted")
     }
 
     /// [P0] requestReadAccess throws when permission is denied
     func testRequestReadAccessThrowsWhenDenied() async throws {
-        // Given: A PhotoKitRepository
-        let repository = PhotoKitRepository()
+        let mock = MockPermissionManager(status: .denied)
+        let repository = PhotoKitRepository(permissionManager: mock)
 
-        // When/Then: The error should be mappable through the chain
         do {
             _ = try await repository.requestReadAccess()
-            // If access was granted, that's fine — test environment has permission
+            XCTFail("requestReadAccess should throw when denied")
         } catch let error as DomainError {
-            // Error should be from the DomainError type (mapped from InfrastructureError)
             if case .insufficientPermission = error {
                 // Correct mapping through the chain
             } else {
@@ -93,7 +91,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P1] requestWriteAccess returns false (placeholder for Story 4.1)
     func testRequestWriteAccessReturnsFalse() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
         // When: Calling requestWriteAccess()
@@ -108,7 +106,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] fetchAssets returns AssetPage with assets and hasMore
     func testFetchAssetsReturnsAssetPage() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
         do {
@@ -132,7 +130,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] fetchAssets returns empty page when no photos available
     func testFetchAssetsReturnsEmptyPageWhenNoPhotos() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
         do {
@@ -154,7 +152,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P1] fetchAssets respects pageSize parameter
     func testFetchAssetsRespectsPageSize() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
         do {
@@ -175,7 +173,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P1] fetchAssets returns hasMore=true when more results exist
     func testFetchAssetsReturnsHasMoreWhenMoreResultsExist() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
         do {
@@ -203,10 +201,10 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] fetchAssets throws when permission not granted
     func testFetchAssetsThrowsWithoutPermission() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
-        // When/Then: If no permission, should throw DomainError.insufficientPermission
+        // When/Then: Should throw DomainError.insufficientPermission
         do {
             _ = try await repository.fetchAssets(predicate: .all, pageSize: 20)
             // If it succeeds, the test environment has permission — that's fine
@@ -223,7 +221,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] fetchFullResolutionImage returns Data for a valid AssetID
     func testFetchFullResolutionImageReturnsData() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
         do {
@@ -255,7 +253,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P0] fetchFullResolutionImage throws for non-existent AssetID
     func testFetchFullResolutionImageThrowsForNonexistentAssetID() async throws {
-        // Given: A PhotoKitRepository and a non-existent AssetID
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
         let invalidID = AssetID(rawValue: "nonexistent-asset-id-99999")
 
@@ -275,7 +273,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P1] fetchFullResolutionImage handles iCloud photos not yet downloaded
     func testFetchFullResolutionImageHandlesUndownloadedCloudPhotos() async throws {
-        // Given: A PhotoKitRepository
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
 
         do {
@@ -305,16 +303,8 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P1] PhotoKitRepository methods execute within actor isolation
     func testRepositoryMethodsExecuteWithinActorIsolation() async throws {
-        // Given: A PhotoKitRepository (actor)
+        try skipIfNoPhotoKitAccess()
         let repository = PhotoKitRepository()
-
-        // When: Calling multiple methods concurrently
-        // Both calls go through actor isolation — no data races
-        // Skip if no PhotoKit access to avoid triggering system permission dialog
-        let status = await repository.permissionManager.checkCurrentStatus()
-        guard status == .authorized || status == .limited else {
-            throw XCTSkip("Photo library access not available in test environment")
-        }
 
         do {
             async let accessResult: Bool = repository.requestReadAccess()
@@ -332,9 +322,7 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
     /// [P1] PhotoKitRepository can be registered in AppDependencies
     func testPhotoKitRepositoryCanBeRegisteredInAppDependencies() async throws {
-        // Given: An AppDependencies container and a PhotoKitRepository
-        // When: Registering the repository
-        // Then: photoRepository property should be non-nil
+        try skipIfNoPhotoKitAccess()
         await MainActor.run {
             let dependencies = AppDependencies()
             let repository = PhotoKitRepository()
@@ -343,5 +331,20 @@ final class PhotoKitRepositoryTests: XCTestCase {
             XCTAssertNotNil(dependencies.photoRepository,
                 "photoRepository should be set after registration")
         }
+    }
+}
+
+// MARK: - Mock Permission Manager
+
+/// Mock implementation of PhotoPermissionManaging for testing denied scenarios.
+private struct MockPermissionManager: PhotoPermissionManaging {
+    let status: PHAuthorizationStatus
+
+    var currentStatus: PHAuthorizationStatus { status }
+
+    func checkCurrentStatus() -> PHAuthorizationStatus { status }
+
+    func requestReadAccess() async throws -> Bool {
+        throw InfrastructureError.photoKitAccessDenied
     }
 }

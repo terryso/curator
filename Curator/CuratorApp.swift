@@ -4,18 +4,24 @@ import SwiftUI
 struct CuratorApp: App {
     init() {
         // UI test launch arguments
-        if CommandLine.arguments.contains("--uitest-reset-onboarding") {
-            UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
-        }
-        if CommandLine.arguments.contains("--uitest-mock-photos") {
-            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
-            // Pre-configure LLM for UI tests (avoids Keychain/system prompts)
+        let isUITest = CommandLine.arguments.contains("--uitest-reset-onboarding")
+            || CommandLine.arguments.contains("--uitest-mock-photos")
+
+        if isUITest {
+            // Pre-configure LLM for all UI tests to avoid system prompts
             let mockConfig = LLMConfig(
                 baseURL: "https://mock.test",
                 apiKey: "test-key",
                 modelID: "claude-sonnet-4-20250514"
             )
             mockConfig.save()
+        }
+
+        if CommandLine.arguments.contains("--uitest-reset-onboarding") {
+            UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+        }
+        if CommandLine.arguments.contains("--uitest-mock-photos") {
+            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
         }
     }
 

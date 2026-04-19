@@ -1,4 +1,5 @@
 import Foundation
+import os.log
 
 /// Actor-isolated unified gateway for LLM provider access.
 ///
@@ -6,9 +7,18 @@ import Foundation
 /// provider with automatic exponential backoff retry (max 3 attempts) and
 /// failover to backup providers when the primary is unavailable.
 ///
+/// Error-type-aware failover strategy:
+/// - **429 rate limit**: Retries with retry-after delay, then failovers after retries exhausted.
+/// - **5xx server error**: Retries with exponential backoff, then failovers.
+/// - **4xx client error (non-429)**: No retry, immediate failover.
+/// - **Network/timeout**: Retries with exponential backoff, then failovers.
+///
 /// All mutable state (current provider index, retry counts) is isolated
 /// within this actor for thread-safe concurrent access.
 actor LLMGateway: LLMGatewayProtocol {
+
+    /// Logger for failover and retry events.
+    private static let logger = Logger(subsystem: "com.curator.app", category: "LLMGateway")
 
     /// The list of providers in priority order. Index 0 is primary.
     private let providers: [any LLMProvider]
@@ -36,7 +46,7 @@ actor LLMGateway: LLMGatewayProtocol {
         retryMultiplier: Double = 2.0
     ) {
         self.providers = providers
-        self.maxRetries = maxRetries
+        self.maxRetries = max(1, maxRetries)
         self.baseRetryDelay = baseRetryDelay
         self.retryMultiplier = retryMultiplier
     }
@@ -45,9 +55,11 @@ actor LLMGateway: LLMGatewayProtocol {
 
     /// Analyzes images using the primary provider with retry and failover.
     ///
-    /// Tries the primary provider up to `maxRetries` times with exponential
-    /// backoff. If all retries are exhausted, falls back to the next provider
-    /// in the list and repeats the retry cycle. Throws if every provider fails.
+    /// Error-type-aware strategy:
+    /// - 4xx client errors (non-429): failover immediately without retrying.
+    /// - 429 rate limit: retry up to maxRetries within the same provider, then failover.
+    /// - 5xx server errors: retry with exponential backoff, then failover.
+    /// - Network/timeout errors: retry with exponential backoff, then failover.
     func analyze(images: [Data], prompt: String, model: String) async throws -> LLMResponse {
         var lastError: Error?
 
@@ -61,6 +73,7 @@ actor LLMGateway: LLMGatewayProtocol {
                 )
             } catch {
                 lastError = error
+                Self.logger.warning("Provider '\(provider.name)' failed: \(error.localizedDescription). Failover to next provider.")
                 // Move to next provider (failover)
             }
         }
@@ -87,7 +100,11 @@ actor LLMGateway: LLMGatewayProtocol {
 
     // MARK: - Private Retry Logic
 
-    /// Executes analysis with exponential backoff retry for a single provider.
+    /// Executes analysis with error-type-aware retry for a single provider.
+    ///
+    /// - **4xx client errors (non-429)**: Immediate throw — no retry, triggers failover.
+    /// - **429 rate limit**: Retries with retry-after delay from the error.
+    /// - **5xx/network errors**: Retries with exponential backoff.
     private func analyzeWithRetry(
         provider: any LLMProvider,
         images: [Data],
@@ -99,8 +116,32 @@ actor LLMGateway: LLMGatewayProtocol {
         for attempt in 0..<maxRetries {
             do {
                 return try await provider.analyze(images: images, prompt: prompt, model: model)
+            } catch let error as InfrastructureError {
+                lastError = error
+
+                // 4xx client errors (non-429): do not retry — failover immediately.
+                if case .llmProviderError(_, let statusCode, _) = error,
+                   (400...499).contains(statusCode), statusCode != 429 {
+                    throw error
+                }
+
+                // 429 rate limit: use retry-after delay from the error (capped at 60s).
+                if case .rateLimitExceeded(_, let retryAfter) = error {
+                    if attempt < maxRetries - 1 {
+                        try await Task.sleep(for: .seconds(min(retryAfter, 60)))
+                        continue
+                    }
+                    throw error
+                }
+
+                // All other errors (5xx, network): exponential backoff retry.
+                if attempt < maxRetries - 1 {
+                    let delay = baseRetryDelay * pow(retryMultiplier, Double(attempt))
+                    try await Task.sleep(for: .seconds(delay))
+                }
             } catch {
                 lastError = error
+                // Non-InfrastructureError: retry with exponential backoff.
                 if attempt < maxRetries - 1 {
                     let delay = baseRetryDelay * pow(retryMultiplier, Double(attempt))
                     try await Task.sleep(for: .seconds(delay))

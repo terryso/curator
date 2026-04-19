@@ -57,7 +57,7 @@ development_status:
   epic-2: in-progress
   2-1-llm-gateway-core: done
   2-2-keychain-credential-mgmt: done
-  2-3-multi-provider-support: backlog
+  2-3-multi-provider-support: done
   2-4-cost-tracking-engine: backlog
   2-5-provider-settings-ui: backlog
   2-6-cost-estimate-and-tracking: backlog

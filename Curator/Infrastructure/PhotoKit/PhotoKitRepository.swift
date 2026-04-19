@@ -21,9 +21,9 @@ actor PhotoKitRepository: PhotoLibraryRepository {
     // MARK: - Dependencies
 
     /// Manages photo library permission requests.
-    /// Marked `nonisolated(unsafe)` because PhotoPermissionManager is a
-    /// Sendable value type — safe to access from any isolation domain.
-    nonisolated(unsafe) var permissionManager: PhotoPermissionManager
+    /// Marked `nonisolated(unsafe)` because the conforming type is
+    /// Sendable — safe to access from any isolation domain.
+    nonisolated(unsafe) var permissionManager: any PhotoPermissionManaging
 
     /// In-memory thumbnail cache. 100MB limit per UX-DR13 / Story 1.4 AC.
     private let thumbnailCache: NSCache<NSString, NSData> = {
@@ -36,7 +36,7 @@ actor PhotoKitRepository: PhotoLibraryRepository {
 
     /// Creates a new PhotoKitRepository.
     /// - Parameter permissionManager: The permission manager to use for access checks.
-    init(permissionManager: PhotoPermissionManager = PhotoPermissionManager()) {
+    init(permissionManager: any PhotoPermissionManaging = PhotoPermissionManager()) {
         self.permissionManager = permissionManager
     }
 

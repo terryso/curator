@@ -23,6 +23,11 @@ struct PhotoPermissionManager: Sendable {
     /// - Returns: `true` if read access was granted.
     /// - Throws: `InfrastructureError.photoKitAccessDenied` when access is denied or restricted.
     func requestReadAccess() async throws -> Bool {
+        let current = checkCurrentStatus()
+        if current == .authorized || current == .limited {
+            return true
+        }
+
         let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
 
         switch status {

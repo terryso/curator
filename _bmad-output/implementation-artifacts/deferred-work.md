@@ -11,3 +11,19 @@
 ## Deferred from: code review of 1-4-photo-library-browse-grid.md (2026-04-18)
 
 - NSCache thumbnail cache (100MB limit per AC3/architecture decision 8) not implemented. Story 1.3 returns thumbnailData as nil for performance. Thumbnail loading strategy must be decided first (Method A/B/C from spec). Defer to a dedicated thumbnail-loading story or when implementing NFR8 performance requirements.
+
+## Deferred from: macOS HIG compliance review of Epic 1 UI (2026-04-19)
+
+Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar），以下为增量合规项，可在后续 Epic 或专项 HIG 清理 Story 中补齐：
+
+- 照片网格缺少右键 Context Menu（应含复制、删除、收藏、分享等操作）
+- Toolbar 按钮缺少键盘快捷键（如 Cmd+Ctrl+S 切换 Sidebar）
+- 缺少 Space 键 Quick Look 预览照片支持
+- 照片网格缺少多选支持（Cmd+Click 非连续选、Shift+Click 范围选）
+- Onboarding 动画未检查 `@Environment(\.accessibilityReduceMotion)` 设置
+- 未注册菜单栏命令（App 菜单、自定义菜单项）
+
+## Deferred from: code review of 2-1-llm-gateway-core.md (2026-04-19)
+
+- API key stored as plain `String` in `AnthropicProvider`. Swift `String` values are interned and may persist in memory. No zeroing after use. Acceptable for now — Story 2.2 will introduce KeychainManager for secure key storage.
+- Unrelated `PhotoPermissionManager` change (early return on already-authorized status) included in Story 2-1 diff. Should be a separate commit for clean git history.

@@ -372,6 +372,7 @@ com.apple.security.keychain                       → API Key 安全存储
 - [ ] 跨层数据是否使用值类型（struct + Sendable）？
 - [ ] 是否有对应的 ATDD 测试？
 - [ ] 是否有对应的 UI 测试 happy-path 覆盖？
+- [ ] 故事涉及 macOS UI 时，实现前是否已参考 /macos-design-guidelines 中的 HIG 规范？
 
 ---
 

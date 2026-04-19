@@ -41,6 +41,7 @@ struct ContentView: View {
                 } else {
                     dependencies.registerPhotoKitRepository()
                 }
+                dependencies.registerLLMGateway()
             }
             .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in
                 if hasRepo, let repo = dependencies.photoRepository {

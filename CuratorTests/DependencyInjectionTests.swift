@@ -166,10 +166,10 @@ private struct MockLLMProvider: LLMProvider {
     let name: String = "MockLLM"
 
     func analyze(images: [Data], prompt: String, model: String) async throws -> LLMResponse {
-        return LLMResponse(text: "mock analysis result")
+        return LLMResponse(text: "mock analysis result", modelID: model, providerName: name, inputTokens: 0, outputTokens: 0)
     }
 
     func estimateCost(imageCount: Int, model: String) -> CostEstimate {
-        return CostEstimate(estimatedTokens: 0, estimatedCost: 0.0)
+        return CostEstimate(estimatedTokens: 0, estimatedCost: 0.0, modelID: model, providerName: name)
     }
 }

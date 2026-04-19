@@ -310,6 +310,12 @@ final class PhotoKitRepositoryTests: XCTestCase {
 
         // When: Calling multiple methods concurrently
         // Both calls go through actor isolation — no data races
+        // Skip if no PhotoKit access to avoid triggering system permission dialog
+        let status = await repository.permissionManager.checkCurrentStatus()
+        guard status == .authorized || status == .limited else {
+            throw XCTSkip("Photo library access not available in test environment")
+        }
+
         do {
             async let accessResult: Bool = repository.requestReadAccess()
             async let page: AssetPage = repository.fetchAssets(predicate: .all, pageSize: 20)

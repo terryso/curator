@@ -55,6 +55,20 @@ final class DependencyInjectionTests: XCTestCase {
         }
     }
 
+    /// [P0] registerLLMGateway() creates gateway without stored config
+    func testRegisterLLMGatewayCreatesGatewayWithoutConfig() async throws {
+        await MainActor.run {
+            let dependencies = AppDependencies()
+
+            // When: Registering LLM gateway with no stored config
+            dependencies.registerLLMGateway()
+
+            // Then: Gateway is still created (with empty credentials)
+            XCTAssertNotNil(dependencies.llmGateway,
+                "llmGateway should be created even without stored config")
+        }
+    }
+
     // MARK: - AC3: Protocol Definitions
 
     /// [P0] PhotoLibraryRepository protocol exists with Sendable conformance

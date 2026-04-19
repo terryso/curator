@@ -8,7 +8,6 @@ import SwiftUI
 struct OnboardingContainerView: View {
     @ObservedObject var viewModel: OnboardingViewModel
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    @State private var isRequestingPermission = false
 
     var body: some View {
         ZStack {
@@ -25,8 +24,15 @@ struct OnboardingContainerView: View {
 
             case .permission:
                 PermissionRequestView(
-                    isRequesting: isRequestingPermission,
-                    onRequestPermission: { requestPermission() },
+                    isRequesting: false,
+                    onRequestPermission: { viewModel.goToNextStep() },
+                    onBack: { viewModel.goToPreviousStep() }
+                )
+
+            case .llmConfig:
+                LLMConfigView(
+                    viewModel: viewModel,
+                    onNext: { viewModel.goToNextStep() },
                     onBack: { viewModel.goToPreviousStep() }
                 )
 
@@ -71,7 +77,7 @@ struct OnboardingContainerView: View {
     /// Whether to show the step indicator dots.
     private var showStepIndicator: Bool {
         switch viewModel.currentStep {
-        case .welcome, .privacy, .permission:
+        case .welcome, .privacy, .permission, .llmConfig:
             return true
         default:
             return false
@@ -96,14 +102,6 @@ struct OnboardingContainerView: View {
     }
 
     // MARK: - Actions
-
-    private func requestPermission() {
-        isRequestingPermission = true
-        Task {
-            await viewModel.requestPhotoPermission()
-            isRequestingPermission = false
-        }
-    }
 
     private func finishOnboarding() {
         viewModel.completeOnboarding()

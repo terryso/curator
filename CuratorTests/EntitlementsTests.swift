@@ -14,7 +14,6 @@ final class EntitlementsTests: XCTestCase {
             "com.apple.security.app-sandbox",
             "com.apple.security.personal-information.photos",
             "com.apple.security.network.client",
-            "com.apple.security.keychain",
         ]
 
         let sourceRoot = try BuildConfigurationTests.getSourceRoot()

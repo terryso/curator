@@ -78,12 +78,13 @@ final class OnboardingViewModelTests: XCTestCase {
     @MainActor
     func testOnboardingStepEnumHasAllCases() async throws {
         let allSteps = OnboardingStep.allCases
-        XCTAssertEqual(allSteps.count, 6, "OnboardingStep should have exactly 6 cases")
+        XCTAssertEqual(allSteps.count, 7, "OnboardingStep should have exactly 7 cases")
 
         // Verify each case exists by constructing them
         let _: OnboardingStep = .welcome
         let _: OnboardingStep = .privacy
         let _: OnboardingStep = .permission
+        let _: OnboardingStep = .llmConfig
         let _: OnboardingStep = .scanning
         let _: OnboardingStep = .complete
         let _: OnboardingStep = .denied
@@ -98,7 +99,7 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertEqual(OnboardingStep.permission.rawValue, 2)
 
         // CaseIterable for iterating step indicators
-        XCTAssertGreaterThanOrEqual(OnboardingStep.allCases.count, 6)
+        XCTAssertGreaterThanOrEqual(OnboardingStep.allCases.count, 7)
     }
 
     // MARK: - AC1: ViewModel Initialization
@@ -159,18 +160,18 @@ final class OnboardingViewModelTests: XCTestCase {
             "Next step from privacy should be permission")
     }
 
-    /// [P0] goToNextStep from permission triggers permission request (does not advance past 3 screens)
+    /// [P0] goToNextStep from permission goes to llmConfig
     @MainActor
-    func testGoToNextStepFromPermissionTriggersPermissionRequest() async throws {
+    func testGoToNextStepFromPermissionGoesToLLMConfig() async throws {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
         viewModel.goToNextStep() // welcome -> privacy
         viewModel.goToNextStep() // privacy -> permission
+        viewModel.goToNextStep() // permission -> llmConfig
 
-        // On permission step, next should NOT advance to a 4th info screen.
-        // Instead it should trigger the permission request flow.
-        XCTAssertEqual(viewModel.currentStep, .permission)
+        XCTAssertEqual(viewModel.currentStep, .llmConfig,
+            "Next step from permission should be llmConfig")
     }
 
     // MARK: - AC1: Backward Navigation
@@ -214,9 +215,9 @@ final class OnboardingViewModelTests: XCTestCase {
             "Previous at welcome should stay at welcome")
     }
 
-    /// [P1] canGoBack is true only on privacy and permission steps
+    /// [P1] canGoBack is true on privacy, permission, and llmConfig steps
     @MainActor
-    func testCanGoBackIsTrueOnPrivacyAndPermissionSteps() async throws {
+    func testCanGoBackIsTrueOnNavigableSteps() async throws {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
@@ -227,6 +228,9 @@ final class OnboardingViewModelTests: XCTestCase {
 
         viewModel.goToNextStep() // -> permission
         XCTAssertTrue(viewModel.canGoBack, "Should be able to go back at permission")
+
+        viewModel.goToNextStep() // -> llmConfig
+        XCTAssertTrue(viewModel.canGoBack, "Should be able to go back at llmConfig")
     }
 
     // MARK: - AC2: Permission Grant and Photo Scan
@@ -428,16 +432,19 @@ final class OnboardingViewModelTests: XCTestCase {
 
         viewModel.goToNextStep() // -> permission
         XCTAssertEqual(viewModel.currentStepIndex, 2, "Permission should be index 2")
+
+        viewModel.goToNextStep() // -> llmConfig
+        XCTAssertEqual(viewModel.currentStepIndex, 3, "LLMConfig should be index 3")
     }
 
-    /// [P1] totalOnboardingSteps returns 3 (welcome, privacy, permission)
+    /// [P1] totalOnboardingSteps returns 4 (welcome, privacy, permission, llmConfig)
     @MainActor
-    func testTotalOnboardingStepsIsThree() async throws {
+    func testTotalOnboardingStepsIsFour() async throws {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
-        XCTAssertEqual(viewModel.totalOnboardingSteps, 3,
-            "Total user-facing onboarding steps should be 3")
+        XCTAssertEqual(viewModel.totalOnboardingSteps, 4,
+            "Total user-facing onboarding steps should be 4")
     }
 }
 

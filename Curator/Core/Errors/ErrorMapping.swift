@@ -22,8 +22,6 @@ extension InfrastructureError {
             return .analysisFailed(reason: "Network connection failed")
         case .rateLimitExceeded:
             return .analysisFailed(reason: "AI service rate limit reached")
-        case .keychainError:
-            return .invalidState(reason: "Secure storage access failed")
         case .cacheError:
             return .invalidState(reason: "Cache operation failed")
         }

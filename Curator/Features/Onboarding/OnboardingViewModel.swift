@@ -2,9 +2,10 @@ import SwiftUI
 
 /// ViewModel for the first-launch onboarding flow.
 ///
-/// Manages navigation through onboarding steps (welcome, privacy, permission),
-/// handles photo permission requests, and scans the photo library after permission
-/// is granted. Supports degradation to a restricted mode when permission is denied.
+/// Manages navigation through onboarding steps (welcome, privacy, permission,
+/// LLM config), handles photo permission requests, and scans the photo library
+/// after permission is granted. Supports degradation to a restricted mode when
+/// permission is denied.
 @MainActor
 final class OnboardingViewModel: ObservableObject {
     @Published var currentStep: OnboardingStep = .welcome
@@ -12,8 +13,13 @@ final class OnboardingViewModel: ObservableObject {
     @Published var discoveredPhotoCount: Int? = nil
     @Published var hasMorePhotos: Bool = false
 
-    /// Number of user-facing onboarding steps (welcome, privacy, permission).
-    let totalOnboardingSteps: Int = 3
+    /// LLM configuration fields.
+    @Published var baseURL: String = LLMConfig.defaultBaseURL
+    @Published var apiKey: String = ""
+    @Published var modelID: String = LLMModelID.claudeSonnet.rawValue
+
+    /// Number of user-facing onboarding steps (welcome, privacy, permission, llmConfig).
+    let totalOnboardingSteps: Int = 4
 
     /// Current step index for step indicator (0-based among user-facing steps).
     var currentStepIndex: Int {
@@ -21,13 +27,20 @@ final class OnboardingViewModel: ObservableObject {
         case .welcome: return 0
         case .privacy: return 1
         case .permission: return 2
-        default: return 2
+        case .llmConfig: return 3
+        default: return 3
         }
     }
 
     /// Whether the user can navigate backward from the current step.
     var canGoBack: Bool {
-        currentStep == .privacy || currentStep == .permission
+        currentStep == .privacy || currentStep == .permission || currentStep == .llmConfig
+    }
+
+    /// Whether the LLM config fields are valid.
+    var isLLMConfigValid: Bool {
+        let config = LLMConfig(baseURL: baseURL, apiKey: apiKey, modelID: modelID)
+        return config.isConfigured
     }
 
     /// Repository for photo library access (injected for testability).
@@ -50,6 +63,13 @@ final class OnboardingViewModel: ObservableObject {
             currentStep = .privacy
         case .privacy:
             currentStep = .permission
+        case .permission:
+            currentStep = .llmConfig
+        case .llmConfig:
+            saveLLMConfig()
+            // After LLM config, request photo permission and scan.
+            // If repository is not ready yet, scanning will handle it.
+            requestPermissionAndScan()
         default:
             break
         }
@@ -61,12 +81,27 @@ final class OnboardingViewModel: ObservableObject {
             currentStep = .welcome
         case .permission:
             currentStep = .privacy
+        case .llmConfig:
+            currentStep = .permission
         default:
             break
         }
     }
 
+    // MARK: - LLM Config
+
+    func saveLLMConfig() {
+        let config = LLMConfig(baseURL: baseURL, apiKey: apiKey, modelID: modelID)
+        config.save()
+    }
+
     // MARK: - Permission & Scanning
+
+    private func requestPermissionAndScan() {
+        Task {
+            await requestPhotoPermission()
+        }
+    }
 
     func requestPhotoPermission() async {
         guard let repository = repository else {
@@ -98,7 +133,6 @@ final class OnboardingViewModel: ObservableObject {
             hasMorePhotos = page.hasMore
             currentStep = .complete
         } catch {
-            // Scan failed, still complete but with no data
             discoveredPhotoCount = 0
             hasMorePhotos = false
             currentStep = .complete

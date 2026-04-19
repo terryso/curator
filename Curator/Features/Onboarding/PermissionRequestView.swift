@@ -1,14 +1,13 @@
 import SwiftUI
 
-/// Third onboarding screen: photo permission request.
+/// Third onboarding screen: photo permission explanation.
 ///
-/// Explains why photo access is needed and provides a primary
-/// "Grant Photo Access" button. On success, transitions to scanning.
-/// On failure, the container shows PermissionDeniedView.
+/// Explains why photo access is needed and provides a "Next" button
+/// to proceed to the LLM configuration step.
 struct PermissionRequestView: View {
     /// Whether a permission request is currently in progress.
     let isRequesting: Bool
-    /// Action called when the user taps "Grant Photo Access".
+    /// Action called when the user taps "Next".
     let onRequestPermission: () -> Void
     /// Action called when the user taps "Back".
     let onBack: () -> Void
@@ -40,25 +39,17 @@ struct PermissionRequestView: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
-                .disabled(isRequesting)
                 .accessibilityLabel("Go back to privacy")
 
                 Spacer()
 
-                Button(action: onRequestPermission) {
-                    HStack(spacing: 8) {
-                        if isRequesting {
-                            ProgressView()
-                                .controlSize(.small)
-                        }
-                        Text(isRequesting ? "Requesting..." : "Grant Photo Access")
-                    }
+                Button("Next") {
+                    onRequestPermission()
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(isRequesting)
                 .keyboardShortcut(.defaultAction)
-                .accessibilityLabel("Grant photo library access")
+                .accessibilityLabel("Continue to next step")
             }
             .padding(.horizontal, 40)
         }

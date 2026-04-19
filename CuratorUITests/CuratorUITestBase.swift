@@ -3,10 +3,77 @@ import XCTest
 /// Base class for all Curator UI tests.
 ///
 /// Provides app launch helpers with state reset via launch arguments,
-/// and common element waiting utilities.
+/// common element waiting utilities, and automatic dismissal of
+/// system permission dialogs (photo library, input method).
 class CuratorUITestBase: XCTestCase {
 
     var app: XCUIApplication!
+
+    /// Monitor handle for system permission dialogs.
+    private var interruptionMonitor: NSObjectProtocol?
+
+    override func setUp() {
+        super.setUp()
+        continueAfterFailure = false
+        installInterruptionMonitors()
+    }
+
+    override func tearDown() {
+        removeInterruptionMonitors()
+        super.tearDown()
+    }
+
+    // MARK: - Interruption Monitors
+
+    /// Installs monitors to auto-dismiss system dialogs during UI tests.
+    private func installInterruptionMonitors() {
+        let monitor = addUIInterruptionMonitor(withDescription: "System Permission Dialogs") { alert in
+            // Photo library permission: "OK" (English)
+            if alert.buttons["OK"].exists {
+                alert.buttons["OK"].tap()
+                return true
+            }
+            // Photo library permission: "好" (Chinese)
+            if alert.buttons["好"].exists {
+                alert.buttons["好"].tap()
+                return true
+            }
+            // Input method permission: "允许" (Chinese)
+            if alert.buttons["允许"].exists {
+                alert.buttons["允许"].tap()
+                return true
+            }
+            // Input method permission: "Allow" (English)
+            if alert.buttons["Allow"].exists {
+                alert.buttons["Allow"].tap()
+                return true
+            }
+            return false
+        }
+        interruptionMonitor = monitor
+    }
+
+    private func removeInterruptionMonitors() {
+        if let monitor = interruptionMonitor {
+            removeUIInterruptionMonitor(monitor)
+            interruptionMonitor = nil
+        }
+    }
+
+    /// Triggers the interruption monitor to handle any pending system dialogs.
+    /// Uses a coordinate tap which works even when the app itself is not hittable.
+    private func handleSystemDialogs() {
+        Thread.sleep(forTimeInterval: 1.5)
+        // Tap at a safe coordinate to trigger the interruption monitor
+        // without depending on the app being the frontmost element.
+        let coordinate = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        coordinate.tap()
+        // Second pass in case multiple dialogs stack
+        Thread.sleep(forTimeInterval: 0.5)
+        coordinate.tap()
+    }
+
+    // MARK: - App Launch
 
     /// Launches the app with optional state reset and mock photos.
     func launchApp(resetOnboarding: Bool = false, mockPhotos: Bool = false) {
@@ -18,7 +85,10 @@ class CuratorUITestBase: XCTestCase {
             app.launchArguments.append("--uitest-mock-photos")
         }
         app.launch()
+        handleSystemDialogs()
     }
+
+    // MARK: - Element Helpers
 
     /// Waits for an element to exist.
     @discardableResult
@@ -38,10 +108,5 @@ class CuratorUITestBase: XCTestCase {
         let txt = app.staticTexts[value]
         waitForExistence(of: txt)
         return txt
-    }
-
-    override func setUp() {
-        super.setUp()
-        continueAfterFailure = false
     }
 }

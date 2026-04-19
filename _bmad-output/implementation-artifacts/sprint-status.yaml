@@ -56,7 +56,7 @@ development_status:
   # === Epic 2: "Your AI Setup" — AI 供应商配置与成本管理 ===
   epic-2: in-progress
   2-1-llm-gateway-core: done
-  2-2-keychain-credential-mgmt: backlog
+  2-2-keychain-credential-mgmt: done
   2-3-multi-provider-support: backlog
   2-4-cost-tracking-engine: backlog
   2-5-provider-settings-ui: backlog

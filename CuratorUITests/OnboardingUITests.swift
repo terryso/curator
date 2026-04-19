@@ -28,7 +28,7 @@ final class OnboardingUITests: CuratorUITestBase {
         button(label: "Next step").tap()
         button(label: "Next step").tap()
         XCTAssertTrue(app.staticTexts["Photo Access"].waitForExistence(timeout: 5))
-        XCTAssertTrue(button(label: "Grant photo library access").exists)
+        XCTAssertTrue(button(label: "Continue to next step").exists)
     }
 
     // MARK: - AC3: Back navigation

@@ -100,7 +100,6 @@ final class ErrorTypeTests: XCTestCase {
             .llmProviderError(provider: "OpenAI", statusCode: 429, message: "rate limited"),
             .networkError(underlying: NSError(domain: "NSURLErrorDomain", code: -1009)),
             .rateLimitExceeded(provider: "Anthropic", retryAfter: 60.0),
-            .keychainError(status: -25300),
             .cacheError(reason: "disk full"),
         ]
 
@@ -269,7 +268,6 @@ final class ErrorTypeTests: XCTestCase {
             (.llmProviderError(provider: "test", statusCode: 500, message: "err"), .analysisFailed(reason: "")),
             (.networkError(underlying: NSError(domain: "t", code: 0)), .analysisFailed(reason: "")),
             (.rateLimitExceeded(provider: "test", retryAfter: 30), .analysisFailed(reason: "")),
-            (.keychainError(status: -1), .invalidState(reason: "")),
             (.cacheError(reason: "test"), .invalidState(reason: "")),
         ]
 

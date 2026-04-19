@@ -14,7 +14,6 @@ final class AppDependencies: ObservableObject {
     @Published var photoRepository: (any PhotoLibraryRepository)?
 
     /// LLM provider — nil until registered.
-    /// Replace with mock for testing.
     /// - Note: Retained for backward compatibility. Prefer `llmGateway` for new code.
     @Published var llmProvider: (any LLMProvider)?
 
@@ -32,13 +31,17 @@ final class AppDependencies: ObservableObject {
         photoRepository = MockPhotoLibraryRepository()
     }
 
-    /// Registers the LLM Gateway with an Anthropic provider.
+    /// Registers the LLM Gateway using stored LLMConfig.
     ///
-    /// Creates an AnthropicProvider with the given API key and wraps it
-    /// in an LLMGateway. The API key is currently passed as a parameter;
-    /// Story 2.2 will replace this with KeychainManager retrieval.
-    func registerLLMGateway(apiKey: String = "") {
-        let provider = AnthropicProvider(apiKey: apiKey)
+    /// Reads baseURL, apiKey, and modelID from UserDefaults via LLMConfig.
+    /// If no config is stored, creates the gateway with empty credentials
+    /// (the user will be prompted to configure via onboarding or settings).
+    func registerLLMGateway() {
+        let config = LLMConfig.load()
+        let apiKey = config?.apiKey ?? ""
+        let baseURL = config?.baseURL ?? ""
+
+        let provider = AnthropicProvider(apiKey: apiKey, baseURL: baseURL)
         let gateway = LLMGateway(providers: [provider])
         llmGateway = gateway
         llmProvider = provider

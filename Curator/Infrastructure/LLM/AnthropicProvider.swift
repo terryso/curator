@@ -21,15 +21,18 @@ final class AnthropicProvider: LLMProvider, Sendable {
     let name = "Anthropic"
 
     private let apiKey: String
+    private let baseURL: String
     private let urlSession: any URLSessionProtocol
 
     /// Creates an Anthropic provider.
     ///
     /// - Parameters:
     ///   - apiKey: The Anthropic API key. Empty string disables real calls.
+    ///   - baseURL: The base URL for the API. Falls back to Anthropic default when empty.
     ///   - urlSession: The URL session used for network requests. Defaults to `.shared`.
-    init(apiKey: String, urlSession: (any URLSessionProtocol)? = nil) {
+    init(apiKey: String, baseURL: String = "", urlSession: (any URLSessionProtocol)? = nil) {
         self.apiKey = apiKey
+        self.baseURL = baseURL.isEmpty ? Self.defaultBaseURL : baseURL
         self.urlSession = urlSession ?? URLSession.shared
     }
 
@@ -71,15 +74,16 @@ final class AnthropicProvider: LLMProvider, Sendable {
 
     // MARK: - Private
 
-    /// Base URL for the Anthropic Messages API.
-    private static let apiBaseURL = "https://api.anthropic.com/v1/messages"
+    /// Default base URL for the Anthropic Messages API.
+    private static let defaultBaseURL = "https://api.anthropic.com"
 
     /// Anthropic API version header value.
     private static let apiVersion = "2023-06-01"
 
     /// Builds the URLRequest for the Anthropic Messages API.
     private func buildRequest(images: [Data], prompt: String, model: String) throws -> URLRequest {
-        guard let url = URL(string: Self.apiBaseURL) else {
+        let endpoint = baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/")) + "/v1/messages"
+        guard let url = URL(string: endpoint) else {
             throw InfrastructureError.networkError(
                 underlying: NSError(domain: "AnthropicProvider", code: -1, userInfo: [
                     NSLocalizedDescriptionKey: "Invalid API URL"

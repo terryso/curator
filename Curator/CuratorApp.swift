@@ -9,6 +9,13 @@ struct CuratorApp: App {
         }
         if CommandLine.arguments.contains("--uitest-mock-photos") {
             UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+            // Pre-configure LLM for UI tests (avoids Keychain/system prompts)
+            let mockConfig = LLMConfig(
+                baseURL: "https://mock.test",
+                apiKey: "test-key",
+                modelID: "claude-sonnet-4-20250514"
+            )
+            mockConfig.save()
         }
     }
 

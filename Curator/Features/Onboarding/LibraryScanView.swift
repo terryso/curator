@@ -24,7 +24,7 @@ struct LibraryScanView: View {
                     .controlSize(.large)
                     .accessibilityLabel("Scanning photo library")
 
-                Text("Scanning photo library...")
+                Text("Scanning photo folder...")
                     .font(.title3)
                     .foregroundStyle(.secondary)
             } else {
@@ -55,7 +55,7 @@ struct LibraryScanView: View {
     private var photoCountSummary: some View {
         if let count = discoveredCount {
             if count == 0 {
-                Text("Your photo library is empty.")
+                Text("Your photo folder is empty.")
                     .font(.title3)
                     .foregroundStyle(.secondary)
             } else {

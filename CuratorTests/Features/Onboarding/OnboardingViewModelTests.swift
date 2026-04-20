@@ -4,24 +4,22 @@ import XCTest
 /// ATDD Tests for Story 1.5 - First Launch Onboarding Flow
 ///
 /// Tests verify:
-/// - OnboardingStep enum defines all 6 steps (welcome, privacy, permission, scanning, complete, denied)
+/// - OnboardingStep enum defines all 6 steps (welcome, privacy, folderSelection, scanning, complete, noFolder)
 /// - OnboardingViewModel manages currentStep state transitions correctly
-/// - Forward navigation: welcome -> privacy -> permission -> (permission request) -> scanning -> complete
-/// - Backward navigation: privacy -> welcome, permission -> privacy
-/// - Permission grant path: requestPhotoPermission succeeds -> scanLibrary -> complete with photo count
-/// - Permission deny path: requestPhotoPermission fails -> denied state
-/// - Denied state provides "open system settings" action and "continue restricted" fallback
+/// - Forward navigation: welcome -> privacy -> folderSelection -> (folder pick) -> scanning -> complete
+/// - Backward navigation: privacy -> welcome, folderSelection -> privacy
+/// - Folder selection success path: requestPhotoPermission succeeds -> scanLibrary -> complete with photo count
+/// - Folder selection cancelled path: requestPhotoPermission fails -> noFolder state
+/// - noFolder state provides retry action and "continue restricted" fallback
 /// - isOnboardingComplete flag transitions from false to true on completion
 /// - OnboardingViewModel accepts optional PhotoLibraryRepository via init injection
 /// - MockOnboardingRepository exercises all paths (grant, deny, scan with assets, empty library)
 ///
-/// All tests use MockOnboardingRepository (no real PhotoKit calls).
-/// RED PHASE: Tests compile against stubs and fail until OnboardingViewModel is implemented.
+/// All tests use MockOnboardingRepository (no real file system calls).
 final class OnboardingViewModelTests: XCTestCase {
 
     // MARK: - Test Helpers
 
-    /// Creates a MockOnboardingRepository that grants permission and returns assets.
     private func makeGrantingRepository(
         assetCount: Int = 10,
         hasMore: Bool = false
@@ -33,7 +31,6 @@ final class OnboardingViewModelTests: XCTestCase {
         )
     }
 
-    /// Creates a MockOnboardingRepository that denies permission.
     private func makeDenyingRepository() -> MockOnboardingRepository {
         MockOnboardingRepository(
             shouldGrantPermission: false,
@@ -42,7 +39,6 @@ final class OnboardingViewModelTests: XCTestCase {
         )
     }
 
-    /// Creates a sample PhotoAsset for testing.
     private func makePhotoAsset(
         id: String = "/Users/mock/Photos/test-\(UUID().uuidString).jpg",
         creationDate: Date? = Date(),
@@ -75,32 +71,29 @@ final class OnboardingViewModelTests: XCTestCase {
 
     // MARK: - AC1: OnboardingStep Enum
 
-    /// [P0] OnboardingStep enum exists and has all required cases
+    /// [P0] OnboardingStep enum has all 6 required cases
     @MainActor
     func testOnboardingStepEnumHasAllCases() async throws {
         let allSteps = OnboardingStep.allCases
-        XCTAssertEqual(allSteps.count, 7, "OnboardingStep should have exactly 7 cases")
+        XCTAssertEqual(allSteps.count, 6, "OnboardingStep should have exactly 6 cases")
 
-        // Verify each case exists by constructing them
         let _: OnboardingStep = .welcome
         let _: OnboardingStep = .privacy
-        let _: OnboardingStep = .permission
-        let _: OnboardingStep = .llmConfig
+        let _: OnboardingStep = .folderSelection
         let _: OnboardingStep = .scanning
         let _: OnboardingStep = .complete
-        let _: OnboardingStep = .denied
+        let _: OnboardingStep = .noFolder
     }
 
-    /// [P1] OnboardingStep is Int-backed and CaseIterable for step indicator
+    /// [P1] OnboardingStep is Int-backed with correct rawValues
     @MainActor
-    func testOnboardingStepIsIntBackedCaseIterable() async throws {
-        // Should be RawRepresentable with Int rawValue
+    func testOnboardingStepRawValues() async throws {
         XCTAssertEqual(OnboardingStep.welcome.rawValue, 0)
         XCTAssertEqual(OnboardingStep.privacy.rawValue, 1)
-        XCTAssertEqual(OnboardingStep.permission.rawValue, 2)
-
-        // CaseIterable for iterating step indicators
-        XCTAssertGreaterThanOrEqual(OnboardingStep.allCases.count, 7)
+        XCTAssertEqual(OnboardingStep.folderSelection.rawValue, 2)
+        XCTAssertEqual(OnboardingStep.scanning.rawValue, 3)
+        XCTAssertEqual(OnboardingStep.complete.rawValue, 4)
+        XCTAssertEqual(OnboardingStep.noFolder.rawValue, 5)
     }
 
     // MARK: - AC1: ViewModel Initialization
@@ -133,7 +126,7 @@ final class OnboardingViewModelTests: XCTestCase {
             "Onboarding should not be complete on init")
     }
 
-    // MARK: - AC1: Forward Navigation (max 3 screens)
+    // MARK: - AC1: Forward Navigation (3 screens)
 
     /// [P0] goToNextStep from welcome goes to privacy
     @MainActor
@@ -148,31 +141,34 @@ final class OnboardingViewModelTests: XCTestCase {
             "Next step from welcome should be privacy")
     }
 
-    /// [P0] goToNextStep from privacy goes to permission
+    /// [P0] goToNextStep from privacy goes to folderSelection
     @MainActor
-    func testGoToNextStepFromPrivacyGoesToPermission() async throws {
+    func testGoToNextStepFromPrivacyGoesToFolderSelection() async throws {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
         viewModel.goToNextStep() // welcome -> privacy
-        viewModel.goToNextStep() // privacy -> permission
+        viewModel.goToNextStep() // privacy -> folderSelection
 
-        XCTAssertEqual(viewModel.currentStep, .permission,
-            "Next step from privacy should be permission")
+        XCTAssertEqual(viewModel.currentStep, .folderSelection,
+            "Next step from privacy should be folderSelection")
     }
 
-    /// [P0] goToNextStep from permission goes to llmConfig
+    /// [P0] goToNextStep from folderSelection triggers selectPhotoFolder
     @MainActor
-    func testGoToNextStepFromPermissionGoesToLLMConfig() async throws {
-        let repository = MockOnboardingRepository()
+    func testGoToNextStepFromFolderSelectionTriggersSelection() async throws {
+        let repository = makeGrantingRepository(assetCount: 5)
         let viewModel = OnboardingViewModel(repository: repository)
 
         viewModel.goToNextStep() // welcome -> privacy
-        viewModel.goToNextStep() // privacy -> permission
-        viewModel.goToNextStep() // permission -> llmConfig
+        viewModel.goToNextStep() // privacy -> folderSelection
+        viewModel.goToNextStep() // folderSelection -> triggers selectPhotoFolder (async)
 
-        XCTAssertEqual(viewModel.currentStep, .llmConfig,
-            "Next step from permission should be llmConfig")
+        // selectPhotoFolder dispatches a Task; yield to let it execute
+        try await Task.sleep(for: .milliseconds(200))
+
+        XCTAssertNotEqual(viewModel.currentStep, .folderSelection,
+            "After next from folderSelection, should have started folder pick")
     }
 
     // MARK: - AC1: Backward Navigation
@@ -190,18 +186,18 @@ final class OnboardingViewModelTests: XCTestCase {
             "Previous step from privacy should be welcome")
     }
 
-    /// [P0] goToPreviousStep from permission goes back to privacy
+    /// [P0] goToPreviousStep from folderSelection goes back to privacy
     @MainActor
-    func testGoToPreviousStepFromPermissionGoesToPrivacy() async throws {
+    func testGoToPreviousStepFromFolderSelectionGoesToPrivacy() async throws {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
         viewModel.goToNextStep() // welcome -> privacy
-        viewModel.goToNextStep() // privacy -> permission
-        viewModel.goToPreviousStep() // permission -> privacy
+        viewModel.goToNextStep() // privacy -> folderSelection
+        viewModel.goToPreviousStep() // folderSelection -> privacy
 
         XCTAssertEqual(viewModel.currentStep, .privacy,
-            "Previous step from permission should be privacy")
+            "Previous step from folderSelection should be privacy")
     }
 
     /// [P1] goToPreviousStep at welcome stays at welcome (no-op)
@@ -210,13 +206,13 @@ final class OnboardingViewModelTests: XCTestCase {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
-        viewModel.goToPreviousStep() // already at welcome
+        viewModel.goToPreviousStep()
 
         XCTAssertEqual(viewModel.currentStep, .welcome,
             "Previous at welcome should stay at welcome")
     }
 
-    /// [P1] canGoBack is true on privacy, permission, and llmConfig steps
+    /// [P1] canGoBack is true on privacy and folderSelection, false on welcome
     @MainActor
     func testCanGoBackIsTrueOnNavigableSteps() async throws {
         let repository = MockOnboardingRepository()
@@ -227,43 +223,34 @@ final class OnboardingViewModelTests: XCTestCase {
         viewModel.goToNextStep() // -> privacy
         XCTAssertTrue(viewModel.canGoBack, "Should be able to go back at privacy")
 
-        viewModel.goToNextStep() // -> permission
-        XCTAssertTrue(viewModel.canGoBack, "Should be able to go back at permission")
-
-        viewModel.goToNextStep() // -> llmConfig
-        XCTAssertTrue(viewModel.canGoBack, "Should be able to go back at llmConfig")
+        viewModel.goToNextStep() // -> folderSelection
+        XCTAssertTrue(viewModel.canGoBack, "Should be able to go back at folderSelection")
     }
 
-    // MARK: - AC2: Permission Grant and Photo Scan
+    // MARK: - AC2: Folder Selection Success and Photo Scan
 
-    /// [P0] requestPhotoPermission with granted permission transitions to scanning
+    /// [P0] Folder selection granted transitions to scanning
     @MainActor
-    func testRequestPermissionGrantedTransitionsToScanning() async throws {
+    func testFolderSelectionGrantedTransitionsToScanning() async throws {
         let repository = makeGrantingRepository(assetCount: 100, hasMore: true)
         let viewModel = OnboardingViewModel(repository: repository)
 
-        // Navigate to permission step
-        viewModel.goToNextStep() // -> privacy
-        viewModel.goToNextStep() // -> permission
-
         await viewModel.requestPhotoPermission()
 
-        // After permission grant, should transition to scanning then complete
         XCTAssertTrue(
             viewModel.currentStep == .scanning || viewModel.currentStep == .complete,
-            "After permission grant, should be in scanning or complete state, got \(viewModel.currentStep)"
+            "After folder selection grant, should be in scanning or complete state, got \(viewModel.currentStep)"
         )
     }
 
-    /// [P0] Successful permission grant triggers scan and shows photo count summary
+    /// [P0] Successful folder selection triggers scan and shows photo count summary
     @MainActor
-    func testSuccessfulPermissionGrantShowsPhotoCountSummary() async throws {
+    func testSuccessfulFolderSelectionShowsPhotoCountSummary() async throws {
         let repository = makeGrantingRepository(assetCount: 100, hasMore: true)
         let viewModel = OnboardingViewModel(repository: repository)
 
         await viewModel.requestPhotoPermission()
 
-        // Should eventually reach complete state with photo count info
         XCTAssertEqual(viewModel.currentStep, .complete,
             "Should reach complete state after scanning")
 
@@ -273,21 +260,21 @@ final class OnboardingViewModelTests: XCTestCase {
             "Photo count should be greater than 0")
     }
 
-    /// [P1] Scan with empty library shows zero count (UX-DR15)
+    /// [P1] Scan with empty folder shows zero count (UX-DR15)
     @MainActor
-    func testScanWithEmptyLibraryShowsZeroCount() async throws {
+    func testScanWithEmptyFolderShowsZeroCount() async throws {
         let repository = makeGrantingRepository(assetCount: 0, hasMore: false)
         let viewModel = OnboardingViewModel(repository: repository)
 
         await viewModel.requestPhotoPermission()
 
         XCTAssertEqual(viewModel.currentStep, .complete,
-            "Should still reach complete with empty library")
+            "Should still reach complete with empty folder")
         XCTAssertEqual(viewModel.discoveredPhotoCount, 0,
-            "Photo count should be 0 for empty library")
+            "Photo count should be 0 for empty folder")
     }
 
-    /// [P1] Scan with hasMore=true appends "+" suffix indicator
+    /// [P1] Scan with hasMore=true sets hasMorePhotos flag
     @MainActor
     func testScanWithMorePhotosShowsPlusIndicator() async throws {
         let repository = makeGrantingRepository(assetCount: 100, hasMore: true)
@@ -297,34 +284,34 @@ final class OnboardingViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.discoveredPhotoCount, 100)
         XCTAssertTrue(viewModel.hasMorePhotos,
-            "hasMorePhotos should be true when library has more")
+            "hasMorePhotos should be true when folder has more")
     }
 
-    // MARK: - AC3: Permission Denied Degradation
+    // MARK: - AC3: Folder Selection Cancelled / No Folder
 
-    /// [P0] Permission denied transitions to denied state
+    /// [P0] Folder selection cancelled transitions to noFolder state
     @MainActor
-    func testPermissionDeniedTransitionsToDeniedState() async throws {
+    func testFolderSelectionCancelledTransitionsToNoFolderState() async throws {
         let repository = makeDenyingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
-        viewModel.goToNextStep() // -> privacy
-        viewModel.goToNextStep() // -> permission
+        viewModel.goToNextStep() // welcome -> privacy
+        viewModel.goToNextStep() // privacy -> folderSelection
 
         await viewModel.requestPhotoPermission()
 
-        XCTAssertEqual(viewModel.currentStep, .denied,
-            "Denied permission should transition to denied state")
+        XCTAssertEqual(viewModel.currentStep, .noFolder,
+            "Cancelled folder selection should transition to noFolder state")
     }
 
-    /// [P0] Denied state allows continuing with restricted functionality
+    /// [P0] noFolder state allows continuing with restricted functionality
     @MainActor
-    func testDeniedStateAllowsContinueRestricted() async throws {
+    func testNoFolderStateAllowsContinueRestricted() async throws {
         let repository = makeDenyingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
         await viewModel.requestPhotoPermission()
-        XCTAssertEqual(viewModel.currentStep, .denied)
+        XCTAssertEqual(viewModel.currentStep, .noFolder)
 
         viewModel.continueWithRestrictedAccess()
 
@@ -332,19 +319,19 @@ final class OnboardingViewModelTests: XCTestCase {
             "Continuing with restricted access should complete onboarding")
     }
 
-    /// [P1] Denied state provides openSystemSettings action
+    /// [P1] noFolder state provides retryFolderSelection action
     @MainActor
-    func testDeniedStateProvidesOpenSystemSettingsAction() async throws {
+    func testNoFolderStateProvidesRetryAction() async throws {
         let repository = makeDenyingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
         await viewModel.requestPhotoPermission()
-        XCTAssertEqual(viewModel.currentStep, .denied)
+        XCTAssertEqual(viewModel.currentStep, .noFolder)
 
-        // Verify the action exists and can be called without crashing
-        viewModel.openSystemSettings()
-        // Should still be in denied state after opening settings
-        XCTAssertEqual(viewModel.currentStep, .denied)
+        viewModel.retryFolderSelection()
+
+        XCTAssertEqual(viewModel.currentStep, .folderSelection,
+            "Retry should go back to folderSelection step")
     }
 
     // MARK: - Onboarding Completion
@@ -358,7 +345,6 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.isOnboardingComplete)
 
         await viewModel.requestPhotoPermission()
-        // After permission + scan, should reach complete
         XCTAssertEqual(viewModel.currentStep, .complete)
 
         viewModel.completeOnboarding()
@@ -373,10 +359,7 @@ final class OnboardingViewModelTests: XCTestCase {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
-        // Verify ObservableObject conformance by accessing objectWillChange
         let _ = viewModel.objectWillChange
-
-        // Verify @Published property exists and is readable
         XCTAssertFalse(viewModel.isOnboardingComplete)
     }
 
@@ -399,28 +382,26 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertNotNil(viewModel)
         XCTAssertEqual(viewModel.currentStep, .welcome)
 
-        // Permission request with nil repo should transition to denied
         await viewModel.requestPhotoPermission()
-        XCTAssertEqual(viewModel.currentStep, .denied,
-            "Nil repository should result in denied state")
+        XCTAssertEqual(viewModel.currentStep, .noFolder,
+            "Nil repository should result in noFolder state")
     }
 
-    /// [P1] OnboardingViewModel uses injected repository for permission check
+    /// [P1] OnboardingViewModel uses injected repository for folder selection
     @MainActor
-    func testViewModelUsesInjectedRepositoryForPermission() async throws {
+    func testViewModelUsesInjectedRepositoryForFolderSelection() async throws {
         let grantingRepo = makeGrantingRepository(assetCount: 5)
         let viewModel = OnboardingViewModel(repository: grantingRepo)
 
         await viewModel.requestPhotoPermission()
 
-        // Should have used the granting repo -> complete, not denied
-        XCTAssertNotEqual(viewModel.currentStep, .denied,
+        XCTAssertNotEqual(viewModel.currentStep, .noFolder,
             "Should use granting repository, not deny")
     }
 
     // MARK: - Step Indicator Support
 
-    /// [P1] currentStepIndex provides 0-based index for step indicator
+    /// [P1] currentStepIndex provides correct 0-based index for 3-step flow
     @MainActor
     func testCurrentStepIndexProvidesCorrectIndex() async throws {
         let repository = MockOnboardingRepository()
@@ -431,30 +412,24 @@ final class OnboardingViewModelTests: XCTestCase {
         viewModel.goToNextStep() // -> privacy
         XCTAssertEqual(viewModel.currentStepIndex, 1, "Privacy should be index 1")
 
-        viewModel.goToNextStep() // -> permission
-        XCTAssertEqual(viewModel.currentStepIndex, 2, "Permission should be index 2")
-
-        viewModel.goToNextStep() // -> llmConfig
-        XCTAssertEqual(viewModel.currentStepIndex, 3, "LLMConfig should be index 3")
+        viewModel.goToNextStep() // -> folderSelection
+        XCTAssertEqual(viewModel.currentStepIndex, 2, "FolderSelection should be index 2")
     }
 
-    /// [P1] totalOnboardingSteps returns 4 (welcome, privacy, permission, llmConfig)
+    /// [P1] totalOnboardingSteps returns 3
     @MainActor
-    func testTotalOnboardingStepsIsFour() async throws {
+    func testTotalOnboardingStepsIsThree() async throws {
         let repository = MockOnboardingRepository()
         let viewModel = OnboardingViewModel(repository: repository)
 
-        XCTAssertEqual(viewModel.totalOnboardingSteps, 4,
-            "Total user-facing onboarding steps should be 4")
+        XCTAssertEqual(viewModel.totalOnboardingSteps, 3,
+            "Total user-facing onboarding steps should be 3")
     }
 }
 
 // MARK: - Mock Repository
 
 /// Mock implementation of PhotoLibraryRepository for onboarding tests.
-///
-/// Configurable to grant or deny permission, return specific asset counts,
-/// and simulate scanning delays.
 private struct MockOnboardingRepository: PhotoLibraryRepository {
     private let shouldGrantPermission: Bool
     private let assets: [PhotoAsset]
@@ -479,7 +454,6 @@ private struct MockOnboardingRepository: PhotoLibraryRepository {
     }
 
     func fetchAssets(predicate: PhotoPredicate, pageSize: Int, pageOffset: Int) async throws -> AssetPage {
-        // Return configured assets up to pageSize
         let endIndex = min(pageOffset + pageSize, assets.count)
         let pageAssets = if pageOffset < assets.count {
             Array(assets[pageOffset..<endIndex])

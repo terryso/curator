@@ -11,7 +11,6 @@ struct OnboardingContainerView: View {
 
     var body: some View {
         ZStack {
-            // Step content
             switch viewModel.currentStep {
             case .welcome:
                 WelcomeView(onNext: { viewModel.goToNextStep() })
@@ -22,17 +21,9 @@ struct OnboardingContainerView: View {
                     onBack: { viewModel.goToPreviousStep() }
                 )
 
-            case .permission:
-                PermissionRequestView(
-                    isRequesting: false,
-                    onRequestPermission: { viewModel.goToNextStep() },
-                    onBack: { viewModel.goToPreviousStep() }
-                )
-
-            case .llmConfig:
-                LLMConfigView(
+            case .folderSelection:
+                FolderSelectionView(
                     viewModel: viewModel,
-                    onNext: { viewModel.goToNextStep() },
                     onBack: { viewModel.goToPreviousStep() }
                 )
 
@@ -52,14 +43,13 @@ struct OnboardingContainerView: View {
                     onStart: { finishOnboarding() }
                 )
 
-            case .denied:
-                PermissionDeniedView(
-                    onOpenSettings: { viewModel.openSystemSettings() },
+            case .noFolder:
+                NoFolderSelectedView(
+                    viewModel: viewModel,
                     onContinueRestricted: { finishOnboarding() }
                 )
             }
 
-            // Step indicator overlay (only for the 3 main steps)
             if showStepIndicator {
                 VStack {
                     Spacer()
@@ -74,17 +64,15 @@ struct OnboardingContainerView: View {
 
     // MARK: - Step Indicator
 
-    /// Whether to show the step indicator dots.
     private var showStepIndicator: Bool {
         switch viewModel.currentStep {
-        case .welcome, .privacy, .permission, .llmConfig:
+        case .welcome, .privacy, .folderSelection:
             return true
         default:
             return false
         }
     }
 
-    /// Three-dot step indicator showing current position.
     private var stepIndicator: some View {
         HStack(spacing: 8) {
             ForEach(0..<viewModel.totalOnboardingSteps, id: \.self) { index in

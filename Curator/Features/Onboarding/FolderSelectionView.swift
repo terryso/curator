@@ -1,14 +1,11 @@
 import SwiftUI
 
-/// Third onboarding screen: photo permission explanation.
+/// Third onboarding screen: folder selection.
 ///
-/// Explains why photo access is needed and provides a "Next" button
-/// to proceed to the LLM configuration step.
-struct PermissionRequestView: View {
-    /// Whether a permission request is currently in progress.
-    let isRequesting: Bool
-    /// Action called when the user taps "Next".
-    let onRequestPermission: () -> Void
+/// Explains why folder access is needed and provides a "Select Photo Folder"
+/// button that triggers NSOpenPanel via the ViewModel.
+struct FolderSelectionView: View {
+    @ObservedObject var viewModel: OnboardingViewModel
     /// Action called when the user taps "Back".
     let onBack: () -> Void
 
@@ -16,16 +13,16 @@ struct PermissionRequestView: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Image(systemName: "photo.badge.checkmark")
+            Image(systemName: "folder.badge.plus")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
 
-            Text("Photo Access")
+            Text("Select Photo Folder")
                 .font(.title)
                 .fontWeight(.bold)
 
-            Text("Curator needs access to your photo library to help you organize and manage your photos.")
+            Text("Choose the folder containing your photos. Curator will scan it and organize your library.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -43,13 +40,13 @@ struct PermissionRequestView: View {
 
                 Spacer()
 
-                Button("Next") {
-                    onRequestPermission()
+                Button("Select Photo Folder") {
+                    viewModel.selectPhotoFolder()
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
-                .accessibilityLabel("Continue to next step")
+                .accessibilityLabel("Select a photo folder to scan")
             }
             .padding(.horizontal, 40)
         }
@@ -59,19 +56,17 @@ struct PermissionRequestView: View {
     }
 }
 
-#Preview("PermissionRequestView - Light") {
-    PermissionRequestView(
-        isRequesting: false,
-        onRequestPermission: {},
+#Preview("FolderSelectionView - Light") {
+    FolderSelectionView(
+        viewModel: OnboardingViewModel(repository: nil),
         onBack: {}
     )
     .frame(width: 600, height: 500)
 }
 
-#Preview("PermissionRequestView - Dark") {
-    PermissionRequestView(
-        isRequesting: false,
-        onRequestPermission: {},
+#Preview("FolderSelectionView - Dark") {
+    FolderSelectionView(
+        viewModel: OnboardingViewModel(repository: nil),
         onBack: {}
     )
     .frame(width: 600, height: 500)

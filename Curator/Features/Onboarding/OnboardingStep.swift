@@ -4,15 +4,13 @@ import Foundation
 ///
 /// Defined as Int-backed enum for use with step indicators.
 /// Cases: welcome (product intro), privacy (privacy explanation),
-/// permission (photo access request), llmConfig (LLM provider setup),
-/// scanning (library scan in progress),
-/// complete (scan done, photo count shown), denied (permission rejected).
+/// folderSelection (NSOpenPanel folder pick), scanning (folder scan in progress),
+/// complete (scan done, photo count shown), noFolder (user skipped/cancelled).
 enum OnboardingStep: Int, CaseIterable, Equatable, Sendable {
     case welcome = 0
     case privacy = 1
-    case permission = 2
-    case llmConfig = 3
-    case scanning = 4
-    case complete = 5
-    case denied = 6
+    case folderSelection = 2
+    case scanning = 3
+    case complete = 4
+    case noFolder = 5
 }

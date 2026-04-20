@@ -2,10 +2,9 @@ import SwiftUI
 
 /// ViewModel for the first-launch onboarding flow.
 ///
-/// Manages navigation through onboarding steps (welcome, privacy, permission,
-/// LLM config), handles photo permission requests, and scans the photo library
-/// after permission is granted. Supports degradation to a restricted mode when
-/// permission is denied.
+/// Manages navigation through 3 onboarding screens (welcome, privacy, folderSelection),
+/// handles folder selection via NSOpenPanel, and scans the photo library after access
+/// is granted. Supports degradation to restricted mode when the user skips folder selection.
 @MainActor
 final class OnboardingViewModel: ObservableObject {
     @Published var currentStep: OnboardingStep = .welcome
@@ -13,34 +12,22 @@ final class OnboardingViewModel: ObservableObject {
     @Published var discoveredPhotoCount: Int? = nil
     @Published var hasMorePhotos: Bool = false
 
-    /// LLM configuration fields.
-    @Published var baseURL: String = LLMConfig.defaultBaseURL
-    @Published var apiKey: String = ""
-    @Published var modelID: String = LLMModelID.claudeSonnet.rawValue
-
-    /// Number of user-facing onboarding steps (welcome, privacy, permission, llmConfig).
-    let totalOnboardingSteps: Int = 4
+    /// Number of user-facing onboarding steps (welcome, privacy, folderSelection).
+    let totalOnboardingSteps: Int = 3
 
     /// Current step index for step indicator (0-based among user-facing steps).
     var currentStepIndex: Int {
         switch currentStep {
         case .welcome: return 0
         case .privacy: return 1
-        case .permission: return 2
-        case .llmConfig: return 3
-        default: return 3
+        case .folderSelection: return 2
+        default: return 2
         }
     }
 
     /// Whether the user can navigate backward from the current step.
     var canGoBack: Bool {
-        currentStep == .privacy || currentStep == .permission || currentStep == .llmConfig
-    }
-
-    /// Whether the LLM config fields are valid.
-    var isLLMConfigValid: Bool {
-        let config = LLMConfig(baseURL: baseURL, apiKey: apiKey, modelID: modelID)
-        return config.isConfigured
+        currentStep == .privacy || currentStep == .folderSelection
     }
 
     /// Repository for photo library access (injected for testability).
@@ -50,7 +37,7 @@ final class OnboardingViewModel: ObservableObject {
         self.repository = repository
     }
 
-    /// Update the repository reference (called when PhotoKit registration completes).
+    /// Update the repository reference (called when DI registration completes).
     func updateRepository(_ repository: any PhotoLibraryRepository) {
         self.repository = repository
     }
@@ -62,14 +49,9 @@ final class OnboardingViewModel: ObservableObject {
         case .welcome:
             currentStep = .privacy
         case .privacy:
-            currentStep = .permission
-        case .permission:
-            currentStep = .llmConfig
-        case .llmConfig:
-            saveLLMConfig()
-            // After LLM config, request photo permission and scan.
-            // If repository is not ready yet, scanning will handle it.
-            requestPermissionAndScan()
+            currentStep = .folderSelection
+        case .folderSelection:
+            selectPhotoFolder()
         default:
             break
         }
@@ -79,33 +61,30 @@ final class OnboardingViewModel: ObservableObject {
         switch currentStep {
         case .privacy:
             currentStep = .welcome
-        case .permission:
+        case .folderSelection:
             currentStep = .privacy
-        case .llmConfig:
-            currentStep = .permission
         default:
             break
         }
     }
 
-    // MARK: - LLM Config
+    // MARK: - Folder Selection
 
-    func saveLLMConfig() {
-        let config = LLMConfig(baseURL: baseURL, apiKey: apiKey, modelID: modelID)
-        config.save()
-    }
-
-    // MARK: - Permission & Scanning
-
-    private func requestPermissionAndScan() {
+    func selectPhotoFolder() {
         Task {
             await requestPhotoPermission()
         }
     }
 
+    func retryFolderSelection() {
+        currentStep = .folderSelection
+    }
+
+    // MARK: - Permission & Scanning
+
     func requestPhotoPermission() async {
         guard let repository = repository else {
-            currentStep = .denied
+            currentStep = .noFolder
             return
         }
 
@@ -115,10 +94,10 @@ final class OnboardingViewModel: ObservableObject {
                 currentStep = .scanning
                 await scanLibrary(repository: repository)
             } else {
-                currentStep = .denied
+                currentStep = .noFolder
             }
         } catch {
-            currentStep = .denied
+            currentStep = .noFolder
         }
     }
 
@@ -143,15 +122,7 @@ final class OnboardingViewModel: ObservableObject {
         isOnboardingComplete = true
     }
 
-    // MARK: - Denied State
-
     func continueWithRestrictedAccess() {
         isOnboardingComplete = true
-    }
-
-    func openSystemSettings() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Photos") {
-            NSWorkspace.shared.open(url)
-        }
     }
 }

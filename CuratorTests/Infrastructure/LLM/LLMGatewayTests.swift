@@ -273,6 +273,53 @@ final class LLMGatewayTests: XCTestCase {
         XCTAssertEqual(estimate.providerName, "PrimaryProvider")
     }
 
+    // MARK: - AC1: LLMGateway estimateCost Edge Cases
+
+    /// [P0] LLMGateway estimateCost returns CostEstimate with zero values when no providers
+    func testGatewayEstimateCostReturnsZeroEstimateWhenNoProviders() async throws {
+        // Given: Gateway with no providers
+        let gateway = LLMGateway(providers: [])
+
+        // When: Calling estimateCost
+        let estimate = await gateway.estimateCost(
+            imageCount: 5,
+            model: "claude-sonnet-4-20250514"
+        )
+
+        // Then: Returns a CostEstimate with zero values and "none" provider
+        XCTAssertEqual(estimate.estimatedTokens, 0,
+            "estimateCost with no providers should return zero tokens")
+        XCTAssertEqual(estimate.estimatedCost, 0,
+            "estimateCost with no providers should return zero cost")
+        XCTAssertEqual(estimate.modelID, "claude-sonnet-4-20250514",
+            "estimateCost should preserve the requested model ID")
+        XCTAssertEqual(estimate.providerName, "none",
+            "estimateCost with no providers should return 'none' provider name")
+    }
+
+    /// [P1] LLMGateway estimateCost returns CostEstimate struct with correct fields
+    func testGatewayEstimateCostReturnsCostEstimateStruct() async throws {
+        // Given: Gateway with a mock provider
+        let primary = MockLLMProvider(name: "CostTestProvider")
+        let gateway = LLMGateway(providers: [primary])
+
+        // When: Calling estimateCost
+        let estimate = await gateway.estimateCost(
+            imageCount: 3,
+            model: "claude-sonnet-4-20250514"
+        )
+
+        // Then: Returns a fully populated CostEstimate
+        XCTAssertEqual(estimate.estimatedTokens, 3000,
+            "Should delegate to provider's estimateCost")
+        XCTAssertEqual(estimate.estimatedCost, 0.03, accuracy: 0.001,
+            "Should delegate to provider's estimateCost")
+        XCTAssertEqual(estimate.modelID, "claude-sonnet-4-20250514",
+            "Should preserve the requested model ID")
+        XCTAssertEqual(estimate.providerName, "CostTestProvider",
+            "Should use primary provider's name")
+    }
+
     // MARK: - AC3: Failover
 
     /// [P0] LLMGateway fails over to backup provider when primary fails
@@ -608,6 +655,179 @@ final class LLMGatewayTests: XCTestCase {
 
         XCTAssertEqual(result.text, "Retry succeeded",
             "Should succeed after rate limit retry")
+    }
+
+    // MARK: - AC2: AnthropicProvider Media Type Detection
+
+    /// [P0] AnthropicProvider detects JPEG data as image/jpeg (default/unknown)
+    func testAnthropicProviderDetectsJPEGMediaType() async throws {
+        let mockSession = MockURLSession()
+        let provider = AnthropicProvider(apiKey: "test-key", urlSession: mockSession)
+
+        // JPEG-like data starting with 0xFF 0xD8 (not matching PNG/GIF/RIFF signatures)
+        var jpegData = Data([0xFF, 0xD8, 0xFF, 0xE0])
+        jpegData.append(Data("jpeg-content".utf8))
+
+        _ = try await provider.analyze(
+            images: [jpegData],
+            prompt: "test",
+            model: "claude-sonnet-4-20250514"
+        )
+
+        let request = try XCTUnwrap(mockSession.lastRequest)
+        let bodyData = try XCTUnwrap(request.httpBody)
+        let body = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+        let messages = try XCTUnwrap(body?["messages"] as? [[String: Any]])
+        let content = try XCTUnwrap(messages.first?["content"] as? [[String: Any]])
+        let imageBlock = try XCTUnwrap(content.first { $0["type"] as? String == "image" })
+        let source = try XCTUnwrap(imageBlock["source"] as? [String: Any])
+
+        XCTAssertEqual(source["media_type"] as? String, "image/jpeg",
+            "JPEG-like data should be detected as image/jpeg")
+    }
+
+    /// [P0] AnthropicProvider detects PNG data as image/png
+    func testAnthropicProviderDetectsPNGMediaType() async throws {
+        let mockSession = MockURLSession()
+        let provider = AnthropicProvider(apiKey: "test-key", urlSession: mockSession)
+
+        // PNG magic bytes: 0x89 0x50 0x4E 0x47
+        var pngData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        pngData.append(Data("png-content".utf8))
+
+        _ = try await provider.analyze(
+            images: [pngData],
+            prompt: "test",
+            model: "claude-sonnet-4-20250514"
+        )
+
+        let request = try XCTUnwrap(mockSession.lastRequest)
+        let bodyData = try XCTUnwrap(request.httpBody)
+        let body = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+        let messages = try XCTUnwrap(body?["messages"] as? [[String: Any]])
+        let content = try XCTUnwrap(messages.first?["content"] as? [[String: Any]])
+        let imageBlock = try XCTUnwrap(content.first { $0["type"] as? String == "image" })
+        let source = try XCTUnwrap(imageBlock["source"] as? [String: Any])
+
+        XCTAssertEqual(source["media_type"] as? String, "image/png",
+            "PNG data (0x89 0x50 0x4E 0x47) should be detected as image/png")
+    }
+
+    /// [P0] AnthropicProvider detects GIF data as image/gif
+    func testAnthropicProviderDetectsGIFMediaType() async throws {
+        let mockSession = MockURLSession()
+        let provider = AnthropicProvider(apiKey: "test-key", urlSession: mockSession)
+
+        // GIF magic bytes: 0x47 0x49 0x46
+        var gifData = Data([0x47, 0x49, 0x46, 0x38])
+        gifData.append(Data("gif-content".utf8))
+
+        _ = try await provider.analyze(
+            images: [gifData],
+            prompt: "test",
+            model: "claude-sonnet-4-20250514"
+        )
+
+        let request = try XCTUnwrap(mockSession.lastRequest)
+        let bodyData = try XCTUnwrap(request.httpBody)
+        let body = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+        let messages = try XCTUnwrap(body?["messages"] as? [[String: Any]])
+        let content = try XCTUnwrap(messages.first?["content"] as? [[String: Any]])
+        let imageBlock = try XCTUnwrap(content.first { $0["type"] as? String == "image" })
+        let source = try XCTUnwrap(imageBlock["source"] as? [String: Any])
+
+        XCTAssertEqual(source["media_type"] as? String, "image/gif",
+            "GIF data (0x47 0x49 0x46) should be detected as image/gif")
+    }
+
+    /// [P0] AnthropicProvider detects WebP data as image/webp
+    func testAnthropicProviderDetectsWebPMediaType() async throws {
+        let mockSession = MockURLSession()
+        let provider = AnthropicProvider(apiKey: "test-key", urlSession: mockSession)
+
+        // RIFF header (0x52 0x49 0x46 0x46) + 4 size bytes + WEBP (0x57 0x45 0x42 0x50)
+        var webpData = Data([0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50])
+        webpData.append(Data("webp-content".utf8))
+
+        _ = try await provider.analyze(
+            images: [webpData],
+            prompt: "test",
+            model: "claude-sonnet-4-20250514"
+        )
+
+        let request = try XCTUnwrap(mockSession.lastRequest)
+        let bodyData = try XCTUnwrap(request.httpBody)
+        let body = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+        let messages = try XCTUnwrap(body?["messages"] as? [[String: Any]])
+        let content = try XCTUnwrap(messages.first?["content"] as? [[String: Any]])
+        let imageBlock = try XCTUnwrap(content.first { $0["type"] as? String == "image" })
+        let source = try XCTUnwrap(imageBlock["source"] as? [String: Any])
+
+        XCTAssertEqual(source["media_type"] as? String, "image/webp",
+            "WebP data (RIFF + WEBP) should be detected as image/webp")
+    }
+
+    /// [P0] AnthropicProvider defaults to image/jpeg for unknown/short data
+    func testAnthropicProviderDefaultsToJPEGForUnknownData() async throws {
+        let mockSession = MockURLSession()
+        let provider = AnthropicProvider(apiKey: "test-key", urlSession: mockSession)
+
+        // Very short data (less than 4 bytes) falls through to default
+        let shortData = Data([0x01, 0x02])
+
+        _ = try await provider.analyze(
+            images: [shortData],
+            prompt: "test",
+            model: "claude-sonnet-4-20250514"
+        )
+
+        let request = try XCTUnwrap(mockSession.lastRequest)
+        let bodyData = try XCTUnwrap(request.httpBody)
+        let body = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+        let messages = try XCTUnwrap(body?["messages"] as? [[String: Any]])
+        let content = try XCTUnwrap(messages.first?["content"] as? [[String: Any]])
+        let imageBlock = try XCTUnwrap(content.first { $0["type"] as? String == "image" })
+        let source = try XCTUnwrap(imageBlock["source"] as? [String: Any])
+
+        XCTAssertEqual(source["media_type"] as? String, "image/jpeg",
+            "Unknown/short data should default to image/jpeg")
+    }
+
+    /// [P1] AnthropicProvider detects multiple images with different media types in single request
+    func testAnthropicProviderDetectsMultipleMediaTypes() async throws {
+        let mockSession = MockURLSession()
+        let provider = AnthropicProvider(apiKey: "test-key", urlSession: mockSession)
+
+        // PNG image
+        var pngData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        pngData.append(Data("png-content".utf8))
+
+        // JPEG-like image (no known magic bytes)
+        var jpegData = Data([0xFF, 0xD8, 0xFF, 0xE0])
+        jpegData.append(Data("jpeg-content".utf8))
+
+        _ = try await provider.analyze(
+            images: [pngData, jpegData],
+            prompt: "test",
+            model: "claude-sonnet-4-20250514"
+        )
+
+        let request = try XCTUnwrap(mockSession.lastRequest)
+        let bodyData = try XCTUnwrap(request.httpBody)
+        let body = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any]
+        let messages = try XCTUnwrap(body?["messages"] as? [[String: Any]])
+        let content = try XCTUnwrap(messages.first?["content"] as? [[String: Any]])
+
+        let imageBlocks = content.filter { $0["type"] as? String == "image" }
+        XCTAssertEqual(imageBlocks.count, 2, "Should have two image blocks")
+
+        let firstSource = try XCTUnwrap(imageBlocks[0]["source"] as? [String: Any])
+        XCTAssertEqual(firstSource["media_type"] as? String, "image/png",
+            "First image should be detected as PNG")
+
+        let secondSource = try XCTUnwrap(imageBlocks[1]["source"] as? [String: Any])
+        XCTAssertEqual(secondSource["media_type"] as? String, "image/jpeg",
+            "Second image should be detected as JPEG")
     }
 
     // MARK: - AC2: AnthropicProvider Cost Estimation

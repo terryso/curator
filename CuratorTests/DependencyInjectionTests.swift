@@ -148,6 +148,68 @@ final class DependencyInjectionTests: XCTestCase {
         }
     }
 
+    // MARK: - registerTestRepository Tests
+
+    /// [P0] registerTestRepository() creates a non-nil repository
+    func testRegisterTestRepositoryCreatesNonNilRepository() async throws {
+        await MainActor.run {
+            let dependencies = AppDependencies()
+            dependencies.registerTestRepository()
+            XCTAssertNotNil(dependencies.photoRepository,
+                "registerTestRepository() should register a non-nil repository")
+        }
+    }
+
+    /// [P0] registerTestRepository() creates sample photos in temp directory
+    func testRegisterTestRepositoryCreatesSamplePhotosInTempDirectory() async throws {
+        await MainActor.run {
+            let dependencies = AppDependencies()
+            dependencies.registerTestRepository()
+
+            // Verify the temp directory was created with sample photo files
+            let tempDir = FileManager.default.temporaryDirectory
+                .appendingPathComponent("CuratorTestPhotos", isDirectory: true)
+            var isDir: ObjCBool = false
+            XCTAssertTrue(FileManager.default.fileExists(atPath: tempDir.path, isDirectory: &isDir),
+                "registerTestRepository() should create the CuratorTestPhotos temp directory")
+            XCTAssertTrue(isDir.boolValue, "CuratorTestPhotos path should be a directory")
+
+            // Verify sample photo files exist
+            let expectedFiles = ["test_photo_1.jpg", "test_photo_2.png", "test_photo_3.jpg"]
+            for fileName in expectedFiles {
+                let fileURL = tempDir.appendingPathComponent(fileName)
+                XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path),
+                    "Sample photo file \(fileName) should exist in temp directory")
+                let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path)
+                let fileSize = attributes?[.size] as? UInt ?? 0
+                XCTAssertGreaterThan(fileSize, 0,
+                    "Sample photo file \(fileName) should have non-zero size")
+            }
+        }
+    }
+
+    // MARK: - registerMockRepository Tests
+
+    /// [P0] registerMockRepository() creates a non-nil repository
+    func testRegisterMockRepositoryCreatesNonNilRepository() async throws {
+        await MainActor.run {
+            let dependencies = AppDependencies()
+            dependencies.registerMockRepository()
+            XCTAssertNotNil(dependencies.photoRepository,
+                "registerMockRepository() should register a non-nil repository")
+        }
+    }
+
+    /// [P0] registerMockRepository() creates a MockPhotoLibraryRepository
+    func testRegisterMockRepositoryCreatesCorrectType() async throws {
+        await MainActor.run {
+            let dependencies = AppDependencies()
+            dependencies.registerMockRepository()
+            XCTAssertTrue(dependencies.photoRepository is MockPhotoLibraryRepository,
+                "registerMockRepository() should create a MockPhotoLibraryRepository")
+        }
+    }
+
     /// [P1] Replaced mock implementations preserve protocol behavior
     func testReplacedMockPhotoRepoIsCallable() async throws {
         let dependencies = await MainActor.run { AppDependencies() }

@@ -63,6 +63,7 @@
 		AFCD62D966883E01C98E279E /* LLMConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12AE6AC674E57D3C1636711 /* LLMConfig.swift */; };
 		B6073F8DB74AA5F749F722B7 /* AssetPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07327D362CE6EB9317DDA8C /* AssetPage.swift */; };
 		BE194D8FEFCFFFA05C1D7908 /* PrivacyExplanationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54A5427FB3A192E7F1AC2719 /* PrivacyExplanationView.swift */; };
+		BE501DE4D797EC4D254200E4 /* PhotoPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703B283740507F85DD17FD00 /* PhotoPredicateTests.swift */; };
 		C0A58C7E6BF1390C61414A23 /* LLMGateway.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0AE80CB597C8329EA9FD71 /* LLMGateway.swift */; };
 		C18852BB970D36BCF10568F7 /* MainWorkspaceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5130202E82CAFA1ACC85D605 /* MainWorkspaceUITests.swift */; };
 		C27221912A4CE8EDF29E84D4 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = B8335BFA6303B9CD2F75C292 /* Sparkle */; };
@@ -151,6 +152,7 @@
 		6631D56F083C304EA9239740 /* ErrorMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMapping.swift; sourceTree = "<group>"; };
 		671140177989A061D91DF01A /* PhotoLibraryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryRepository.swift; sourceTree = "<group>"; };
 		6D443ECDDBF46DCFD9FEADED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		703B283740507F85DD17FD00 /* PhotoPredicateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhotoPredicateTests.swift; sourceTree = "<group>"; };
 		73BD871D309385D14726D97F /* FolderBookmarkManaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderBookmarkManaging.swift; sourceTree = "<group>"; };
 		77905D2E2C799D43B13860FB /* FolderBookmarkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderBookmarkManager.swift; sourceTree = "<group>"; };
 		780797E17C430BBE9AD3242D /* MockPhotoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPhotoData.swift; sourceTree = "<group>"; };
@@ -544,6 +546,7 @@
 				325CF7CFA44763B4B95B8114 /* CoreModelsTests.swift */,
 				3B3DD78381C650DA9E40E480 /* LLMConfigMultiProviderTests.swift */,
 				5EB3E5BD6EDEC97DD90954C6 /* LLMConfigTests.swift */,
+				703B283740507F85DD17FD00 /* PhotoPredicateTests.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -621,8 +624,6 @@
 				6B05C585DFB8D4319ADCE512 /* PBXTargetDependency */,
 			);
 			name = CuratorUITests;
-			packageProductDependencies = (
-			);
 			productName = CuratorUITests;
 			productReference = CA95A11DD78E91E3DA16AC50 /* CuratorUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -660,8 +661,6 @@
 				FF5556C573625CA873EC56B8 /* PBXTargetDependency */,
 			);
 			name = CuratorTests;
-			packageProductDependencies = (
-			);
 			productName = CuratorTests;
 			productReference = 93DE118FE8EF8A32D0B49BC2 /* CuratorTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -695,6 +694,7 @@
 				276F3F08C6ADC65D4AB5DDEA /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
+			productRefGroup = 091605DB38C2B2FD247D76F1 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -812,6 +812,7 @@
 				64BF5D751C3489892BA58E82 /* OpenAICompatibleProviderTests.swift in Sources */,
 				44603D9D6542570C93701DB7 /* PhotoLibraryViewModelTests.swift in Sources */,
 				AA3DF9A01E0988DDF6EFAC85 /* SPMDependencyTests.swift in Sources */,
+				BE501DE4D797EC4D254200E4 /* PhotoPredicateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

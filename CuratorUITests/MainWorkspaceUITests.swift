@@ -1,4 +1,4 @@
-import XCTest
+@preconcurrency import XCTest
 
 /// UI tests for Story 1.6 — Main UI framework and window management.
 ///

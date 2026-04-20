@@ -1,4 +1,4 @@
-import XCTest
+@preconcurrency import XCTest
 
 /// UI tests for Story 1.4 — Photo library browse grid.
 ///

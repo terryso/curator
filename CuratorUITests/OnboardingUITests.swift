@@ -1,4 +1,4 @@
-import XCTest
+@preconcurrency import XCTest
 
 /// UI tests for Story 1.5 — First-launch onboarding flow.
 final class OnboardingUITests: CuratorUITestBase {

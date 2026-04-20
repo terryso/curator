@@ -1,4 +1,4 @@
-import XCTest
+@preconcurrency import XCTest
 
 /// UI tests for Story 2.1 — LLM Gateway Core integration.
 ///

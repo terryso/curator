@@ -5,7 +5,6 @@
 /// Provides app launch helpers with state reset via launch arguments,
 /// common element waiting utilities, and automatic dismissal of
 /// system dialogs that may appear during UI tests.
-@MainActor
 class CuratorUITestBase: XCTestCase {
 
     var app: XCUIApplication!

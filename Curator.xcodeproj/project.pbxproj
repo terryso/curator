@@ -23,6 +23,7 @@
 		1FF6BCC7FA1A7025F2C5DF6A /* LLMConfigMultiProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3DD78381C650DA9E40E480 /* LLMConfigMultiProviderTests.swift */; };
 		21FBB781250C2846CDA8EAE7 /* LLMGatewayProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CFA563AA625C945EC49E5 /* LLMGatewayProtocol.swift */; };
 		28325A065E0F6FED98BA8E78 /* LLMModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1E584AA2F521FE4AF378CE /* LLMModels.swift */; };
+		28D59E7D96466164113204AE /* CostTrackingPanelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E7C3E3A422512879C043AD /* CostTrackingPanelTests.swift */; };
 		2AD00845F3B21FE5B9E889D8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85E5B69C6366ED2E17F648E /* AppDelegate.swift */; };
 		2C3FB939716EE7D17DF3C58D /* EntitlementsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E447259ED5F31F32748C3A45 /* EntitlementsTests.swift */; };
 		2D3993EEF32C4592B411DAC2 /* InfrastructureError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE9B9DD88665C81141DFE7 /* InfrastructureError.swift */; };
@@ -38,6 +39,7 @@
 		40AFE8C8A9379BA858B1BAFC /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F56A627256FC5FC38EBB1 /* SettingsViewModelTests.swift */; };
 		435380D76A33FB12DBE6E66C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 213211339EC04E9439B13E6D /* Assets.xcassets */; };
 		43A816CDD6B2AACB4FC460E6 /* DirectoryStructureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE54A0C1BF48B0985EDED35A /* DirectoryStructureTests.swift */; };
+		43BB16BE13F2929742DF4EB9 /* CostTimeRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E0DA936EC314E9471F84563 /* CostTimeRange.swift */; };
 		43ECD450140FACEADDE0BCE1 /* DependencyInjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BF6809BDC3B59DFCDCB18F /* DependencyInjectionTests.swift */; };
 		44603D9D6542570C93701DB7 /* PhotoLibraryViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80915BAB3A739CE29868B51 /* PhotoLibraryViewModelTests.swift */; };
 		4602A3B7A1ACE6F1FC7ECB55 /* LLMGatewayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAAEA6A3456397C6EEF0C5F0 /* LLMGatewayTests.swift */; };
@@ -67,6 +69,7 @@
 		91D9269EB0D13A20ABFEF9DD /* CostEstimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530D80D424B4E9EF1571D2C9 /* CostEstimate.swift */; };
 		9A5DD7CF69E99C4C6ED9EE05 /* DomainError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43537555B1BE7A6BE474BEEB /* DomainError.swift */; };
 		9BA4B66983CFCD6B5A911C93 /* LLMConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB3E5BD6EDEC97DD90954C6 /* LLMConfigTests.swift */; };
+		9C029D93BA7EBA94E33ACB8B /* CostEstimateCardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83017EC5EF86736B80D97A49 /* CostEstimateCardTests.swift */; };
 		9ED593709A0F90D3D77FF41A /* CoreModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 325CF7CFA44763B4B95B8114 /* CoreModelsTests.swift */; };
 		A083304BE12F9E00E43025D5 /* ModelSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F54CE38812FBCB7D2034F /* ModelSelectionView.swift */; };
 		AA3DF9A01E0988DDF6EFAC85 /* SPMDependencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24CB492E04997E7BBE9189A2 /* SPMDependencyTests.swift */; };
@@ -99,6 +102,7 @@
 		F41FFFC4B684110CB301DB55 /* OpenAICompatibleProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91A997A849FD0CDB9D564702 /* OpenAICompatibleProvider.swift */; };
 		F64D546146C975B53BCD9201 /* FolderBookmarkManaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73BD871D309385D14726D97F /* FolderBookmarkManaging.swift */; };
 		F7C7C1C087B3BD79F5DFA2E6 /* MainWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15DADAB7B540165FFA824A44 /* MainWorkspaceView.swift */; };
+		F7D1079741145CBF9BE33C9B /* CostEstimateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B1EAE269953312023222ED /* CostEstimateCard.swift */; };
 		F9654D21C05DEF71280E460A /* NoFolderSelectedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B62F985DC3F05B45A79081 /* NoFolderSelectedView.swift */; };
 		F9FBDAD231EB7BDF893AFB3F /* FolderBookmarkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77905D2E2C799D43B13860FB /* FolderBookmarkManager.swift */; };
 		FA1589FDC9601BA5E6F3F45E /* AssetID.swift in Sources */ = {isa = PBXBuildFile; fileRef = B569A0482E5EF36A6D43FF0B /* AssetID.swift */; };
@@ -161,9 +165,11 @@
 		4ACB6C4DB6E882BC85E22597 /* CuratorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CuratorApp.swift; sourceTree = "<group>"; };
 		4B5292B3111A182E1AEF0E01 /* PhotoPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPredicate.swift; sourceTree = "<group>"; };
 		4C1E584AA2F521FE4AF378CE /* LLMModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMModels.swift; sourceTree = "<group>"; };
+		4E0DA936EC314E9471F84563 /* CostTimeRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostTimeRange.swift; sourceTree = "<group>"; };
 		5020FE4F11FD00247FF8179C /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
 		5130202E82CAFA1ACC85D605 /* MainWorkspaceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWorkspaceUITests.swift; sourceTree = "<group>"; };
 		523F56A627256FC5FC38EBB1 /* SettingsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModelTests.swift; sourceTree = "<group>"; };
+		52B1EAE269953312023222ED /* CostEstimateCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostEstimateCard.swift; sourceTree = "<group>"; };
 		52C24C60F6EFE6BADA95A432 /* SettingsPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPlaceholderView.swift; sourceTree = "<group>"; };
 		52E5643E57CC6462AC5F2AAF /* SessionContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionContext.swift; sourceTree = "<group>"; };
 		530D80D424B4E9EF1571D2C9 /* CostEstimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostEstimate.swift; sourceTree = "<group>"; };
@@ -185,6 +191,7 @@
 		7C7871BE59794A4F5BD8368C /* OnboardingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModelTests.swift; sourceTree = "<group>"; };
 		7D709B8893D8415EAFD20955 /* UserFacingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFacingError.swift; sourceTree = "<group>"; };
 		818EA32ED130729F60A9DA41 /* BuildConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildConfigurationTests.swift; sourceTree = "<group>"; };
+		83017EC5EF86736B80D97A49 /* CostEstimateCardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostEstimateCardTests.swift; sourceTree = "<group>"; };
 		85950E671999A2E7F918A474 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		89FC693AA6CE3157F5980B0A /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		8A6D290BE5E4129D628F1FFE /* FileFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileFormat.swift; sourceTree = "<group>"; };
@@ -212,6 +219,7 @@
 		B92CFA563AA625C945EC49E5 /* LLMGatewayProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMGatewayProtocol.swift; sourceTree = "<group>"; };
 		BE54A0C1BF48B0985EDED35A /* DirectoryStructureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryStructureTests.swift; sourceTree = "<group>"; };
 		C0DE9B9DD88665C81141DFE7 /* InfrastructureError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfrastructureError.swift; sourceTree = "<group>"; };
+		C0E7C3E3A422512879C043AD /* CostTrackingPanelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostTrackingPanelTests.swift; sourceTree = "<group>"; };
 		C1A8558AE7786F879AAB35A7 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		C2769F715B64143A1E2BFDD8 /* AppDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
 		C61CBDBDD93CEC75332950A6 /* CuratorUITestBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CuratorUITestBase.swift; sourceTree = "<group>"; };
@@ -274,6 +282,8 @@
 		1102B78A396447C6EF1E1F2B /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				83017EC5EF86736B80D97A49 /* CostEstimateCardTests.swift */,
+				C0E7C3E3A422512879C043AD /* CostTrackingPanelTests.swift */,
 				523F56A627256FC5FC38EBB1 /* SettingsViewModelTests.swift */,
 			);
 			path = Settings;
@@ -465,6 +475,7 @@
 				530D80D424B4E9EF1571D2C9 /* CostEstimate.swift */,
 				A3D6072FA92990C266A72F3E /* CostRecord.swift */,
 				9ECD71B549012AA196C75366 /* CostSummary.swift */,
+				4E0DA936EC314E9471F84563 /* CostTimeRange.swift */,
 				6C9920F854A4BD5CE0991815 /* CostTrackerProtocol.swift */,
 				8A6D290BE5E4129D628F1FFE /* FileFormat.swift */,
 				73BD871D309385D14726D97F /* FolderBookmarkManaging.swift */,
@@ -487,6 +498,7 @@
 			isa = PBXGroup;
 			children = (
 				A75FC4D43C0C7D549A49A9B9 /* APIKeyManagementView.swift */,
+				52B1EAE269953312023222ED /* CostEstimateCard.swift */,
 				69D45BD1A6F6C903A58C518A /* CostTrackingSettingsView.swift */,
 				616F54CE38812FBCB7D2034F /* ModelSelectionView.swift */,
 				52C24C60F6EFE6BADA95A432 /* SettingsPlaceholderView.swift */,
@@ -803,8 +815,10 @@
 				B6073F8DB74AA5F749F722B7 /* AssetPage.swift in Sources */,
 				87868EC390ABD532456FD050 /* ContentView.swift in Sources */,
 				91D9269EB0D13A20ABFEF9DD /* CostEstimate.swift in Sources */,
+				F7D1079741145CBF9BE33C9B /* CostEstimateCard.swift in Sources */,
 				BDAEED62A293CD7C3500547A /* CostRecord.swift in Sources */,
 				1F0D32CF3CF67CDF7D3F3E43 /* CostSummary.swift in Sources */,
+				43BB16BE13F2929742DF4EB9 /* CostTimeRange.swift in Sources */,
 				62B4C2D98DE21E3C6CEFFF02 /* CostTracker.swift in Sources */,
 				04FEE263D053DA2FCDADD57E /* CostTrackerProtocol.swift in Sources */,
 				8976F0814B607BEC04ACE7B0 /* CostTrackingSettingsView.swift in Sources */,
@@ -866,9 +880,11 @@
 			files = (
 				D591930CBE417B9B2081F663 /* BuildConfigurationTests.swift in Sources */,
 				9ED593709A0F90D3D77FF41A /* CoreModelsTests.swift in Sources */,
+				9C029D93BA7EBA94E33ACB8B /* CostEstimateCardTests.swift in Sources */,
 				5182C0455276D648610CEC11 /* CostRecordTests.swift in Sources */,
 				30504F88608C16C36A407CEE /* CostTrackerIntegrationTests.swift in Sources */,
 				1EFF1202A956287D355BC355 /* CostTrackerTests.swift in Sources */,
+				28D59E7D96466164113204AE /* CostTrackingPanelTests.swift in Sources */,
 				43ECD450140FACEADDE0BCE1 /* DependencyInjectionTests.swift in Sources */,
 				43A816CDD6B2AACB4FC460E6 /* DirectoryStructureTests.swift in Sources */,
 				2C3FB939716EE7D17DF3C58D /* EntitlementsTests.swift in Sources */,

@@ -522,4 +522,246 @@ final class SettingsViewModelTests: XCTestCase {
             XCTFail("Should be .failure")
         }
     }
+
+    // MARK: - Story 2.6: Cost Tracking Panel
+
+    // MARK: Mock CostTracker for Story 2.6
+
+    /// Mock CostTracker for testing SettingsViewModel cost panel methods.
+    private final class MockCostTrackerForPanel: CostTrackerProtocol, Sendable {
+        private let _allTimeSummary: CostSummary
+        private let _recentRecords: [CostRecord]
+        private let _monthlySummary: CostSummary
+
+        init(
+            allTimeSummary: CostSummary = .zero,
+            recentRecords: [CostRecord] = [],
+            monthlySummary: CostSummary = .zero
+        ) {
+            self._allTimeSummary = allTimeSummary
+            self._recentRecords = recentRecords
+            self._monthlySummary = monthlySummary
+        }
+
+        func record(_ record: CostRecord) async throws {}
+        func monthlySummary() async throws -> CostSummary { _monthlySummary }
+        func sessionSummary(_ sessionID: String) async throws -> CostSummary { .zero }
+        func allTimeSummary() async throws -> CostSummary { _allTimeSummary }
+        func recentRecords(limit: Int) async throws -> [CostRecord] {
+            Array(_recentRecords.prefix(limit))
+        }
+    }
+
+    /// Creates a SettingsViewModel with a mock cost tracker injected.
+    private func makeViewModelWithMockTracker(
+        allTimeSummary: CostSummary = .zero,
+        recentRecords: [CostRecord] = [],
+        monthlySummary: CostSummary = .zero
+    ) async -> SettingsViewModel {
+        let deps = await MainActor.run { AppDependencies() }
+        let tracker = MockCostTrackerForPanel(
+            allTimeSummary: allTimeSummary,
+            recentRecords: recentRecords,
+            monthlySummary: monthlySummary
+        )
+        await MainActor.run {
+            deps.costTracker = tracker
+        }
+        return await MainActor.run { SettingsViewModel(dependencies: deps) }
+    }
+
+    // MARK: - AC2: Cost Tracking Panel - All-Time Summary
+
+    /// [P0] SettingsViewModel loads all-time cost summary (AC2, Task 3.2, 3.4)
+    func testLoadAllTimeSummaryPopulatesProperty() async throws {
+        // Given: A mock tracker with known all-time summary
+        let expectedSummary = CostSummary(
+            totalCost: 0.0525,
+            totalInputTokens: 5000,
+            totalOutputTokens: 2500,
+            callCount: 15,
+            byProvider: ["Anthropic": 0.0350, "OpenAI": 0.0175],
+            bySession: ["s1": 0.0350, "s2": 0.0175],
+            dateRange: nil
+        )
+
+        let viewModel = await makeViewModelWithMockTracker(allTimeSummary: expectedSummary)
+
+        // When: Loading all-time summary
+        await viewModel.loadAllTimeSummary()
+
+        // Then: Property should be populated with the mock data
+        await MainActor.run {
+            let summary = viewModel.allTimeSummary
+            XCTAssertNotNil(summary, "allTimeSummary should be populated after loading")
+            XCTAssertEqual(summary!.totalCost, 0.0525, accuracy: 0.0001)
+            XCTAssertEqual(summary!.callCount, 15)
+            XCTAssertEqual(summary!.byProvider["Anthropic"] ?? 0, 0.0350, accuracy: 0.0001)
+            XCTAssertEqual(summary!.byProvider["OpenAI"] ?? 0, 0.0175, accuracy: 0.0001)
+        }
+    }
+
+    /// [P0] SettingsViewModel loads monthly summary for tracking panel (AC2)
+    func testCostTrackingPanelLoadsMonthlySummary() async throws {
+        // Given: A mock tracker with known monthly summary
+        let expectedSummary = CostSummary(
+            totalCost: 0.0250,
+            totalInputTokens: 2000,
+            totalOutputTokens: 1000,
+            callCount: 8,
+            byProvider: ["Anthropic": 0.0250],
+            bySession: ["s1": 0.0150, "s2": 0.0100],
+            dateRange: nil
+        )
+
+        let viewModel = await makeViewModelWithMockTracker(monthlySummary: expectedSummary)
+
+        // When: Loading monthly cost summary
+        await viewModel.loadMonthlyCostSummary()
+
+        // Then: Monthly summary should be populated
+        await MainActor.run {
+            let summary = viewModel.monthlyCostSummary
+            XCTAssertNotNil(summary, "monthlyCostSummary should be populated")
+            XCTAssertEqual(summary!.totalCost, 0.0250, accuracy: 0.0001)
+            XCTAssertEqual(summary!.callCount, 8)
+            XCTAssertEqual(summary!.byProvider["Anthropic"] ?? 0, 0.0250, accuracy: 0.0001)
+        }
+    }
+
+    // MARK: - AC2: Provider Breakdown
+
+    /// [P0] SettingsViewModel cost summary includes provider breakdown (AC2, Task 2.2)
+    func testCostTrackingPanelProviderBreakdown() async throws {
+        // Given: A summary with multiple providers
+        let expectedSummary = CostSummary(
+            totalCost: 0.0500,
+            totalInputTokens: 3000,
+            totalOutputTokens: 1500,
+            callCount: 10,
+            byProvider: [
+                "Anthropic": 0.0300,
+                "OpenAI": 0.0150,
+                "DeepSeek": 0.0050
+            ],
+            bySession: [:],
+            dateRange: nil
+        )
+
+        let viewModel = await makeViewModelWithMockTracker(allTimeSummary: expectedSummary)
+        await viewModel.loadAllTimeSummary()
+
+        // Then: Provider breakdown should be accessible
+        await MainActor.run {
+            let summary = viewModel.allTimeSummary
+            XCTAssertNotNil(summary)
+            XCTAssertEqual(summary?.byProvider.count, 3, "Should have 3 providers")
+            XCTAssertEqual(summary?.byProvider["Anthropic"] ?? 0, 0.0300, accuracy: 0.0001)
+            XCTAssertEqual(summary?.byProvider["OpenAI"] ?? 0, 0.0150, accuracy: 0.0001)
+            XCTAssertEqual(summary?.byProvider["DeepSeek"] ?? 0, 0.0050, accuracy: 0.0001)
+        }
+    }
+
+    // MARK: - AC2: Time Range Selection
+
+    /// [P0] SettingsViewModel has selectedTimeRange property (AC2, Task 3.3)
+    func testSettingsViewModelHasSelectedTimeRange() async throws {
+        let viewModel = await makeViewModelWithMockTracker()
+
+        await MainActor.run {
+            // Default should be .month
+            XCTAssertEqual(viewModel.selectedTimeRange, .month,
+                           "Default time range should be .month")
+        }
+    }
+
+    /// [P0] SettingsViewModel refreshCostData loads correct summary based on time range (AC2, Task 3.5)
+    func testRefreshCostDataBasedOnTimeRange() async throws {
+        // Given: A ViewModel with mock data
+        let monthlySummary = CostSummary(
+            totalCost: 0.0100,
+            totalInputTokens: 1000, totalOutputTokens: 500,
+            callCount: 3, byProvider: ["Anthropic": 0.0100],
+            bySession: [:], dateRange: nil
+        )
+        let allTimeSummary = CostSummary(
+            totalCost: 0.0500,
+            totalInputTokens: 5000, totalOutputTokens: 2500,
+            callCount: 15, byProvider: ["Anthropic": 0.0500],
+            bySession: [:], dateRange: nil
+        )
+
+        let viewModel = await makeViewModelWithMockTracker(
+            allTimeSummary: allTimeSummary,
+            monthlySummary: monthlySummary
+        )
+
+        // When: Time range is .month, refresh should load monthly data
+        await MainActor.run {
+            viewModel.selectedTimeRange = .month
+        }
+        await viewModel.refreshCostData()
+
+        await MainActor.run {
+            let summary = viewModel.monthlyCostSummary
+            XCTAssertNotNil(summary)
+            XCTAssertEqual(summary!.totalCost, 0.0100, accuracy: 0.0001,
+                           "Monthly range should load monthly summary")
+        }
+
+        // When: Time range is .all, refresh should load all-time data
+        await MainActor.run {
+            viewModel.selectedTimeRange = .all
+        }
+        await viewModel.refreshCostData()
+
+        await MainActor.run {
+            let summary = viewModel.allTimeSummary
+            XCTAssertNotNil(summary)
+            XCTAssertEqual(summary!.totalCost, 0.0500, accuracy: 0.0001,
+                           "All-time range should load all-time summary")
+        }
+    }
+
+    // MARK: - AC2: Recent Records
+
+    /// [P0] SettingsViewModel loads recent records for display (AC2, Task 2.4)
+    func testLoadRecentRecordsPopulatesProperty() async throws {
+        // Given: A mock tracker with recent records
+        let records = [
+            CostRecord(providerName: "Anthropic", modelID: "claude-sonnet-4-20250514",
+                       inputTokens: 100, outputTokens: 50, costUSD: 0.001,
+                       timestamp: Date().addingTimeInterval(-60), sessionID: "s1"),
+            CostRecord(providerName: "OpenAI", modelID: "gpt-4o",
+                       inputTokens: 200, outputTokens: 100, costUSD: 0.002,
+                       timestamp: Date(), sessionID: "s2")
+        ]
+
+        let viewModel = await makeViewModelWithMockTracker(recentRecords: records)
+
+        // When: Loading recent records
+        await viewModel.loadRecentRecords()
+
+        // Then: Property should contain the records
+        await MainActor.run {
+            XCTAssertEqual(viewModel.recentRecords.count, 2, "Should load 2 recent records")
+            XCTAssertEqual(viewModel.recentRecords[0].providerName, "Anthropic")
+            XCTAssertEqual(viewModel.recentRecords[1].providerName, "OpenAI")
+        }
+    }
+
+    // MARK: - AC2: CostTimeRange Property
+
+    /// [P1] SettingsViewModel.selectedTimeRange can be changed (AC2, Task 3.3)
+    func testSelectedTimeRangeCanBeChanged() async throws {
+        let viewModel = await makeViewModelWithMockTracker()
+
+        await MainActor.run {
+            XCTAssertEqual(viewModel.selectedTimeRange, .month)
+
+            viewModel.selectedTimeRange = .all
+            XCTAssertEqual(viewModel.selectedTimeRange, .all,
+                           "Should be able to switch to .all time range")
+        }
+    }
 }

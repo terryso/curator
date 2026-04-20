@@ -66,6 +66,50 @@ final class CostTracker: CostTrackerProtocol, @unchecked Sendable {
         return .zero
     }
 
+    // MARK: - Story 2.6 Extensions
+
+    /// Returns the aggregated cost summary for all recorded calls (all time).
+    func allTimeSummary() async throws -> CostSummary {
+        let descriptor = FetchDescriptor<CostRecordEntity>(
+            sortBy: [SortDescriptor(\.timestamp, order: .forward)]
+        )
+        let records = try modelContext.fetch(descriptor)
+
+        if let first = records.min(by: { $0.timestamp < $1.timestamp }),
+           let last = records.max(by: { $0.timestamp < $1.timestamp }) {
+            return buildSummary(from: records, start: first.timestamp, end: last.timestamp)
+        }
+        return .zero
+    }
+
+    /// Returns the most recent cost records, ordered by timestamp descending.
+    ///
+    /// When `limit` is 0, returns an empty array. Otherwise returns at most
+    /// `limit` records sorted by timestamp descending (most recent first).
+    func recentRecords(limit: Int) async throws -> [CostRecord] {
+        // Edge case: limit 0 means return nothing
+        guard limit > 0 else { return [] }
+
+        var descriptor = FetchDescriptor<CostRecordEntity>(
+            sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
+        )
+        descriptor.fetchLimit = limit
+        let entities = try modelContext.fetch(descriptor)
+
+        return entities.map { entity in
+            CostRecord(
+                id: entity.id,
+                providerName: entity.providerName,
+                modelID: entity.modelID,
+                inputTokens: entity.inputTokens,
+                outputTokens: entity.outputTokens,
+                costUSD: entity.costUSD,
+                timestamp: entity.timestamp,
+                sessionID: entity.sessionID
+            )
+        }
+    }
+
     // MARK: - Private Helpers
 
     private func buildSummary(from records: [CostRecordEntity], start: Date, end: Date) -> CostSummary {

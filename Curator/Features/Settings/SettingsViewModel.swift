@@ -41,6 +41,17 @@ final class SettingsViewModel {
     /// Monthly cost summary accessed through dependencies.
     var monthlyCostSummary: CostSummary?
 
+    // MARK: - Story 2.6: Cost Tracking Panel
+
+    /// All-time cost summary for the tracking panel.
+    var allTimeSummary: CostSummary?
+
+    /// Selected time range for the cost tracking panel.
+    var selectedTimeRange: CostTimeRange = .month
+
+    /// Recent cost records for display in the tracking panel.
+    var recentRecords: [CostRecord] = []
+
     // MARK: - Dependencies
 
     private let dependencies: AppDependencies
@@ -179,6 +190,46 @@ final class SettingsViewModel {
             monthlyCostSummary = try await tracker.monthlySummary()
         } catch {
             monthlyCostSummary = nil
+        }
+    }
+
+    // MARK: - Story 2.6: Cost Tracking Panel
+
+    /// Loads the all-time cost summary from the cost tracker.
+    func loadAllTimeSummary() async {
+        guard let tracker = dependencies.costTracker else {
+            allTimeSummary = nil
+            return
+        }
+
+        do {
+            allTimeSummary = try await tracker.allTimeSummary()
+        } catch {
+            allTimeSummary = nil
+        }
+    }
+
+    /// Refreshes cost data based on the selected time range.
+    func refreshCostData() async {
+        switch selectedTimeRange {
+        case .month:
+            await loadMonthlyCostSummary()
+        case .all:
+            await loadAllTimeSummary()
+        }
+    }
+
+    /// Loads recent cost records for display in the tracking panel.
+    func loadRecentRecords() async {
+        guard let tracker = dependencies.costTracker else {
+            recentRecords = []
+            return
+        }
+
+        do {
+            recentRecords = try await tracker.recentRecords(limit: 10)
+        } catch {
+            recentRecords = []
         }
     }
 }

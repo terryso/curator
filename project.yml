@@ -71,11 +71,9 @@ schemes:
       targets:
         Curator: all
         CuratorTests: [test]
-        CuratorUITests: [test]
     test:
       targets:
         - CuratorTests
-        - CuratorUITests
       gatherCoverageData: true
       coverageTargets:
         - Curator

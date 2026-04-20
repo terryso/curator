@@ -65,11 +65,11 @@ class CuratorUITestBase: XCTestCase {
 
     /// Triggers the interruption monitor to handle any pending system dialogs.
     private func handleSystemDialogs() {
-        for attempt in 0..<3 {
-            Thread.sleep(forTimeInterval: 1.0 + Double(attempt) * 0.5)
-            let coordinate = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            coordinate.tap()
-        }
+        Thread.sleep(forTimeInterval: 1.0)
+        let window = app.windows.firstMatch
+        guard window.exists else { return }
+        let coordinate = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        coordinate.tap()
     }
 
     // MARK: - App Launch

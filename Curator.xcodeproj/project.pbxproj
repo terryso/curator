@@ -12,6 +12,10 @@
 		04FEE263D053DA2FCDADD57E /* CostTrackerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9920F854A4BD5CE0991815 /* CostTrackerProtocol.swift */; };
 		08D9900260C0894105AE1EED /* PhotoAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B3DD3F550BD6BE5FEC1114 /* PhotoAsset.swift */; };
 		0D05EC283B666CFFC788E332 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ED8240B023E29E278C18D6 /* SettingsView.swift */; };
+		A1B2C3D4E5F607182930ABCD /* SettingsNavigationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A40BCDE /* SettingsNavigationUITests.swift */; };
+		C3D4E5F60718293A4B50CDEF /* APIKeyManagementUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B5C60DEFA /* APIKeyManagementUITests.swift */; };
+		E5F60718293A4B5C6D70EFAB /* ModelSelectionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C6D7E80FABC /* ModelSelectionUITests.swift */; };
+		0718293A4B5C6D7E8F901234 /* CostTrackingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18293A4B5C6D7E8F0A012345 /* CostTrackingUITests.swift */; };
 		0E87C2295B8CB08A5C7FF149 /* NavigationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0AC104E62DF110010FCD70C /* NavigationModel.swift */; };
 		1426F3D0D7306A60BEA90C00 /* CuratorUITestBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61CBDBDD93CEC75332950A6 /* CuratorUITestBase.swift */; };
 		150B8F0AEE7DF519159312A2 /* FileFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A6D290BE5E4129D628F1FFE /* FileFormat.swift */; };
@@ -152,6 +156,10 @@
 		325CF7CFA44763B4B95B8114 /* CoreModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreModelsTests.swift; sourceTree = "<group>"; };
 		356CA2BE2B30AE7E1728D6F0 /* MainWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWorkspaceTests.swift; sourceTree = "<group>"; };
 		37244F4EC0332DE9BD59DDCC /* PhotoGridUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoGridUITests.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A40BCDE /* SettingsNavigationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNavigationUITests.swift; sourceTree = "<group>"; };
+		D4E5F60718293A4B5C60DEFA /* APIKeyManagementUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyManagementUITests.swift; sourceTree = "<group>"; };
+		F60718293A4B5C6D7E80FABC /* ModelSelectionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSelectionUITests.swift; sourceTree = "<group>"; };
+		18293A4B5C6D7E8F0A012345 /* CostTrackingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostTrackingUITests.swift; sourceTree = "<group>"; };
 		37BF6809BDC3B59DFCDCB18F /* DependencyInjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyInjectionTests.swift; sourceTree = "<group>"; };
 		39E0D131F80D74E0BEF9030A /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		3B3DD78381C650DA9E40E480 /* LLMConfigMultiProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfigMultiProviderTests.swift; sourceTree = "<group>"; };
@@ -424,6 +432,10 @@
 				5130202E82CAFA1ACC85D605 /* MainWorkspaceUITests.swift */,
 				AFA119CACE070CE9CA6F2E98 /* OnboardingUITests.swift */,
 				37244F4EC0332DE9BD59DDCC /* PhotoGridUITests.swift */,
+					B2C3D4E5F60718293A40BCDE /* SettingsNavigationUITests.swift */,
+					D4E5F60718293A4B5C60DEFA /* APIKeyManagementUITests.swift */,
+					F60718293A4B5C6D7E80FABC /* ModelSelectionUITests.swift */,
+					18293A4B5C6D7E8F0A012345 /* CostTrackingUITests.swift */,
 			);
 			path = CuratorUITests;
 			sourceTree = "<group>";
@@ -798,6 +810,10 @@
 				C18852BB970D36BCF10568F7 /* MainWorkspaceUITests.swift in Sources */,
 				D48F0E02C3D35E9494F6DFB8 /* OnboardingUITests.swift in Sources */,
 				AC552C979B1B06087463DA37 /* PhotoGridUITests.swift in Sources */,
+					A1B2C3D4E5F607182930ABCD /* SettingsNavigationUITests.swift in Sources */,
+					C3D4E5F60718293A4B50CDEF /* APIKeyManagementUITests.swift in Sources */,
+					E5F60718293A4B5C6D70EFAB /* ModelSelectionUITests.swift in Sources */,
+					0718293A4B5C6D7E8F901234 /* CostTrackingUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

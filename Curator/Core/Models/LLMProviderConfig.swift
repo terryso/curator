@@ -7,6 +7,14 @@ import Foundation
 enum LLMProviderType: String, Sendable, Codable, CaseIterable {
     case anthropic
     case openAICompatible
+
+    /// User-facing display name for the provider type.
+    var displayName: String {
+        switch self {
+        case .anthropic: return "Anthropic"
+        case .openAICompatible: return "OpenAI Compatible"
+        }
+    }
 }
 
 /// Configuration for a single LLM provider instance.

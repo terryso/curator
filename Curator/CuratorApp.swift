@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct CuratorApp: App {
+    @StateObject private var dependencies = AppDependencies()
+
     init() {
         let isUITest = CommandLine.arguments.contains("--uitest-reset-onboarding")
             || CommandLine.arguments.contains("--uitest-mock-photos")
@@ -27,6 +29,7 @@ struct CuratorApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(dependencies)
                 .frame(
                     minWidth: 900,
                     idealWidth: 1200,
@@ -44,7 +47,8 @@ struct CuratorApp: App {
         }
 
         Settings {
-            SettingsPlaceholderView()
+            SettingsView()
+                .environmentObject(dependencies)
         }
     }
 }

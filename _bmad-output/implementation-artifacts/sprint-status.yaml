@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-18
-last_updated: 2026-04-20 (Story 2-4 ready-for-dev)
+last_updated: 2026-04-20 (Story 2-5 done)
 
 project: curator
 project_key: NOKEY
@@ -59,7 +59,7 @@ development_status:
   2-2-keychain-credential-mgmt: deferred  # migrated to Epic 7 as 7-0
   2-3-multi-provider-support: done
   2-4-cost-tracking-engine: done
-  2-5-provider-settings-ui: backlog
+  2-5-provider-settings-ui: done
   2-6-cost-estimate-and-tracking: backlog
   epic-2-retrospective: optional
 

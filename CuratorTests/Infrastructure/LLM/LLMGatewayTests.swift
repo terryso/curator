@@ -71,7 +71,9 @@ final class LLMGatewayTests: XCTestCase {
                 estimatedTokens: imageCount * 1000,
                 estimatedCost: Double(imageCount) * 0.01,
                 modelID: model,
-                providerName: name
+                providerName: name,
+                estimatedAPICalls: 1,
+                currency: "USD"
             )
         }
     }
@@ -219,7 +221,9 @@ final class LLMGatewayTests: XCTestCase {
             estimatedTokens: 1000,
             estimatedCost: 0.05,
             modelID: "claude-sonnet-4-20250514",
-            providerName: "Anthropic"
+            providerName: "Anthropic",
+            estimatedAPICalls: 1,
+            currency: "USD"
         )
         XCTAssertEqual(estimate.modelID, "claude-sonnet-4-20250514",
             "CostEstimate should include modelID field")
@@ -231,7 +235,9 @@ final class LLMGatewayTests: XCTestCase {
             estimatedTokens: 1000,
             estimatedCost: 0.05,
             modelID: "model",
-            providerName: "Anthropic"
+            providerName: "Anthropic",
+            estimatedAPICalls: 1,
+            currency: "USD"
         )
         XCTAssertEqual(estimate.providerName, "Anthropic",
             "CostEstimate should include providerName field")
@@ -897,7 +903,9 @@ final class LLMGatewayTests: XCTestCase {
             estimatedTokens: 0,
             estimatedCost: 0,
             modelID: "model",
-            providerName: "provider"
+            providerName: "provider",
+            estimatedAPICalls: 0,
+            currency: "USD"
         )
         func assertSendable<T: Sendable>(_: T) {}
         assertSendable(estimate)

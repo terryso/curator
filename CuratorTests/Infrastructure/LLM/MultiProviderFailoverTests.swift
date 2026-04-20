@@ -63,7 +63,9 @@ final class MultiProviderFailoverTests: XCTestCase {
                 estimatedTokens: imageCount * 1000,
                 estimatedCost: Double(imageCount) * 0.01,
                 modelID: model,
-                providerName: name
+                providerName: name,
+                estimatedAPICalls: 1,
+                currency: "USD"
             )
         }
     }

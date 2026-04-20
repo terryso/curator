@@ -32,20 +32,26 @@ actor LLMGateway: LLMGatewayProtocol {
     /// Exponential backoff multiplier.
     private let retryMultiplier: Double
 
+    /// Optional cost tracker for recording LLM call costs.
+    private let costTracker: (any CostTrackerProtocol)?
+
     /// Creates an LLMGateway with a prioritized list of providers.
     ///
     /// - Parameters:
     ///   - providers: Providers in priority order. The first is primary.
+    ///   - costTracker: Optional cost tracker for recording LLM call costs.
     ///   - maxRetries: Maximum retry attempts per provider (default: 3).
     ///   - baseRetryDelay: Base delay between retries in seconds (default: 1.0).
     ///   - retryMultiplier: Exponential factor for backoff (default: 2.0).
     init(
         providers: [any LLMProvider],
+        costTracker: (any CostTrackerProtocol)? = nil,
         maxRetries: Int = 3,
         baseRetryDelay: TimeInterval = 1.0,
         retryMultiplier: Double = 2.0
     ) {
         self.providers = providers
+        self.costTracker = costTracker
         self.maxRetries = max(1, maxRetries)
         self.baseRetryDelay = baseRetryDelay
         self.retryMultiplier = retryMultiplier
@@ -65,12 +71,14 @@ actor LLMGateway: LLMGatewayProtocol {
 
         for provider in providers {
             do {
-                return try await analyzeWithRetry(
+                let response = try await analyzeWithRetry(
                     provider: provider,
                     images: images,
                     prompt: prompt,
                     model: model
                 )
+                await recordCostIfNeeded(response: response)
+                return response
             } catch {
                 lastError = error
                 Self.logger.warning("Provider '\(provider.name)' failed: \(error.localizedDescription). Failover to next provider.")
@@ -92,10 +100,38 @@ actor LLMGateway: LLMGatewayProtocol {
                 estimatedTokens: 0,
                 estimatedCost: 0,
                 modelID: model,
-                providerName: "none"
+                providerName: "none",
+                estimatedAPICalls: 0,
+                currency: "USD"
             )
         }
         return primary.estimateCost(imageCount: imageCount, model: model)
+    }
+
+    // MARK: - Cost Recording
+
+    /// Records the cost of a successful LLM call via CostTracker.
+    private func recordCostIfNeeded(response: LLMResponse) async {
+        guard let tracker = costTracker else { return }
+        let cost = CostTracker.calculateCost(
+            model: response.modelID,
+            inputTokens: response.inputTokens,
+            outputTokens: response.outputTokens
+        )
+        let sessionID = await SessionContext.current ?? "unknown"
+        let record = CostRecord(
+            providerName: response.providerName,
+            modelID: response.modelID,
+            inputTokens: response.inputTokens,
+            outputTokens: response.outputTokens,
+            costUSD: cost,
+            sessionID: sessionID
+        )
+        do {
+            try await tracker.record(record)
+        } catch {
+            Self.logger.warning("Failed to record cost: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - Private Retry Logic

@@ -62,7 +62,9 @@ final class OpenAICompatibleProvider: LLMProvider, Sendable {
             estimatedTokens: estimatedTokens,
             estimatedCost: estimatedCost,
             modelID: model,
-            providerName: name
+            providerName: name,
+            estimatedAPICalls: 1,
+            currency: "USD"
         )
     }
 

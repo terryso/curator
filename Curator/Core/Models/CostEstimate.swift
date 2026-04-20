@@ -13,4 +13,8 @@ struct CostEstimate: Sendable {
     let modelID: String
     /// The provider name this estimate is based on.
     let providerName: String
+    /// Estimated number of API calls required.
+    let estimatedAPICalls: Int
+    /// Currency code for the cost estimate.
+    let currency: String
 }

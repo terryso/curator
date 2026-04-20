@@ -17,6 +17,12 @@ final class AppDependencies: ObservableObject {
     /// LLM Gateway — nil until registered.
     @Published var llmGateway: (any LLMGatewayProtocol)?
 
+    /// SwiftData manager — nil until registered.
+    var swiftDataManager: SwiftDataManager?
+
+    /// Cost tracker — nil until registered.
+    var costTracker: (any CostTrackerProtocol)?
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()
@@ -71,6 +77,13 @@ final class AppDependencies: ObservableObject {
 
     /// Registers the LLM Gateway using stored LLMConfig.
     func registerLLMGateway() {
+        // Initialize SwiftData and CostTracker
+        let manager = SwiftDataManager()
+        self.swiftDataManager = manager
+        let context = manager.container.mainContext
+        let tracker = CostTracker(modelContext: context)
+        self.costTracker = tracker
+
         let config = LLMConfig.load()
 
         let apiKey = config?.apiKey ?? ""
@@ -88,7 +101,7 @@ final class AppDependencies: ObservableObject {
             providers.append(fallbackProvider)
         }
 
-        let gateway = LLMGateway(providers: providers)
+        let gateway = LLMGateway(providers: providers, costTracker: tracker)
         llmGateway = gateway
         llmProvider = primaryProvider
     }

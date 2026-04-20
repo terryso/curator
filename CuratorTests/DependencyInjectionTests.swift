@@ -246,6 +246,6 @@ private struct DITestMockLLMProvider: LLMProvider {
         return LLMResponse(text: "mock analysis result", modelID: model, providerName: name, inputTokens: 0, outputTokens: 0)
     }
     func estimateCost(imageCount: Int, model: String) -> CostEstimate {
-        return CostEstimate(estimatedTokens: 0, estimatedCost: 0.0, modelID: model, providerName: name)
+        return CostEstimate(estimatedTokens: 0, estimatedCost: 0.0, modelID: model, providerName: name, estimatedAPICalls: 1, currency: "USD")
     }
 }

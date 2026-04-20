@@ -44,3 +44,8 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 - `LocationData` 纬度/经度无范围校验 — 后续优化
 - UI 测试 `testClickPhotoOpensDetailSheet` 失败 — 环境相关，非本 Story 范围
 - `FolderBookmarkManaging` accessBookmark/releaseBookmark 非异步 — API 设计由实现层关注
+
+## Deferred from: code review of 2-6-cost-estimate-and-tracking.md (2026-04-20)
+
+- `allTimeSummary()` fetches all CostRecordEntity records without limit — unbounded memory if many records exist. Pattern is consistent with pre-existing `monthlySummary()` and `sessionSummary()`. A future story should add pagination or streaming to all summary methods.
+- Silent error swallowing in `SettingsViewModel.loadAllTimeSummary()`, `refreshCostData()`, `loadRecentRecords()` — sets properties to nil/empty on error with no logging. Consistent with pre-existing `loadMonthlyCostSummary()` pattern from Story 2.5. A future story should add proper error logging and/or user-facing error states.

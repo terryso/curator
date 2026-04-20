@@ -1,6 +1,6 @@
 # Story 2.6: 费用预估与追踪面板
 
-Status: review
+Status: done
 
 ## Story
 
@@ -301,6 +301,17 @@ GLM-5.1
 - `CuratorTests/Features/Settings/CostTrackingPanelTests.swift` — Removed all XCTSkip, 8 tests active (including previously skipped limit=0 test)
 - `CuratorTests/Features/Settings/SettingsViewModelTests.swift` — Removed all XCTSkip for Story 2.6 tests, 9 new tests active
 
+### Review Findings
+
+- [x] [Review][Defer] `allTimeSummary()` fetches all records without limit (unbounded memory) [Curator/Infrastructure/LLM/CostTracker.swift:72] — deferred, pre-existing pattern consistent with `monthlySummary()` and `sessionSummary()`
+- [x] [Review][Defer] Silent error swallowing in SettingsViewModel with no logging [Curator/Features/Settings/SettingsViewModel.swift:199-209] — deferred, consistent with pre-existing `loadMonthlyCostSummary()` pattern from Story 2.5
+- [x] [Review][Patch] NumberFormatter created on every render in CostEstimateCard and CostTrackingSettingsView [Curator/Features/Settings/CostEstimateCard.swift:58-64, Curator/Features/Settings/CostTrackingSettingsView.swift:246-253] — fixed: extracted to static let formatters
+- [x] [Review][Patch] `allTimeSummary()` uses min/max after sorted fetch — should use first/last [Curator/Infrastructure/LLM/CostTracker.swift:78-79] — fixed: replaced min/max with first/last
+- [x] [Review][Patch] `ProviderCostData` not marked Sendable under Swift 6 strict concurrency [Curator/Features/Settings/CostTrackingSettingsView.swift:264] — fixed: added Sendable conformance
+- [x] [Review][Patch] `onChange(of: selectedModel)` creates unstructured Task that may race with `.task` modifier [Curator/Features/Settings/CostEstimateCard.swift:46-47] — fixed: replaced with .task(id:)
+- [x] [Review][Patch] Dead `if #available(macOS 13.0, *)` check — project targets macOS 15 [Curator/Features/Settings/CostTrackingSettingsView.swift:190] — fixed: removed dead availability check
+
 ### Change Log
 
 - 2026-04-20: Story 2.6 implementation complete — CostEstimateCard component, full CostTrackingSettingsView panel, SettingsViewModel extensions, CostTrackerProtocol/CostTracker extensions, CostTimeRange enum. All 385 tests pass, 0 failures.
+- 2026-04-20: Code review — 0 decision-needed, 5 patch (all fixed), 2 deferred, 1 dismissed. 385 tests still pass.

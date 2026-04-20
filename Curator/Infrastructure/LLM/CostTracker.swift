@@ -75,8 +75,8 @@ final class CostTracker: CostTrackerProtocol, @unchecked Sendable {
         )
         let records = try modelContext.fetch(descriptor)
 
-        if let first = records.min(by: { $0.timestamp < $1.timestamp }),
-           let last = records.max(by: { $0.timestamp < $1.timestamp }) {
+        // Records are sorted by timestamp ascending, so first/last are min/max.
+        if let first = records.first, let last = records.last {
             return buildSummary(from: records, start: first.timestamp, end: last.timestamp)
         }
         return .zero

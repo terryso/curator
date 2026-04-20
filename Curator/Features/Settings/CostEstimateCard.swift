@@ -42,10 +42,7 @@ struct CostEstimateCard: View {
         }
         .padding()
         .background(.background.secondary, in: .rect(cornerRadius: 8))
-        .task { await loadEstimate() }
-        .onChange(of: selectedModel) { _, _ in
-            Task { await loadEstimate() }
-        }
+        .task(id: selectedModel) { await loadEstimate() }
     }
 
     // MARK: - Private
@@ -56,20 +53,30 @@ struct CostEstimateCard: View {
 
     /// Formats a USD amount with 4 decimal places and thousands separator.
     private func formatUSD(_ value: Double) -> String {
+        return Self.usdFormatter.string(from: NSNumber(value: value)) ?? String(format: "$%.4f", value)
+    }
+
+    /// Formats an integer with thousands separator.
+    private func formatNumber(_ value: Int) -> String {
+        return Self.numberFormatter.string(from: NSNumber(value: value)) ?? "\(value)"
+    }
+
+    /// Shared USD formatter to avoid recreating on every render.
+    private static let usdFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "USD"
         formatter.minimumFractionDigits = 4
         formatter.maximumFractionDigits = 4
-        return formatter.string(from: NSNumber(value: value)) ?? String(format: "$%.4f", value)
-    }
+        return formatter
+    }()
 
-    /// Formats an integer with thousands separator.
-    private func formatNumber(_ value: Int) -> String {
+    /// Shared number formatter to avoid recreating on every render.
+    private static let numberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
-    }
+        return formatter
+    }()
 
     /// Returns a human-readable display name for a model identifier.
     private func modelDisplayName(_ model: LLMModelID) -> String {

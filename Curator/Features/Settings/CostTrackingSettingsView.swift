@@ -113,6 +113,9 @@ struct CostTrackingSettingsView: View {
             await vm.refreshCostData()
             await vm.loadRecentRecords()
         }
+        .task(id: vm.selectedTimeRange) {
+            await vm.refreshCostData()
+        }
     }
 
     // MARK: - Subviews
@@ -126,11 +129,6 @@ struct CostTrackingSettingsView: View {
             Text("All Time").tag(CostTimeRange.all)
         }
         .pickerStyle(.segmented)
-        .onChange(of: vm.selectedTimeRange) { _, _ in
-            Task {
-                await vm.refreshCostData()
-            }
-        }
     }
 
     @ViewBuilder
@@ -187,25 +185,23 @@ struct CostTrackingSettingsView: View {
         let data = summary.byProvider.sorted(by: { $0.value > $1.value }).map { (provider, cost) in
             ProviderCostData(provider: provider, cost: cost)
         }
-        if #available(macOS 13.0, *) {
-            Chart(data) { item in
-                BarMark(
-                    x: .value("Cost (USD)", item.cost),
-                    y: .value("Provider", item.provider)
-                )
-                .annotation(position: .trailing) {
-                    Text(formatUSD(item.cost))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
+        Chart(data) { item in
+            BarMark(
+                x: .value("Cost (USD)", item.cost),
+                y: .value("Provider", item.provider)
+            )
+            .annotation(position: .trailing) {
+                Text(formatUSD(item.cost))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            .chartXAxis {
-                AxisMarks { value in
-                    if let doubleVal = value.as(Double.self) {
-                        AxisValueLabel {
-                            Text(formatUSD(doubleVal))
-                                .font(.caption2)
-                        }
+        }
+        .chartXAxis {
+            AxisMarks { value in
+                if let doubleVal = value.as(Double.self) {
+                    AxisValueLabel {
+                        Text(formatUSD(doubleVal))
+                            .font(.caption2)
                     }
                 }
             }
@@ -244,24 +240,34 @@ struct CostTrackingSettingsView: View {
 
     /// Formats a USD amount with 4 decimal places and thousands separator.
     private func formatUSD(_ value: Double) -> String {
+        return Self.usdFormatter.string(from: NSNumber(value: value)) ?? String(format: "$%.4f", value)
+    }
+
+    /// Formats an integer with thousands separator.
+    private func formatNumber(_ value: Int) -> String {
+        return Self.numberFormatter.string(from: NSNumber(value: value)) ?? "\(value)"
+    }
+
+    /// Shared USD formatter to avoid recreating on every render.
+    private static let usdFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "USD"
         formatter.minimumFractionDigits = 4
         formatter.maximumFractionDigits = 4
-        return formatter.string(from: NSNumber(value: value)) ?? String(format: "$%.4f", value)
-    }
+        return formatter
+    }()
 
-    /// Formats an integer with thousands separator.
-    private func formatNumber(_ value: Int) -> String {
+    /// Shared number formatter to avoid recreating on every render.
+    private static let numberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
-    }
+        return formatter
+    }()
 }
 
 /// Data point for cost chart visualization.
-private struct ProviderCostData: Identifiable {
+private struct ProviderCostData: Identifiable, Sendable {
     let id = UUID()
     let provider: String
     let cost: Double

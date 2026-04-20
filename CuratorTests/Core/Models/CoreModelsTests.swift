@@ -290,11 +290,13 @@ final class CoreModelsTests: XCTestCase {
     // MARK: - FolderBookmarkManaging
 
     /// [P0] FolderBookmarkManaging protocol exists and is Sendable
-    func testFolderBookmarkManagingProtocolExists() throws {
+    func testFolderBookmarkManagingProtocolExists() async throws {
         // Verify the protocol is defined by checking we can create a mock
         let mock = MockFolderBookmarkManager()
-        XCTAssertFalse(mock.hasValidBookmark)
-        XCTAssertNil(mock.currentFolderURL)
+        let hasValid = await mock.hasValidBookmark
+        let currentURL = await mock.currentFolderURL
+        XCTAssertFalse(hasValid)
+        XCTAssertNil(currentURL)
     }
 }
 
@@ -304,6 +306,6 @@ private struct MockFolderBookmarkManager: FolderBookmarkManaging {
     var currentFolderURL: URL? { nil }
     func selectAndBookmarkFolder() async throws -> URL { URL(fileURLWithPath: "/mock/photos") }
     func loadBookmark() async throws -> URL? { nil }
-    func accessBookmark(_ url: URL) throws -> Bool { true }
+    func accessBookmark(_ url: URL) -> Bool { true }
     func releaseBookmark(_ url: URL) {}
 }

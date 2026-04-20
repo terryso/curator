@@ -18,7 +18,7 @@ protocol FolderBookmarkManaging: Sendable {
     func loadBookmark() async throws -> URL?
 
     /// Begins accessing a bookmark-protected folder.
-    func accessBookmark(_ url: URL) throws -> Bool
+    func accessBookmark(_ url: URL) -> Bool
 
     /// Stops accessing a bookmark-protected folder.
     func releaseBookmark(_ url: URL)

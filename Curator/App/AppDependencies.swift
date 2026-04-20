@@ -19,8 +19,8 @@ final class AppDependencies: ObservableObject {
 
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
-        // Story 1.3 will create LocalFolderRepository and register it here.
-        // For now, leave nil — mock registration is available for testing.
+        let bookmarkManager = FolderBookmarkManager()
+        photoRepository = LocalFolderRepository(bookmarkManager: bookmarkManager)
     }
 
     /// Registers a mock repository for UI testing.

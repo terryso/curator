@@ -54,14 +54,13 @@ final class DependencyInjectionTests: XCTestCase {
         }
     }
 
-    /// [P0] registerLocalFolderRepository() method exists
+    /// [P0] registerLocalFolderRepository() method creates a repository
     func testRegisterLocalFolderRepositoryMethodExists() async throws {
         await MainActor.run {
             let dependencies = AppDependencies()
-            // Method should be callable without crash (implementation deferred to Story 1.3)
             dependencies.registerLocalFolderRepository()
-            XCTAssertNil(dependencies.photoRepository,
-                "registerLocalFolderRepository() should be a no-op until Story 1.3")
+            XCTAssertNotNil(dependencies.photoRepository,
+                "registerLocalFolderRepository() should register a LocalFolderRepository")
         }
     }
 

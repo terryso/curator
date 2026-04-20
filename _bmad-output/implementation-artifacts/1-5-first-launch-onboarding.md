@@ -1,6 +1,6 @@
 # Story 1.5: 首次启动引导流程
 
-Status: todo
+Status: done
 
 <!-- 重写说明：MVP 照片来源策略从 PhotoKit 切换为本地文件夹。
      原始实现基于 PhotoKit 权限模型（requestReadAccess → PhotoPermissionManager → 系统权限弹窗），
@@ -413,3 +413,4 @@ CuratorTests/
 
 - 2026-04-18: Story 1.5 原始实现完成（基于 PhotoKit 权限模型，4 屏引导流程含 LLM 配置）
 - 2026-04-20: Story 1.5 规格重写——MVP 照片来源从 PhotoKit 切换为本地文件夹。引导流程从 4 屏缩减为 3 屏（移除 LLM 配置步骤）。PermissionRequestView → FolderSelectionView（NSOpenPanel），PermissionDeniedView → NoFolderSelectedView。OnboardingStep 枚举从 7 个 case 精简为 6 个。Status 从 review 回退为 todo。
+- 2026-04-20: Story 1.5 代码已实现完毕——OnboardingStep 6 case 枚举、3 屏引导流程、FolderSelectionView、NoFolderSelectedView 全部就绪。状态从 todo 更新为 done。

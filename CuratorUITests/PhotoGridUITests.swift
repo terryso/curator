@@ -29,7 +29,7 @@ final class PhotoGridUITests: CuratorUITestBase {
         firstPhoto.tap()
 
         XCTAssertTrue(app.staticTexts["Date"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Title"].exists)
+        XCTAssertTrue(app.staticTexts["File Name"].exists)
         XCTAssertTrue(button(label: "Close").exists)
     }
 

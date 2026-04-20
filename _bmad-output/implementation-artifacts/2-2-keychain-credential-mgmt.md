@@ -1,6 +1,6 @@
 # Story 2.2: Keychain 凭证管理
 
-Status: done
+Status: deferred
 
 ## Story
 

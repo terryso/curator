@@ -1,6 +1,6 @@
 # Story 1.3: 本地文件夹读取服务
 
-Status: todo
+Status: done
 
 <!-- 重写说明：MVP 照片来源策略从 PhotoKit 切换为本地文件夹。
      原始实现基于 PhotoKit（PHAssetMapper、PhotoPermissionManager、PhotoKitRepository），
@@ -387,6 +387,7 @@ CuratorTests/
 
 - 2026-04-18: Story 1.3 原始实现完成（基于 PhotoKit）
 - 2026-04-20: Story 1.3 重写规格——MVP 照片来源从 PhotoKit 切换为本地文件夹。所有 PhotoKit 相关组件（PHAssetMapper、PhotoPermissionManager、PhotoKitRepository）替换为文件系统组件（ExifMetadataReader、FolderBookmarkManager、LocalFolderRepository）。协议和领域模型已在 Story 1.2 中更新完毕，本 Story 仅实现基础设施层代码。
+- 2026-04-20: Story 1.3 代码已实现完毕——LocalFolderRepository（actor）、FolderBookmarkManager、ExifMetadataReader 全部就绪。状态从 todo 更新为 done。
 
 ## Dev Agent Record
 

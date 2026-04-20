@@ -23,9 +23,50 @@ final class AppDependencies: ObservableObject {
         photoRepository = LocalFolderRepository(bookmarkManager: bookmarkManager)
     }
 
+    /// Registers a real LocalFolderRepository with a pre-set temp directory for testing.
+    /// Creates sample photos so the UI has content to display.
+    func registerTestRepository() {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("CuratorTestPhotos", isDirectory: true)
+        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+        createSamplePhotos(in: tempDir)
+
+        let bookmarkManager = FolderBookmarkManager()
+        photoRepository = LocalFolderRepository(
+            bookmarkManager: bookmarkManager,
+            initialFolderURL: tempDir
+        )
+    }
+
     /// Registers a mock repository for UI testing.
     func registerMockRepository() {
         photoRepository = MockPhotoLibraryRepository()
+    }
+
+    private func createSamplePhotos(in directory: URL) {
+        let names = ["test_photo_1.jpg", "test_photo_2.png", "test_photo_3.jpg"]
+        for name in names {
+            let url = directory.appendingPathComponent(name)
+            if FileManager.default.fileExists(atPath: url.path) { continue }
+
+            let size = NSSize(width: 100, height: 100)
+            let image = NSImage(size: size)
+            image.lockFocus()
+            NSColor.blue.setFill()
+            NSBezierPath.fill(NSRect(origin: .zero, size: size))
+            image.unlockFocus()
+
+            guard let tiffData = image.tiffRepresentation,
+                  let bitmap = NSBitmapImageRep(data: tiffData) else { continue }
+
+            let data: Data = if name.hasSuffix(".jpg") {
+                bitmap.representation(using: .jpeg, properties: [:])!
+            } else {
+                bitmap.representation(using: .png, properties: [:])!
+            }
+            try? data.write(to: url)
+        }
     }
 
     /// Registers the LLM Gateway using stored LLMConfig.

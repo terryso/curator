@@ -4,7 +4,7 @@ import XCTest
 ///
 /// Provides app launch helpers with state reset via launch arguments,
 /// common element waiting utilities, and automatic dismissal of
-/// system permission dialogs (photo library, input method).
+/// system dialogs that may appear during UI tests.
 class CuratorUITestBase: XCTestCase {
 
     var app: XCUIApplication!
@@ -28,42 +28,25 @@ class CuratorUITestBase: XCTestCase {
     /// Installs monitors to auto-dismiss system dialogs during UI tests.
     private func installInterruptionMonitors() {
         let monitor = addUIInterruptionMonitor(withDescription: "System Permission Dialogs") { alert in
-            // Photo library permission: "OK" (English)
+            // General confirmation dialogs
             if alert.buttons["OK"].exists {
                 alert.buttons["OK"].tap()
                 return true
             }
-            // Photo library permission: "好" (Chinese)
             if alert.buttons["好"].exists {
                 alert.buttons["好"].tap()
                 return true
             }
-            // Input method / Keychain access: "允许" (Chinese)
-            if alert.buttons["允许"].exists {
-                alert.buttons["允许"].tap()
-                return true
-            }
-            // Input method / Keychain access: "Allow" (English)
+            // Allow access dialogs (input method, etc.)
             if alert.buttons["Allow"].exists {
                 alert.buttons["Allow"].tap()
                 return true
             }
-            // Keychain: "始终允许" (Always Allow - Chinese)
-            if alert.buttons["始终允许"].exists {
-                alert.buttons["始终允许"].tap()
+            if alert.buttons["允许"].exists {
+                alert.buttons["允许"].tap()
                 return true
             }
-            // Keychain: "Always Allow" (English)
-            if alert.buttons["Always Allow"].exists {
-                alert.buttons["Always Allow"].tap()
-                return true
-            }
-            // System auth: "好" as confirm button in Chinese dialogs
-            if alert.buttons["好"].exists {
-                alert.buttons["好"].tap()
-                return true
-            }
-            // Developer tools: "Don't Allow" dismissal fallback
+            // Developer tools / system access
             if alert.buttons["Don't Allow"].exists {
                 alert.buttons["Don't Allow"].tap()
                 return true
@@ -81,9 +64,7 @@ class CuratorUITestBase: XCTestCase {
     }
 
     /// Triggers the interruption monitor to handle any pending system dialogs.
-    /// Uses multiple passes with increasing delays to catch stacked dialogs.
     private func handleSystemDialogs() {
-        // Multiple passes to handle stacked dialogs
         for attempt in 0..<3 {
             Thread.sleep(forTimeInterval: 1.0 + Double(attempt) * 0.5)
             let coordinate = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
@@ -102,6 +83,9 @@ class CuratorUITestBase: XCTestCase {
         if mockPhotos {
             app.launchArguments.append("--uitest-mock-photos")
         }
+        // Signal to the app that it's running under a UI test runner,
+        // so it uses test repositories instead of real NSOpenPanel-based ones.
+        app.launchEnvironment["CURATOR_UI_TEST"] = "1"
         app.launch()
         handleSystemDialogs()
     }

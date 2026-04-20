@@ -12,8 +12,12 @@ actor LocalFolderRepository: PhotoLibraryRepository {
     private var cachedFileURLs: [URL]?
     private var cachedPredicate: PhotoPredicate?
 
-    init(bookmarkManager: FolderBookmarkManaging = FolderBookmarkManager()) {
+    private let initialFolderURL: URL?
+
+    init(bookmarkManager: FolderBookmarkManaging = FolderBookmarkManager(), initialFolderURL: URL? = nil) {
         self.bookmarkManager = bookmarkManager
+        self.initialFolderURL = initialFolderURL
+        self.folderURL = initialFolderURL
     }
 
     deinit {

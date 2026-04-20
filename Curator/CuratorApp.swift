@@ -3,12 +3,11 @@ import SwiftUI
 @main
 struct CuratorApp: App {
     init() {
-        // UI test launch arguments
         let isUITest = CommandLine.arguments.contains("--uitest-reset-onboarding")
             || CommandLine.arguments.contains("--uitest-mock-photos")
+        let isUnitTest = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 
-        if isUITest {
-            // Pre-configure LLM for all UI tests to avoid system prompts
+        if isUITest || isUnitTest {
             let mockConfig = LLMConfig(
                 baseURL: "https://mock.test",
                 apiKey: "test-key",
@@ -20,7 +19,7 @@ struct CuratorApp: App {
         if CommandLine.arguments.contains("--uitest-reset-onboarding") {
             UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
         }
-        if CommandLine.arguments.contains("--uitest-mock-photos") {
+        if CommandLine.arguments.contains("--uitest-mock-photos") || isUnitTest {
             UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
         }
     }

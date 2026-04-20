@@ -13,6 +13,11 @@ struct ContentView: View {
     @StateObject private var onboardingViewModel: OnboardingViewModel
     @StateObject private var navigationModel = NavigationModel()
 
+    private var isUnderTestRunner: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            || ProcessInfo.processInfo.environment["CURATOR_UI_TEST"] != nil
+    }
+
     init() {
         let deps = AppDependencies()
         _dependencies = StateObject(wrappedValue: deps)
@@ -36,8 +41,8 @@ struct ContentView: View {
             )
             .frame(minWidth: 900, minHeight: 600)
             .task {
-                if CommandLine.arguments.contains("--uitest-mock-photos") {
-                    dependencies.registerMockRepository()
+                if CommandLine.arguments.contains("--uitest-mock-photos") || isUnderTestRunner {
+                    dependencies.registerTestRepository()
                 } else {
                     dependencies.registerLocalFolderRepository()
                 }
@@ -52,8 +57,8 @@ struct ContentView: View {
             OnboardingContainerView(viewModel: onboardingViewModel)
                 .frame(minWidth: 900, minHeight: 600)
                 .task {
-                    if CommandLine.arguments.contains("--uitest-mock-photos") {
-                        dependencies.registerMockRepository()
+                    if CommandLine.arguments.contains("--uitest-mock-photos") || isUnderTestRunner {
+                        dependencies.registerTestRepository()
                     } else {
                         dependencies.registerLocalFolderRepository()
                     }

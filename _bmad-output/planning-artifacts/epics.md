@@ -400,6 +400,8 @@ So that 我有稳定的工作环境。
 
 用户配置 Anthropic 和 OpenAI 兼容的 API Key，选择默认模型和备用供应商，查看费用预估和累计支出。LLM 网关提供统一的供应商抽象、自动故障转移和成本追踪。
 
+> **Note:** Story 2.2（Keychain 凭证管理）已迁移至 Epic 7（Story 7.0），MVP 阶段 API Key 暂存 UserDefaults。
+
 ### Story 2.1: LLM 网关核心
 
 As a 系统，
@@ -422,28 +424,6 @@ So that 上层代码不依赖具体供应商实现，支持故障转移和重试
 **When** LLMGateway 检测到错误
 **Then** 执行指数退避重试（最多 3 次）
 **And** 重试全部失败后回退到备用供应商（NFR21: 10 秒内完成）
-
-### Story 2.2: Keychain 凭证管理
-
-As a 用户，
-I want 我的 API Key 安全存储在 macOS Keychain 中，
-So that 凭证不会被泄露到配置文件或日志中。
-
-**Acceptance Criteria:**
-
-**Given** KeychainManager 已实现（NFR9）
-**When** 存储 API Key
-**Then** 使用 Security 框架的 SecItemAdd API 存储到 Keychain
-**And** API Key 不以明文出现在任何配置文件或日志中
-
-**Given** API Key 已存储在 Keychain
-**When** 应用启动时读取
-**Then** KeychainManager 通过 SecItemCopyMatching 检索 API Key
-**And** 读取失败时返回 nil 而非崩溃
-
-**Given** 用户在设置中删除 API Key
-**When** 调用 KeychainManager.delete()
-**Then** 通过 SecItemDelete 从 Keychain 移除对应条目
 
 ### Story 2.3: 多供应商支持
 
@@ -1048,6 +1028,28 @@ So that 高效完成整个重命名流程。
 ## Epic 7: "Always Ready" — 隐私、更新与离线能力
 
 用户获得完整的隐私透明度、自动更新和离线能力。
+
+### Story 7.0: Keychain 凭证管理（从 Epic 2 迁入）
+
+As a 用户，
+I want 我的 API Key 安全存储在 macOS Keychain 中，
+So that 凭证不会被泄露到配置文件或日志中。
+
+**Acceptance Criteria:**
+
+**Given** KeychainManager 已实现（NFR9）
+**When** 存储 API Key
+**Then** 使用 Security 框架的 SecItemAdd API 存储到 Keychain
+**And** API Key 不以明文出现在任何配置文件或日志中
+
+**Given** API Key 已存储在 Keychain
+**When** 应用启动时读取
+**Then** KeychainManager 通过 SecItemCopyMatching 检索 API Key
+**And** 读取失败时返回 nil 而非崩溃
+
+**Given** 用户在设置中删除 API Key
+**When** 调用 KeychainManager.delete()
+**Then** 通过 SecItemDelete 从 Keychain 移除对应条目
 
 ### Story 7.1: 文件夹变更监控
 

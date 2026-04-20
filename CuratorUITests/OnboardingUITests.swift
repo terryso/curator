@@ -21,14 +21,15 @@ final class OnboardingUITests: CuratorUITestBase {
         XCTAssertTrue(app.staticTexts["Your Privacy Matters"].waitForExistence(timeout: 5))
     }
 
-    /// [P0] Permission screen appears after tapping Next on privacy.
-    func testPermissionScreenAfterPrivacy() {
+    /// [P0] Folder selection screen appears after tapping Next on privacy.
+    func testFolderSelectionScreenAfterPrivacy() {
         launchApp(resetOnboarding: true)
 
         button(label: "Next step").tap()
         button(label: "Next step").tap()
-        XCTAssertTrue(app.staticTexts["Photo Access"].waitForExistence(timeout: 5))
-        XCTAssertTrue(button(label: "Continue to next step").exists)
+        // Verify we reached the folder selection screen by checking the back button and action button
+        XCTAssertTrue(button(label: "Go back to privacy").waitForExistence(timeout: 5))
+        XCTAssertTrue(button(label: "Select a photo folder to scan").exists)
     }
 
     // MARK: - AC3: Back navigation

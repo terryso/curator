@@ -48,13 +48,13 @@ jobs:
 
       - name: Extract coverage percentage
         run: |
-          RESULT_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.xcresult" -path "*Curator*Test*" -type d | sort -r | head -1)
+          RESULT_PATH=$(find ~/Library/Developer/Xcode/DerivedData -path "*/Curator*" -name "*.xcresult" -type d | sort -r | head -1)
           if [ -z "$RESULT_PATH" ]; then
             echo "No test results found, skipping coverage"
             exit 0
           fi
 
-          COVERAGE=$(xcrun xccov view --report "$RESULT_PATH" 2>/dev/null | grep -E '^Curator\.app\s' | awk '{print $NF}' | sed 's/(//;s/)//;s/%//' | cut -d/ -f1 | awk '{printf "%.1f", $1}')
+          COVERAGE=$(xcrun xccov view --report "$RESULT_PATH" 2>/dev/null | grep 'Curator\.app' | awk '{print $2}' | tr -d '%')
           if [ -z "$COVERAGE" ]; then
             COVERAGE="0.0"
           fi

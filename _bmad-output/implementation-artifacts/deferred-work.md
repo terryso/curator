@@ -49,3 +49,7 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - `allTimeSummary()` fetches all CostRecordEntity records without limit — unbounded memory if many records exist. Pattern is consistent with pre-existing `monthlySummary()` and `sessionSummary()`. A future story should add pagination or streaming to all summary methods.
 - Silent error swallowing in `SettingsViewModel.loadAllTimeSummary()`, `refreshCostData()`, `loadRecentRecords()` — sets properties to nil/empty on error with no logging. Consistent with pre-existing `loadMonthlyCostSummary()` pattern from Story 2.5. A future story should add proper error logging and/or user-facing error states.
+
+## Deferred from: code review of 3-3-agent-input-bar (2026-04-21)
+
+- Tests use `Task.sleep(for: .milliseconds(100))` to wait for AgentJob state transitions — fragile under CI load. Pattern pre-exists from Story 3.1/3.2. A future story should introduce a proper async expectation or EventBus pattern for deterministic state transition testing.

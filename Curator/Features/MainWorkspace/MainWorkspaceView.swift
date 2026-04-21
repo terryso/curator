@@ -3,7 +3,7 @@ import SwiftUI
 /// Agent workspace main view with NavigationSplitView three-column layout.
 ///
 /// Implements UX-DR1 (three-column layout): sidebar (photo library) +
-/// detail (Agent execution area) + bottom input area placeholder.
+/// detail (Agent execution area) + bottom input area.
 /// Uses NavigationSplitView for sidebar collapse/expand control.
 /// Window state is persisted via @AppStorage through NavigationModel.
 struct MainWorkspaceView: View {
@@ -17,21 +17,42 @@ struct MainWorkspaceView: View {
     /// Navigation state manager for sidebar visibility and active panel.
     @ObservedObject var navigationModel: NavigationModel
 
+    /// Chat input ViewModel managing Agent instruction submission and execution state.
+    @State private var chatInputViewModel: ChatInputViewModel
+
+    init(
+        photoViewModel: PhotoLibraryViewModel,
+        dependencies: AppDependencies,
+        navigationModel: NavigationModel
+    ) {
+        self.photoViewModel = photoViewModel
+        self.dependencies = dependencies
+        self.navigationModel = navigationModel
+        // Initialize ChatInputViewModel with AppDependencies
+        _chatInputViewModel = State(
+            initialValue: ChatInputViewModel(dependencies: dependencies)
+        )
+    }
+
     var body: some View {
         NavigationSplitView(columnVisibility: $navigationModel.columnVisibility) {
             // Sidebar: Photo library panel (collapsible)
             PhotoGridView(viewModel: photoViewModel)
                 .navigationTitle("Photo Library")
         } detail: {
-            // Detail: Agent execution area + bottom input placeholder
+            // Detail: Agent execution area + bottom input bar
             VStack(spacing: 0) {
-                // Main content area — Agent execution / result display
-                AgentContentAreaPlaceholder()
+                // Main content area — Quick commands or Agent execution panel
+                if chatInputViewModel.quickCommandsVisible {
+                    Spacer()
+                    QuickCommandSuggestions(viewModel: chatInputViewModel)
+                    Spacer()
+                } else {
+                    AgentContentAreaPlaceholder()
+                }
 
-                Spacer()
-
-                // Bottom fixed input area placeholder
-                InputBarPlaceholder()
+                // Bottom fixed input bar
+                AgentInputBar(viewModel: chatInputViewModel)
             }
             .navigationTitle("Curator")
         }
@@ -71,23 +92,6 @@ struct MainWorkspaceView: View {
             navigationModel.windowWidth = Double(window.frame.width)
             navigationModel.windowHeight = Double(window.frame.height)
         }
-    }
-}
-
-/// Bottom input bar placeholder view.
-///
-/// Simple placeholder for the Agent input area.
-/// Story 3.3 will replace this with the full AgentInputBar component.
-private struct InputBarPlaceholder: View {
-    var body: some View {
-        HStack {
-            Text("Try \"Find all duplicate photos\"...")
-                .foregroundStyle(.tertiary)
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(.bar)
     }
 }
 

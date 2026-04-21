@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-18
-last_updated: 2026-04-20 (Story 2-6 done)
+last_updated: 2026-04-21 (Story 3-2 done)
 
 project: curator
 project_key: NOKEY
@@ -64,9 +64,9 @@ development_status:
   epic-2-retrospective: optional
 
   # === Epic 3: "Agent Workspace" — 自然语言照片管理 ===
-  epic-3: backlog
-  3-1-agent-execution-engine: backlog
-  3-2-open-agent-sdk-integration: backlog
+  epic-3: in-progress
+  3-1-agent-execution-engine: done
+  3-2-open-agent-sdk-integration: done
   3-3-agent-input-bar: backlog
   3-4-agent-execution-panel: backlog
   3-5-session-management: backlog

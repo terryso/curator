@@ -1,4 +1,5 @@
 import SwiftUI
+import OpenAgentSDK
 
 /// Dependency injection container for the application layer.
 ///
@@ -22,6 +23,12 @@ final class AppDependencies: ObservableObject {
 
     /// Cost tracker — nil until registered.
     var costTracker: (any CostTrackerProtocol)?
+
+    /// Agent tool registry — nil until registered.
+    var toolRegistry: AgentToolRegistry?
+
+    /// Agent factory — nil until registered.
+    var curatorAgentFactory: CuratorAgentFactory?
 
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
@@ -104,5 +111,36 @@ final class AppDependencies: ObservableObject {
         let gateway = LLMGateway(providers: providers, costTracker: tracker)
         llmGateway = gateway
         llmProvider = primaryProvider
+    }
+
+    /// Registers the agent infrastructure: tool registry and agent factory.
+    ///
+    /// Creates an AgentToolRegistry and CuratorAgentFactory using the current
+    /// LLM configuration. The factory is configured with the primary provider's
+    /// API key, model, and base URL from LLMConfig.
+    func registerAgentInfrastructure() {
+        let registry = AgentToolRegistry()
+        self.toolRegistry = registry
+
+        let config = LLMConfig.load()
+        let apiKey = config?.apiKey ?? ""
+        let model = config?.modelID ?? "claude-sonnet-4-6"
+        let baseURL = config?.baseURL
+
+        // Determine provider type from config
+        let sdkProvider: OpenAgentSDK.LLMProvider
+        switch config?.primary.providerType {
+        case .openAICompatible:
+            sdkProvider = .openai
+        default:
+            sdkProvider = .anthropic
+        }
+
+        self.curatorAgentFactory = CuratorAgentFactory(
+            apiKey: apiKey,
+            model: model,
+            provider: sdkProvider,
+            baseURL: baseURL
+        )
     }
 }

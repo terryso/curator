@@ -47,6 +47,7 @@ struct ContentView: View {
                     dependencies.registerLocalFolderRepository()
                 }
                 dependencies.registerLLMGateway()
+                dependencies.registerAgentInfrastructure()
             }
             .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in
                 if hasRepo, let repo = dependencies.photoRepository {

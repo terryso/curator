@@ -10,12 +10,29 @@ struct CuratorApp: App {
         let isUnitTest = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 
         if isUITest || isUnitTest {
-            let mockConfig = LLMConfig(
-                baseURL: "https://mock.test",
-                apiKey: "test-key",
-                modelID: "claude-sonnet-4-20250514"
-            )
-            mockConfig.save()
+            let env = ProcessInfo.processInfo.environment
+            if let baseURL = env["CURATOR_LLM_BASE_URL"],
+               let apiKey = env["CURATOR_LLM_API_KEY"],
+               let model = env["CURATOR_LLM_MODEL"] {
+                let providerType: LLMProviderType = env["CURATOR_LLM_PROVIDER"] == "openAICompatible" ? .openAICompatible : .anthropic
+                let config = LLMConfig(
+                    primary: LLMProviderConfig(
+                        providerType: providerType,
+                        baseURL: baseURL,
+                        apiKey: apiKey,
+                        modelID: model,
+                        displayName: nil
+                    )
+                )
+                config.save()
+            } else {
+                let mockConfig = LLMConfig(
+                    baseURL: "https://mock.test",
+                    apiKey: "test-key",
+                    modelID: "claude-sonnet-4-20250514"
+                )
+                mockConfig.save()
+            }
         }
 
         if CommandLine.arguments.contains("--uitest-reset-onboarding") {

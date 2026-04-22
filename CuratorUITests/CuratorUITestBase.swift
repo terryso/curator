@@ -51,6 +51,19 @@ class CuratorUITestBase: XCTestCase {
                 alert.buttons["Don't Allow"].tap()
                 return true
             }
+            if alert.buttons["不允许"].exists {
+                alert.buttons["不允许"].tap()
+                return true
+            }
+            // Input method activation dialogs (e.g. "百度拼音")
+            if alert.buttons["Allow"].exists {
+                alert.buttons["Allow"].tap()
+                return true
+            }
+            if alert.buttons["允许"].exists {
+                alert.buttons["允许"].tap()
+                return true
+            }
             return false
         }
         interruptionMonitor = monitor
@@ -86,6 +99,8 @@ class CuratorUITestBase: XCTestCase {
         // Signal to the app that it's running under a UI test runner,
         // so it uses test repositories instead of real NSOpenPanel-based ones.
         app.launchEnvironment["CURATOR_UI_TEST"] = "1"
+        // Load LLM credentials from .env file (gitignored)
+        loadDotEnv(into: &app.launchEnvironment)
         app.launch()
         handleSystemDialogs()
     }
@@ -110,5 +125,23 @@ class CuratorUITestBase: XCTestCase {
         let txt = app.staticTexts[value]
         waitForExistence(of: txt)
         return txt
+    }
+
+    // MARK: - .env Loading
+
+    /// Reads key=value pairs from `.env` in the project root and merges into env dict.
+    private func loadDotEnv(into env: inout [String: String]) {
+        let envURL = URL(fileURLWithPath: #file)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent(".env")
+        guard let contents = try? String(contentsOf: envURL, encoding: .utf8) else { return }
+        for line in contents.split(separator: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.hasPrefix("#"), let eq = trimmed.firstIndex(of: "=") else { continue }
+            let key = String(trimmed[..<eq]).trimmingCharacters(in: .whitespaces)
+            let value = String(trimmed[trimmed.index(after: eq)...]).trimmingCharacters(in: .whitespaces)
+            env[key] = value
+        }
     }
 }

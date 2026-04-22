@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		001557229D929F8643C20EAF /* SDKMessageBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1D178D65CDE504E9DA3DBF /* SDKMessageBridgeTests.swift */; };
+		175D7F3ED0C8B1EE529F4D0F /* AgentInputBarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A054B4AAFAFACDBC96541A6 /* AgentInputBarUITests.swift */; };
+		ADD6F6C8E85541A17D3EE1D7 /* QuickCommandUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7D7555B27D58A76215BE26 /* QuickCommandUITests.swift */; };
+		DCBD4E422AE6957BF542A8BE /* SessionHistoryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAC5271504A0EA2A9B833597 /* SessionHistoryUITests.swift */; };
+		298118A2E2D04F4669C95277 /* AgentExecutionPanelUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C2E84ECEC357C60C8A6FE1 /* AgentExecutionPanelUITests.swift */; };
 		041965E1C5B3F1C72E37782C /* PermissionLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1766305DB20EE0912DB6A675 /* PermissionLevel.swift */; };
 		04FEE263D053DA2FCDADD57E /* CostTrackerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9920F854A4BD5CE0991815 /* CostTrackerProtocol.swift */; };
 		058B9CFC58DFC0BFAB68A075 /* CuratorAgentFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13A8DF006794CDDF6E7AD2C /* CuratorAgentFactory.swift */; };
@@ -221,6 +225,10 @@
 		4C1E584AA2F521FE4AF378CE /* LLMModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMModels.swift; sourceTree = "<group>"; };
 		4E0DA936EC314E9471F84563 /* CostTimeRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostTimeRange.swift; sourceTree = "<group>"; };
 		4F1D178D65CDE504E9DA3DBF /* SDKMessageBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKMessageBridgeTests.swift; sourceTree = "<group>"; };
+		1A054B4AAFAFACDBC96541A6 /* AgentInputBarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentInputBarUITests.swift; sourceTree = "<group>"; };
+		1A7D7555B27D58A76215BE26 /* QuickCommandUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCommandUITests.swift; sourceTree = "<group>"; };
+		CAC5271504A0EA2A9B833597 /* SessionHistoryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryUITests.swift; sourceTree = "<group>"; };
+		E0C2E84ECEC357C60C8A6FE1 /* AgentExecutionPanelUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentExecutionPanelUITests.swift; sourceTree = "<group>"; };
 		5020FE4F11FD00247FF8179C /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
 		5130202E82CAFA1ACC85D605 /* MainWorkspaceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWorkspaceUITests.swift; sourceTree = "<group>"; };
 		523F56A627256FC5FC38EBB1 /* SettingsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModelTests.swift; sourceTree = "<group>"; };
@@ -527,6 +535,8 @@
 			isa = PBXGroup;
 			children = (
 				43CA1A8B0FAA5E16ADF93EC7 /* .gitkeep */,
+				1A054B4AAFAFACDBC96541A6 /* AgentInputBarUITests.swift */,
+				E0C2E84ECEC357C60C8A6FE1 /* AgentExecutionPanelUITests.swift */,
 				838BD782711D6C93799C9957 /* APIKeyManagementUITests.swift */,
 				C08FCF97F486CA2B8C2D3A49 /* CostTrackingUITests.swift */,
 				C61CBDBDD93CEC75332950A6 /* CuratorUITestBase.swift */,
@@ -536,6 +546,8 @@
 				1C414BF740475EA0F68BB8D3 /* ModelSelectionUITests.swift */,
 				AFA119CACE070CE9CA6F2E98 /* OnboardingUITests.swift */,
 				37244F4EC0332DE9BD59DDCC /* PhotoGridUITests.swift */,
+				1A7D7555B27D58A76215BE26 /* QuickCommandUITests.swift */,
+				CAC5271504A0EA2A9B833597 /* SessionHistoryUITests.swift */,
 				B51AD7E1160D353AD3A8D519 /* SettingsNavigationUITests.swift */,
 			);
 			path = CuratorUITests;
@@ -973,6 +985,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DAB41E6C3E01AF385F6090CA /* APIKeyManagementUITests.swift in Sources */,
+				175D7F3ED0C8B1EE529F4D0F /* AgentInputBarUITests.swift in Sources */,
+				298118A2E2D04F4669C95277 /* AgentExecutionPanelUITests.swift in Sources */,
 				85CF3FC7C663632E1A908010 /* CostTrackingUITests.swift in Sources */,
 				1426F3D0D7306A60BEA90C00 /* CuratorUITestBase.swift in Sources */,
 				5B600ACA85B31EA6083F904E /* CuratorUITests.swift in Sources */,
@@ -981,6 +995,8 @@
 				90AE0B1C5DFD0480562F63EE /* ModelSelectionUITests.swift in Sources */,
 				D48F0E02C3D35E9494F6DFB8 /* OnboardingUITests.swift in Sources */,
 				AC552C979B1B06087463DA37 /* PhotoGridUITests.swift in Sources */,
+				ADD6F6C8E85541A17D3EE1D7 /* QuickCommandUITests.swift in Sources */,
+				DCBD4E422AE6957BF542A8BE /* SessionHistoryUITests.swift in Sources */,
 				DB65369D7892E2D26977C7D0 /* SettingsNavigationUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

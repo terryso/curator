@@ -4,9 +4,13 @@ struct MockPhotoLibraryRepository: PhotoLibraryRepository {
 
     private let photos: [PhotoAsset]
 
+    var basePath: String? { "/tmp/MockPhotos" }
+
     init(photos: [PhotoAsset] = MockPhotoData.samplePhotos) {
         self.photos = photos
     }
+
+    func currentBasePath() async -> String? { "/tmp/MockPhotos" }
 
     func requestReadAccess() async throws -> Bool { true }
 
@@ -35,6 +39,17 @@ struct MockPhotoLibraryRepository: PhotoLibraryRepository {
             throw DomainError.assetNotFound(assetID)
         }
         return photo.thumbnailData ?? Data()
+    }
+
+    func metadata(for assetID: AssetID) async throws -> AssetMetadata {
+        guard let photo = photos.first(where: { $0.id == assetID }) else {
+            return AssetMetadata(
+                fileName: (assetID.rawValue as NSString).lastPathComponent,
+                fileSize: nil, creationDate: nil, cameraModel: nil,
+                imageWidth: nil, imageHeight: nil, gpsLocation: nil, fileFormat: nil
+            )
+        }
+        return photo.metadata
     }
 
     func updateAsset(_ assetID: AssetID, title: String?) async throws {

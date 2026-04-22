@@ -20,6 +20,8 @@ actor LocalFolderRepository: PhotoLibraryRepository {
         self.folderURL = initialFolderURL
     }
 
+    func currentBasePath() async -> String? { folderURL?.path }
+
     deinit {
         if let url = accessedURL {
             bookmarkManager.releaseBookmark(url)
@@ -61,6 +63,14 @@ actor LocalFolderRepository: PhotoLibraryRepository {
         // Attempt to grant — in production this may present UI for user consent.
         // The bookmark manager decides whether to grant or refuse.
         return await bookmarkManager.requestWriteConsent()
+    }
+
+    func metadata(for assetID: AssetID) async throws -> AssetMetadata {
+        let url = URL(fileURLWithPath: assetID.rawValue)
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            throw InfrastructureError.fileNotFound(path: assetID.rawValue).toDomainError()
+        }
+        return ExifMetadataReader.readMetadata(from: url)
     }
 
     func updateAsset(_ assetID: AssetID, title: String?) async throws {

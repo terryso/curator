@@ -227,6 +227,7 @@ final class DependencyInjectionTests: XCTestCase {
 
 /// Mock PhotoLibraryRepository for DI testing with full protocol conformance.
 private struct DITestMockPhotoLibraryRepository: PhotoLibraryRepository {
+    func currentBasePath() async -> String? { nil }
     func requestReadAccess() async throws -> Bool { true }
     func requestWriteAccess() async throws -> Bool { true }
     func fetchAssets(predicate: PhotoPredicate, pageSize: Int, pageOffset: Int) async throws -> AssetPage {
@@ -234,6 +235,9 @@ private struct DITestMockPhotoLibraryRepository: PhotoLibraryRepository {
     }
     func fetchFullResolutionImage(for assetID: AssetID) async throws -> Data { Data() }
     func fetchThumbnail(for assetID: AssetID, size: CGSize) async throws -> Data { Data() }
+    func metadata(for assetID: AssetID) async throws -> AssetMetadata {
+        AssetMetadata(fileName: "mock.jpg", fileSize: nil, creationDate: nil, cameraModel: nil, imageWidth: nil, imageHeight: nil, gpsLocation: nil, fileFormat: nil)
+    }
     func updateAsset(_ assetID: AssetID, title: String?) async throws {}
     func deleteAssets(_ assetIDs: [AssetID]) async throws {}
     func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {}

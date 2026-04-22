@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-18
-last_updated: 2026-04-22 (Story 4-1 done)
+last_updated: 2026-04-22 (Story 4-2 review)
 
 project: curator
 project_key: NOKEY
@@ -76,7 +76,7 @@ development_status:
   # === Epic 4: "Safety Net" — 操作安全与数据保护 ===
   epic-4: in-progress
   4-1-write-permission-progressive: done
-  4-2-operation-manager-core: backlog
+  4-2-operation-manager-core: review
   4-3-batch-rollback-and-undo: backlog
   4-4-confirmation-workflow-ui: backlog
   4-5-read-only-mode-safety: backlog

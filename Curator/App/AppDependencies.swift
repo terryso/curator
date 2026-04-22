@@ -34,6 +34,9 @@ final class AppDependencies: ObservableObject {
     /// Session manager — nil until registered.
     var sessionManager: (any SessionManagerProtocol)?
 
+    /// Operation manager — nil until registered.
+    var operationManager: (any OperationManaging)?
+
     /// Permission state — manages read/write permission tracking.
     var permissionState: PermissionState?
 
@@ -126,6 +129,11 @@ final class AppDependencies: ObservableObject {
         let sessionContext = ModelContext(manager.container)
         let sessionMgr = SessionManager(modelContext: sessionContext)
         self.sessionManager = sessionMgr
+
+        // Register OperationManager with a separate ModelContext
+        let operationContext = ModelContext(manager.container)
+        let opManager = OperationManager(modelContext: operationContext)
+        self.operationManager = opManager
     }
 
     /// Registers the agent infrastructure: tool registry and agent factory.

@@ -380,6 +380,8 @@ private struct MockPhotoLibraryRepository: PhotoLibraryRepository {
     private let secondPageError: DomainError?
     private let delay: TimeInterval
 
+    func currentBasePath() async -> String? { nil }
+
     init(
         pages: [AssetPage] = [],
         error: DomainError? = nil,
@@ -432,6 +434,9 @@ private struct MockPhotoLibraryRepository: PhotoLibraryRepository {
         return Data()
     }
 
+    func metadata(for assetID: AssetID) async throws -> AssetMetadata {
+        AssetMetadata(fileName: "mock.jpg", fileSize: nil, creationDate: nil, cameraModel: nil, imageWidth: nil, imageHeight: nil, gpsLocation: nil, fileFormat: nil)
+    }
     func updateAsset(_ assetID: AssetID, title: String?) async throws {}
     func deleteAssets(_ assetIDs: [AssetID]) async throws {}
     func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {}

@@ -435,6 +435,8 @@ private struct MockOnboardingRepository: PhotoLibraryRepository {
     private let assets: [PhotoAsset]
     private let hasMore: Bool
 
+    func currentBasePath() async -> String? { nil }
+
     init(
         shouldGrantPermission: Bool = true,
         assets: [PhotoAsset] = [],
@@ -473,6 +475,9 @@ private struct MockOnboardingRepository: PhotoLibraryRepository {
         return Data()
     }
 
+    func metadata(for assetID: AssetID) async throws -> AssetMetadata {
+        AssetMetadata(fileName: "mock.jpg", fileSize: nil, creationDate: nil, cameraModel: nil, imageWidth: nil, imageHeight: nil, gpsLocation: nil, fileFormat: nil)
+    }
     func updateAsset(_ assetID: AssetID, title: String?) async throws {}
     func deleteAssets(_ assetIDs: [AssetID]) async throws {}
     func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {}

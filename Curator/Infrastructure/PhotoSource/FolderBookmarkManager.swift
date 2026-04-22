@@ -4,9 +4,12 @@ import Foundation
 /// Manages security-scoped folder bookmarks for photo library access.
 ///
 /// Handles folder selection via NSOpenPanel, bookmark persistence to UserDefaults,
-/// and security-scoped resource access lifecycle.
+/// and security-scoped resource access lifecycle. Write access is tracked as an
+/// application-level consent flag; the underlying bookmark already carries read-write
+/// capability via the `com.apple.security.files.user-selected.read-write` entitlement.
 struct FolderBookmarkManager: FolderBookmarkManaging, @unchecked Sendable {
     private let bookmarkKey = "curator.folderBookmark"
+    private let writeAccessKey = "curator.writeAccessGranted"
 
     var hasValidBookmark: Bool {
         get async {
@@ -42,6 +45,10 @@ struct FolderBookmarkManager: FolderBookmarkManaging, @unchecked Sendable {
                 return nil
             }
         }
+    }
+
+    var hasWriteAccess: Bool {
+        get async { UserDefaults.standard.bool(forKey: writeAccessKey) }
     }
 
     @MainActor
@@ -88,5 +95,21 @@ struct FolderBookmarkManager: FolderBookmarkManaging, @unchecked Sendable {
 
     func releaseBookmark(_ url: URL) {
         url.stopAccessingSecurityScopedResource()
+    }
+
+    func grantWriteAccess() async {
+        UserDefaults.standard.set(true, forKey: writeAccessKey)
+    }
+
+    func revokeWriteAccess() async {
+        UserDefaults.standard.set(false, forKey: writeAccessKey)
+    }
+
+    func requestWriteConsent() async -> Bool {
+        // In production, the bookmark already carries read-write capability
+        // via entitlements. Granting is automatic (the user has already
+        // consented by selecting the folder in NSOpenPanel).
+        UserDefaults.standard.set(true, forKey: writeAccessKey)
+        return true
     }
 }

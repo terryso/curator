@@ -8,4 +8,5 @@ enum UserFacingError: Sendable {
     case readOnly(title: String, message: String)
     case retryable(title: String, message: String)
     case permissionRequired(title: String, action: String)
+    case writePermissionRequired(title: String, message: String, action: String)
 }

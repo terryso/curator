@@ -302,10 +302,14 @@ final class CoreModelsTests: XCTestCase {
 
 /// Mock implementation of FolderBookmarkManaging for testing.
 private struct MockFolderBookmarkManager: FolderBookmarkManaging {
-    var hasValidBookmark: Bool { false }
-    var currentFolderURL: URL? { nil }
+    var hasValidBookmark: Bool { get async { false } }
+    var currentFolderURL: URL? { get async { nil } }
+    var hasWriteAccess: Bool { get async { false } }
     func selectAndBookmarkFolder() async throws -> URL { URL(fileURLWithPath: "/mock/photos") }
     func loadBookmark() async throws -> URL? { nil }
     func accessBookmark(_ url: URL) -> Bool { true }
     func releaseBookmark(_ url: URL) {}
+    func grantWriteAccess() async {}
+    func revokeWriteAccess() async {}
+    func requestWriteConsent() async -> Bool { true }
 }

@@ -26,6 +26,12 @@ struct MainWorkspaceView: View {
     /// Whether the session history sheet is visible.
     @State private var showSessionHistory = false
 
+    /// Whether the write permission prompt is visible.
+    @State private var showWritePermissionPrompt = false
+
+    /// Permission state observing read/write mode — sourced from AppDependencies.
+    var permissionState: PermissionState? { dependencies.permissionState }
+
     init(
         photoViewModel: PhotoLibraryViewModel,
         dependencies: AppDependencies,
@@ -69,6 +75,17 @@ struct MainWorkspaceView: View {
         )
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                // Read-only mode indicator
+                if let permState = permissionState, permState.isReadOnly {
+                    Button {
+                        showWritePermissionPrompt = true
+                    } label: {
+                        Label("只读模式", systemImage: "lock.fill")
+                    }
+                    .help("当前为只读模式，点击授权写入")
+                    .tint(.secondary)
+                }
+
                 // Photo library toggle -- sidebar visibility
                 Button {
                     navigationModel.toggleSidebar()
@@ -132,6 +149,24 @@ struct MainWorkspaceView: View {
                     }
                 )
             }
+        }
+        .sheet(isPresented: $showWritePermissionPrompt) {
+            WritePermissionPromptView(
+                onGrant: {
+                    showWritePermissionPrompt = false
+                    _Concurrency.Task { @MainActor in
+                        do {
+                            _ = try await permissionState?.requestWritePermission()
+                        } catch {
+                            // Permission request failed — user stays in read-only mode
+                            // The lock icon remains visible so they can retry
+                        }
+                    }
+                },
+                onCancel: {
+                    showWritePermissionPrompt = false
+                }
+            )
         }
     }
 }

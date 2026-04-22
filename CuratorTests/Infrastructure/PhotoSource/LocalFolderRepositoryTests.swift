@@ -4,10 +4,17 @@ import XCTest
 @testable import Curator
 
 /// Test double for FolderBookmarkManaging that avoids NSOpenPanel.
-struct TestBookmarkManager: FolderBookmarkManaging {
+/// Uses a class to support mutable state without `mutating` protocol methods.
+final class TestBookmarkManager: FolderBookmarkManaging, @unchecked Sendable {
     var mockBookmarkURL: URL?
     var mockHasValidBookmark: Bool = false
     var shouldThrow = false
+    var mockHasWriteAccess: Bool = false
+    /// Controls whether requestWriteConsent grants or refuses.
+    /// Defaults to true (grant). Set to false to simulate user refusal.
+    var shouldGrantWrite: Bool = true
+
+    init() {}
 
     var hasValidBookmark: Bool {
         get async { mockHasValidBookmark }
@@ -15,6 +22,10 @@ struct TestBookmarkManager: FolderBookmarkManaging {
 
     var currentFolderURL: URL? {
         get async { mockBookmarkURL }
+    }
+
+    var hasWriteAccess: Bool {
+        get async { mockHasWriteAccess }
     }
 
     func selectAndBookmarkFolder() async throws -> URL {
@@ -34,6 +45,21 @@ struct TestBookmarkManager: FolderBookmarkManaging {
     }
 
     func releaseBookmark(_ url: URL) {}
+
+    func grantWriteAccess() async {
+        mockHasWriteAccess = true
+    }
+
+    func revokeWriteAccess() async {
+        mockHasWriteAccess = false
+    }
+
+    func requestWriteConsent() async -> Bool {
+        if shouldGrantWrite {
+            mockHasWriteAccess = true
+        }
+        return mockHasWriteAccess
+    }
 }
 
 /// Bookmark manager that tracks access and release calls for verification.
@@ -47,6 +73,7 @@ final class TrackingBookmarkManager: FolderBookmarkManaging, @unchecked Sendable
     private var _accessedURLs: [URL] = []
     private var _releasedURLs: [URL] = []
     private var _selectedFolderCount = 0
+    private var _writeAccessGranted = false
 
     var accessedURLs: [URL] {
         queue.sync { _accessedURLs }
@@ -73,6 +100,10 @@ final class TrackingBookmarkManager: FolderBookmarkManaging, @unchecked Sendable
         get async { mockBookmarkURL }
     }
 
+    var hasWriteAccess: Bool {
+        get async { queue.sync { _writeAccessGranted } }
+    }
+
     func selectAndBookmarkFolder() async throws -> URL {
         if shouldThrow {
             throw InfrastructureError.folderAccessDenied(reason: "mock error")
@@ -97,6 +128,19 @@ final class TrackingBookmarkManager: FolderBookmarkManaging, @unchecked Sendable
     func releaseBookmark(_ url: URL) {
         queue.sync { _releasedURLs.append(url) }
     }
+
+    func grantWriteAccess() async {
+        queue.sync { _writeAccessGranted = true }
+    }
+
+    func revokeWriteAccess() async {
+        queue.sync { _writeAccessGranted = false }
+    }
+
+    func requestWriteConsent() async -> Bool {
+        queue.sync { _writeAccessGranted = true }
+        return true
+    }
 }
 
 /// Bookmark manager that returns URLs sequentially from a list on each loadBookmark call.
@@ -110,6 +154,7 @@ final class SequentialLoadBookmarkManager: FolderBookmarkManaging, @unchecked Se
     private var _loadCount = 0
     private var _accessedURLs: [URL] = []
     private var _releasedURLs: [URL] = []
+    private var _writeAccessGranted = false
 
     var accessedURLs: [URL] {
         queue.sync { _accessedURLs }
@@ -124,6 +169,10 @@ final class SequentialLoadBookmarkManager: FolderBookmarkManaging, @unchecked Se
 
     var currentFolderURL: URL? {
         get async { urls.first }
+    }
+
+    var hasWriteAccess: Bool {
+        get async { queue.sync { _writeAccessGranted } }
     }
 
     func selectAndBookmarkFolder() async throws -> URL {
@@ -147,6 +196,19 @@ final class SequentialLoadBookmarkManager: FolderBookmarkManaging, @unchecked Se
 
     func releaseBookmark(_ url: URL) {
         queue.sync { _releasedURLs.append(url) }
+    }
+
+    func grantWriteAccess() async {
+        queue.sync { _writeAccessGranted = true }
+    }
+
+    func revokeWriteAccess() async {
+        queue.sync { _writeAccessGranted = false }
+    }
+
+    func requestWriteConsent() async -> Bool {
+        queue.sync { _writeAccessGranted = true }
+        return true
     }
 }
 

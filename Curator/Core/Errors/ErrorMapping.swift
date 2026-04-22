@@ -49,11 +49,20 @@ extension DomainError {
                 title: "分析不可用",
                 message: "无法分析照片，请稍后重试。"
             )
-        case .insufficientPermission:
-            return .permissionRequired(
-                title: "需要访问权限",
-                action: "请选择照片文件夹以授予访问权限"
-            )
+        case .insufficientPermission(let level):
+            switch level {
+            case .read:
+                return .permissionRequired(
+                    title: "需要访问权限",
+                    action: "请选择照片文件夹以授予访问权限"
+                )
+            case .write:
+                return .writePermissionRequired(
+                    title: "需要写入权限",
+                    message: "此操作需要写入权限才能执行。请在弹出的对话框中确认，或在系统设置中授予权限。",
+                    action: "授权写入"
+                )
+            }
         case .operationCancelled:
             return .readOnly(
                 title: "已取消",

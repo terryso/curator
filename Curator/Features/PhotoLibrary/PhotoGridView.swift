@@ -82,6 +82,8 @@ struct PhotoGridView: View {
                 return m
             case .permissionRequired(_, let action):
                 return action
+            case .writePermissionRequired(_, let m, _):
+                return m
             }
         }()
 
@@ -159,6 +161,8 @@ struct PhotoGridView: View {
                 return (t, m)
             case .permissionRequired(let t, let action):
                 return (t, action)
+            case .writePermissionRequired(let t, let m, _):
+                return (t, m)
             }
         }()
 

@@ -34,10 +34,14 @@ final class AppDependencies: ObservableObject {
     /// Session manager — nil until registered.
     var sessionManager: (any SessionManagerProtocol)?
 
+    /// Permission state — manages read/write permission tracking.
+    var permissionState: PermissionState?
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()
         photoRepository = LocalFolderRepository(bookmarkManager: bookmarkManager)
+        permissionState = PermissionState(repository: photoRepository)
     }
 
     /// Registers a real LocalFolderRepository with a pre-set temp directory for testing.
@@ -54,11 +58,13 @@ final class AppDependencies: ObservableObject {
             bookmarkManager: bookmarkManager,
             initialFolderURL: tempDir
         )
+        permissionState = PermissionState(repository: photoRepository)
     }
 
     /// Registers a mock repository for UI testing.
     func registerMockRepository() {
         photoRepository = MockPhotoLibraryRepository()
+        permissionState = PermissionState(repository: photoRepository)
     }
 
     private func createSamplePhotos(in directory: URL) {

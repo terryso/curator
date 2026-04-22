@@ -151,9 +151,10 @@ final class ErrorTypeTests: XCTestCase {
             .readOnly(title: "Error", message: "Something went wrong"),
             .retryable(title: "Network Error", message: "Please try again"),
             .permissionRequired(title: "Access Denied", action: "Open Settings"),
+            .writePermissionRequired(title: "Write Access", message: "Need write permission", action: "Grant"),
         ]
 
-        XCTAssertEqual(errors.count, 3)
+        XCTAssertEqual(errors.count, 4)
     }
 
     /// [P1] UserFacingError.readOnly carries title and message
@@ -220,6 +221,8 @@ final class ErrorTypeTests: XCTestCase {
             XCTAssertFalse(message.contains("PHImageErrorDomain"))
         case .permissionRequired:
             break
+        case .writePermissionRequired(_, let message, _):
+            XCTAssertFalse(message.contains("PHImageErrorDomain"))
         }
     }
 
@@ -299,6 +302,7 @@ final class ErrorTypeTests: XCTestCase {
             .assetNotFound(AssetID(rawValue: "test")),
             .analysisFailed(reason: "test"),
             .insufficientPermission(required: .read),
+            .insufficientPermission(required: .write),
             .operationCancelled,
             .invalidState(reason: "test"),
         ]
@@ -314,6 +318,10 @@ final class ErrorTypeTests: XCTestCase {
                 XCTAssertFalse(message.isEmpty)
             case .permissionRequired(let title, let action):
                 XCTAssertFalse(title.isEmpty)
+                XCTAssertFalse(action.isEmpty)
+            case .writePermissionRequired(let title, let message, let action):
+                XCTAssertFalse(title.isEmpty)
+                XCTAssertFalse(message.isEmpty)
                 XCTAssertFalse(action.isEmpty)
             }
         }

@@ -55,20 +55,97 @@ actor LocalFolderRepository: PhotoLibraryRepository {
         }
     }
 
-    nonisolated func requestWriteAccess() async throws -> Bool {
-        false
+    func requestWriteAccess() async throws -> Bool {
+        // If already granted, return true immediately
+        if await bookmarkManager.hasWriteAccess { return true }
+        // Attempt to grant — in production this may present UI for user consent.
+        // The bookmark manager decides whether to grant or refuse.
+        return await bookmarkManager.requestWriteConsent()
     }
 
-    nonisolated func updateAsset(_ assetID: AssetID, title: String?) async throws {
-        // Story 4.1 implementation
+    func updateAsset(_ assetID: AssetID, title: String?) async throws {
+        guard await bookmarkManager.hasWriteAccess else {
+            throw DomainError.insufficientPermission(required: .write)
+        }
+        guard let newTitle = title, !newTitle.isEmpty else { return }
+        guard !newTitle.contains("/") && !newTitle.contains(":") else {
+            throw DomainError.invalidState(reason: "文件名不能包含 / 或 :")
+        }
+        let sourceURL = URL(fileURLWithPath: assetID.rawValue)
+        let directory = sourceURL.deletingLastPathComponent()
+        let ext = sourceURL.pathExtension
+        let fileName = ext.isEmpty ? newTitle : "\(newTitle).\(ext)"
+        let destURL = directory.appendingPathComponent(fileName)
+        guard !FileManager.default.fileExists(atPath: destURL.path) else {
+            throw DomainError.invalidState(reason: "文件名已被占用: \(fileName)")
+        }
+        do {
+            try FileManager.default.moveItem(at: sourceURL, to: destURL)
+        } catch let error as NSError {
+            throw InfrastructureError.fileWriteFailed(
+                path: assetID.rawValue,
+                reason: error.localizedDescription
+            ).toDomainError()
+        }
+        cachedFileURLs = nil
     }
 
-    nonisolated func deleteAssets(_ assetIDs: [AssetID]) async throws {
-        // Story 4.1 implementation
+    func deleteAssets(_ assetIDs: [AssetID]) async throws {
+        guard await bookmarkManager.hasWriteAccess else {
+            throw DomainError.insufficientPermission(required: .write)
+        }
+        guard !assetIDs.isEmpty else { return }
+        for assetID in assetIDs {
+            let url = URL(fileURLWithPath: assetID.rawValue)
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                throw InfrastructureError.fileNotFound(path: assetID.rawValue).toDomainError()
+            }
+            var resultURL: NSURL?
+            do {
+                try FileManager.default.trashItem(at: url, resultingItemURL: &resultURL)
+            } catch let error as NSError {
+                throw InfrastructureError.fileWriteFailed(
+                    path: assetID.rawValue,
+                    reason: error.localizedDescription
+                ).toDomainError()
+            }
+        }
+        cachedFileURLs = nil
     }
 
-    nonisolated func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {
-        // Story 4.1 implementation
+    func moveAssets(_ assetIDs: [AssetID], to directory: String) async throws {
+        guard await bookmarkManager.hasWriteAccess else {
+            throw DomainError.insufficientPermission(required: .write)
+        }
+        guard !assetIDs.isEmpty else { return }
+        guard !directory.contains("..") else {
+            throw DomainError.invalidState(reason: "目录路径不能包含 ..")
+        }
+        guard let baseFolder = folderURL else {
+            throw InfrastructureError.folderAccessDenied(reason: "未选择照片文件夹").toDomainError()
+        }
+        let destDir = baseFolder.appendingPathComponent(directory, isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: destDir, withIntermediateDirectories: true)
+        } catch let error as NSError {
+            throw InfrastructureError.fileWriteFailed(
+                path: destDir.path,
+                reason: error.localizedDescription
+            ).toDomainError()
+        }
+        for assetID in assetIDs {
+            let sourceURL = URL(fileURLWithPath: assetID.rawValue)
+            let destURL = destDir.appendingPathComponent(sourceURL.lastPathComponent)
+            do {
+                try FileManager.default.moveItem(at: sourceURL, to: destURL)
+            } catch let error as NSError {
+                throw InfrastructureError.fileWriteFailed(
+                    path: assetID.rawValue,
+                    reason: error.localizedDescription
+                ).toDomainError()
+            }
+        }
+        cachedFileURLs = nil
     }
 
     nonisolated func observeSourceChanges() -> AsyncStream<SourceChange> {

@@ -10,7 +10,7 @@ import Observation
 /// SwiftUI views observe this object directly via @Observable.
 @MainActor
 @Observable
-final class AgentJob {
+final class AgentJob: Equatable {
 
     // MARK: - Public State
 
@@ -169,6 +169,12 @@ final class AgentJob {
     private func updateStep(id: UUID, _ update: (inout AgentStep) -> Void) {
         guard let index = steps.firstIndex(where: { $0.id == id }) else { return }
         update(&steps[index])
+    }
+
+    // MARK: - Equatable (identity-based)
+
+    nonisolated static func == (lhs: AgentJob, rhs: AgentJob) -> Bool {
+        lhs === rhs
     }
 
 }

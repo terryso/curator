@@ -53,3 +53,8 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 ## Deferred from: code review of 3-3-agent-input-bar (2026-04-21)
 
 - Tests use `Task.sleep(for: .milliseconds(100))` to wait for AgentJob state transitions — fragile under CI load. Pattern pre-exists from Story 3.1/3.2. A future story should introduce a proper async expectation or EventBus pattern for deterministic state transition testing.
+
+## Deferred from: code review of 3-4-agent-execution-panel (2026-04-22)
+
+- `formattedDuration` 仅展示整数秒 (`Int(summary.duration)`)，丢弃亚秒精度。执行时间在 0.5-0.9 秒的任务会显示 "0s"。低优先级设计选择。
+- UI 文本硬编码英文（"Starting execution...", "Waiting", "Running" 等）而非中文。可能是有意的产品决策，与中文用户故事不一致。

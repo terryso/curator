@@ -20,6 +20,9 @@ struct MainWorkspaceView: View {
     /// Chat input ViewModel managing Agent instruction submission and execution state.
     @State private var chatInputViewModel: ChatInputViewModel
 
+    /// Execution ViewModel observing AgentJob state for the execution panel.
+    @State private var executionViewModel: AgentExecutionViewModel = AgentExecutionViewModel()
+
     init(
         photoViewModel: PhotoLibraryViewModel,
         dependencies: AppDependencies,
@@ -47,8 +50,10 @@ struct MainWorkspaceView: View {
                     Spacer()
                     QuickCommandSuggestions(viewModel: chatInputViewModel)
                     Spacer()
+                } else if chatInputViewModel.agentJob != nil {
+                    AgentExecutionPanel(viewModel: executionViewModel)
                 } else {
-                    AgentContentAreaPlaceholder()
+                    Spacer()
                 }
 
                 // Bottom fixed input bar
@@ -87,6 +92,12 @@ struct MainWorkspaceView: View {
             minWidth: navigationModel.minimumWindowWidth,
             minHeight: navigationModel.minimumWindowHeight
         )
+        .onAppear {
+            executionViewModel.agentJob = chatInputViewModel.agentJob
+        }
+        .onChange(of: chatInputViewModel.agentJob) { _, _ in
+            executionViewModel.agentJob = chatInputViewModel.agentJob
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResizeNotification)) { notification in
             guard let window = notification.object as? NSWindow else { return }
             navigationModel.windowWidth = Double(window.frame.width)

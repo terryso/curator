@@ -10,7 +10,7 @@ final class SwiftDataManager: ObservableObject {
     let container: ModelContainer
 
     init(inMemory: Bool = false) {
-        let schema = Schema([CostRecordEntity.self])
+        let schema = Schema([CostRecordEntity.self, SessionEntity.self])
         let config = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: inMemory

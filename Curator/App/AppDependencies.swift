@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import OpenAgentSDK
 
 /// Dependency injection container for the application layer.
@@ -29,6 +30,9 @@ final class AppDependencies: ObservableObject {
 
     /// Agent factory — nil until registered.
     var curatorAgentFactory: CuratorAgentFactory?
+
+    /// Session manager — nil until registered.
+    var sessionManager: (any SessionManagerProtocol)?
 
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
@@ -111,6 +115,11 @@ final class AppDependencies: ObservableObject {
         let gateway = LLMGateway(providers: providers, costTracker: tracker)
         llmGateway = gateway
         llmProvider = primaryProvider
+
+        // Register SessionManager with a separate ModelContext
+        let sessionContext = ModelContext(manager.container)
+        let sessionMgr = SessionManager(modelContext: sessionContext)
+        self.sessionManager = sessionMgr
     }
 
     /// Registers the agent infrastructure: tool registry and agent factory.

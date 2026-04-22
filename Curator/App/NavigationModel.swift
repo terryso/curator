@@ -90,12 +90,14 @@ final class NavigationModel: ObservableObject {
         activePanel = panel
     }
 
-    // MARK: - Toolbar Actions (Placeholders)
+    // MARK: - Toolbar Actions
 
-    /// Create a new session (placeholder for Cmd+N).
-    /// Story 3.5 will implement actual session management.
+    /// Callback triggered when a new session is requested (Cmd+N or toolbar).
+    var onNewSession: (() -> Void)?
+
+    /// Create a new session via the registered callback.
     func newSession() {
-        // Placeholder — no-op
+        onNewSession?()
     }
 
     /// Request to open Settings window (placeholder for Cmd+,).

@@ -40,7 +40,7 @@ struct CuratorApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("New Session") {
-                    // Story 3.5 will implement full session management
+                    NotificationCenter.default.post(name: .newSessionRequested, object: nil)
                 }
                 .keyboardShortcut("n", modifiers: .command)
             }

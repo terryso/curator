@@ -23,6 +23,9 @@ struct MainWorkspaceView: View {
     /// Execution ViewModel observing AgentJob state for the execution panel.
     @State private var executionViewModel: AgentExecutionViewModel = AgentExecutionViewModel()
 
+    /// Whether the session history sheet is visible.
+    @State private var showSessionHistory = false
+
     init(
         photoViewModel: PhotoLibraryViewModel,
         dependencies: AppDependencies,
@@ -45,7 +48,7 @@ struct MainWorkspaceView: View {
         } detail: {
             // Detail: Agent execution area + bottom input bar
             VStack(spacing: 0) {
-                // Main content area — Quick commands or Agent execution panel
+                // Main content area -- Quick commands or Agent execution panel
                 if chatInputViewModel.quickCommandsVisible {
                     Spacer()
                     QuickCommandSuggestions(viewModel: chatInputViewModel)
@@ -66,16 +69,16 @@ struct MainWorkspaceView: View {
         )
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                // Photo library toggle — sidebar visibility
+                // Photo library toggle -- sidebar visibility
                 Button {
                     navigationModel.toggleSidebar()
                 } label: {
                     Label("Photo Library", systemImage: "sidebar.leading")
                 }
 
-                // Session history — placeholder (Story 3.5)
+                // Session history button
                 Button {
-                    // Placeholder: session history
+                    showSessionHistory = true
                 } label: {
                     Label("Session History", systemImage: "clock.arrow.circlepath")
                 }
@@ -94,6 +97,10 @@ struct MainWorkspaceView: View {
         )
         .onAppear {
             executionViewModel.agentJob = chatInputViewModel.agentJob
+            // Connect new session callback
+            navigationModel.onNewSession = { [chatInputViewModel] in
+                chatInputViewModel.createNewSession()
+            }
         }
         .onChange(of: chatInputViewModel.agentJob) { _, _ in
             executionViewModel.agentJob = chatInputViewModel.agentJob
@@ -102,6 +109,29 @@ struct MainWorkspaceView: View {
             guard let window = notification.object as? NSWindow else { return }
             navigationModel.windowWidth = Double(window.frame.width)
             navigationModel.windowHeight = Double(window.frame.height)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .newSessionRequested)) { _ in
+            chatInputViewModel.createNewSession()
+        }
+        .sheet(isPresented: $showSessionHistory) {
+            if let sessionManager = dependencies.sessionManager {
+                SessionHistorySheet(
+                    sessionManager: sessionManager,
+                    onSessionSelected: { session in
+                        showSessionHistory = false
+                        // Restore session through SessionManager to update active state
+                        _Concurrency.Task {
+                            if let current = chatInputViewModel.currentSession {
+                                try? await sessionManager.saveSession(current)
+                            }
+                            _ = try? await sessionManager.switchToSession(session.id)
+                        }
+                        chatInputViewModel.currentSession = session
+                        chatInputViewModel.agentJob = nil
+                        chatInputViewModel.isSubmitting = false
+                    }
+                )
+            }
         }
     }
 }

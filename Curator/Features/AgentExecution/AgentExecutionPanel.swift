@@ -69,7 +69,16 @@ struct AgentExecutionPanel: View {
             .onChange(of: viewModel.steps.count) { _, _ in
                 scrollToLatestStep(proxy: proxy)
             }
+            .onChange(of: reasoningMessageCount) { _, _ in
+                scrollToLatestStep(proxy: proxy)
+            }
         }
+    }
+
+    /// Total count of reasoning messages across all steps, used to trigger
+    /// auto-scroll when new streaming reasoning content arrives.
+    private var reasoningMessageCount: Int {
+        viewModel.steps.reduce(0) { $0 + $1.reasoningMessages.count }
     }
 
     /// Scrolls to the latest (last) step in the list.

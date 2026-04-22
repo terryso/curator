@@ -5,14 +5,28 @@ import SwiftUI
 /// Implements UX-DR10: reasoning content shown in indigo-tinted card with
 /// italic/secondary text, brain icon, and expand/collapse interaction.
 ///
+/// Supports streaming mode where a blinking cursor is shown at the end of text
+/// to indicate the Agent is actively generating reasoning content. When
+/// `isStreaming` is true, the text is displayed without line limits so the
+/// full accumulated content is visible.
+///
 /// Default state shows first 2 lines; tap to expand full content.
 struct ReasoningBubbleView: View {
 
     /// The reasoning message text to display.
     let message: String
 
+    /// Whether the Agent is actively streaming reasoning text.
+    ///
+    /// When true, a blinking cursor is appended to the text and the view
+    /// expands to show all content (no line limit).
+    var isStreaming: Bool = false
+
     /// Whether the bubble is expanded to show full content.
     @State private var isExpanded = false
+
+    /// Drives the blinking cursor animation when streaming.
+    @State private var cursorVisible = true
 
     /// Whether the user prefers reduced motion.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -32,12 +46,26 @@ struct ReasoningBubbleView: View {
                     .foregroundStyle(.indigo)
                     .padding(.top, 2)
 
-                Text(message)
-                    .font(.body.italic())
-                    .foregroundStyle(.secondary)
-                    .lineLimit(isExpanded ? nil : 2)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 0) {
+                    Text(message)
+                        .font(.body.italic())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(isStreaming || isExpanded ? nil : 2)
+                        .multilineTextAlignment(.leading)
+
+                    if isStreaming && !reduceMotion {
+                        Text("|")
+                            .font(.body.monospaced().italic())
+                            .foregroundStyle(.secondary)
+                            .opacity(cursorVisible ? 1 : 0)
+                            .onAppear {
+                                withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                                    cursorVisible = false
+                                }
+                            }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(12)
             .background(
@@ -47,12 +75,21 @@ struct ReasoningBubbleView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Agent reasoning: \(messagePrefix)")
+        .accessibilityLabel(accessibilityText)
     }
 
     /// Adaptive opacity for indigo background based on color scheme.
     private var colorOpacity: Double {
         colorScheme == .dark ? 0.2 : 0.08
+    }
+
+    /// Combined accessibility label for the bubble.
+    private var accessibilityText: String {
+        var label = "Agent reasoning: \(messagePrefix)"
+        if isStreaming {
+            label += ", generating"
+        }
+        return label
     }
 
     /// Prefix of the message for accessibility label.
@@ -69,6 +106,7 @@ struct ReasoningBubbleView: View {
     VStack(spacing: 16) {
         ReasoningBubbleView(message: "Found 3 similar photos with matching EXIF timestamps and visual similarity score above 0.95.")
         ReasoningBubbleView(message: "Short reasoning.")
+        ReasoningBubbleView(message: "Analyzing photo metadata and comparing visual features across the library", isStreaming: true)
     }
     .padding()
     .frame(width: 400)

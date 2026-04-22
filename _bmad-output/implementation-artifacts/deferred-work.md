@@ -58,3 +58,8 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - `formattedDuration` 仅展示整数秒 (`Int(summary.duration)`)，丢弃亚秒精度。执行时间在 0.5-0.9 秒的任务会显示 "0s"。低优先级设计选择。
 - UI 文本硬编码英文（"Starting execution...", "Waiting", "Running" 等）而非中文。可能是有意的产品决策，与中文用户故事不一致。
+
+## Deferred from: code review of 3-6-agent-streaming-comm.md (2026-04-22)
+
+- Pre-tool partialMessage reasoning (arriving before any toolUse event) falls through to `AgentJob.reasoningMessages` array which is not rendered in any view. The messages are silently dropped from the UI. This is a pre-existing limitation of the `stepIDMap.latestValue ?? UUID()` fallback pattern -- pre-existing
+- No explicit `withAnimation(.easeInOut(duration: 0.2))` for streaming text append in ReasoningBubbleView (AC5 spec says "smooth append"). SwiftUI @Observable implicit animation may handle this. Verify visually during QA -- deferred, verify visually

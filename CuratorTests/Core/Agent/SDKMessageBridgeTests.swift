@@ -183,18 +183,151 @@ final class SDKMessageBridgeTests: XCTestCase {
         }
     }
 
-    /// [P1] .partialMessage is ignored (Story 3.6 optimization)
-    func testSDKMessageBridgePartialMessageIgnored() async throws {
+    // MARK: - AC3: PartialMessage Streaming (Story 3.6)
+
+    /// [P0] Single partialMessage with text exceeding flush threshold produces stepReasoning.
+    /// Story 3.6: partialMessage is no longer ignored — it maps to stepReasoning events.
+    func testPartialMessageMapToStepReasoning() async throws {
         let bridge = SDKMessageBridge()
 
+        // First, establish a step context via toolUse
+        let toolUseMsg = SDKMessage.toolUse(SDKMessage.ToolUseData(
+            toolName: "analyze",
+            toolUseId: "partial-test-1",
+            input: "{}"
+        ))
+        _ = bridge.mapSDKMessage(toolUseMsg)
+
+        // Send a partialMessage with text longer than flush threshold (20 chars)
+        let longText = "I will analyze the photos by looking at their metadata."
         let message = SDKMessage.partialMessage(SDKMessage.PartialData(
-            text: "partial text"
+            text: longText
         ))
 
         let events = bridge.mapSDKMessage(message)
 
-        XCTAssertTrue(events.isEmpty,
-            ".partialMessage should be ignored (no events produced)")
+        XCTAssertTrue(events.contains { if case .stepReasoning = $0 { return true } else { return false } },
+            ".partialMessage with text exceeding threshold should map to .stepReasoning event")
+    }
+
+    /// [P0] Multiple consecutive partialMessage events accumulate in buffer
+    /// and produce stepReasoning when threshold is reached.
+    func testPartialMessageAccumulation() async throws {
+        let bridge = SDKMessageBridge()
+
+        // Establish step context
+        let toolUseMsg = SDKMessage.toolUse(SDKMessage.ToolUseData(
+            toolName: "scan",
+            toolUseId: "partial-test-2",
+            input: "{}"
+        ))
+        _ = bridge.mapSDKMessage(toolUseMsg)
+
+        // Send short fragments that individually don't exceed threshold
+        let fragments = ["Hello", " world", " this", " is", " a", " test", " message"]
+        var totalReasoningEvents = 0
+
+        for fragment in fragments {
+            let message = SDKMessage.partialMessage(SDKMessage.PartialData(text: fragment))
+            let events = bridge.mapSDKMessage(message)
+            totalReasoningEvents += events.filter { if case .stepReasoning = $0 { return true } else { return false } }.count
+        }
+
+        XCTAssertGreaterThan(totalReasoningEvents, 0,
+            "Accumulated partialMessage fragments should produce at least one stepReasoning event")
+    }
+
+    /// [P0] .result(.success) event triggers flush of remaining partialTextBuffer.
+    func testPartialMessageFlushOnResult() async throws {
+        let bridge = SDKMessageBridge()
+
+        // Establish step context
+        let toolUseMsg = SDKMessage.toolUse(SDKMessage.ToolUseData(
+            toolName: "analyze",
+            toolUseId: "partial-test-3",
+            input: "{}"
+        ))
+        _ = bridge.mapSDKMessage(toolUseMsg)
+
+        // Send short fragment (below threshold, should stay in buffer)
+        // "Short" is 5 chars, well below the 20-char threshold
+        let shortFragment = SDKMessage.partialMessage(SDKMessage.PartialData(text: "Short"))
+        let preFlushEvents = bridge.mapSDKMessage(shortFragment)
+        let preFlushReasoning = preFlushEvents.filter { if case .stepReasoning = $0 { return true } else { return false } }.count
+
+        // Confirm the fragment did NOT trigger a flush on its own
+        XCTAssertEqual(preFlushReasoning, 0,
+            "Short fragment below threshold should not produce stepReasoning yet")
+
+        // Send .result(.success) which should flush the buffer
+        let resultMsg = SDKMessage.result(SDKMessage.ResultData(
+            subtype: .success,
+            text: "All done",
+            usage: nil,
+            numTurns: 1,
+            durationMs: 1000
+        ))
+
+        let resultEvents = bridge.mapSDKMessage(resultMsg)
+
+        // The result events MUST include a stepReasoning from buffer flush
+        let hasReasoningFlush = resultEvents.contains { if case .stepReasoning = $0 { return true } else { return false } }
+        XCTAssertTrue(hasReasoningFlush,
+            ".result(.success) must flush remaining partialTextBuffer as stepReasoning")
+
+        // Also verify the flushed text contains the buffered content
+        for event in resultEvents {
+            if case .stepReasoning(_, let message) = event {
+                XCTAssertTrue(message.contains("Short"),
+                    "Flushed reasoning should contain the buffered fragment text")
+            }
+        }
+
+        // And executionCompleted must also be present
+        let hasCompleted = resultEvents.contains { if case .executionCompleted = $0 { return true } else { return false } }
+        XCTAssertTrue(hasCompleted,
+            ".result(.success) should produce executionCompleted event")
+    }
+
+    /// [P0] After cancellation cleanup, partialTextBuffer is empty (no stale data).
+    func testPartialMessageBufferCleanup() async throws {
+        let bridge = SDKMessageBridge()
+
+        // Establish step context
+        let toolUseMsg = SDKMessage.toolUse(SDKMessage.ToolUseData(
+            toolName: "analyze",
+            toolUseId: "partial-test-4",
+            input: "{}"
+        ))
+        _ = bridge.mapSDKMessage(toolUseMsg)
+
+        // Send some partial messages to fill buffer
+        let partial = SDKMessage.partialMessage(SDKMessage.PartialData(text: "Some partial text here"))
+        _ = bridge.mapSDKMessage(partial)
+
+        // Simulate cancellation — bridge should clean up buffer
+        // This tests that a new bridge (or reset bridge) doesn't have stale data
+        let resultCancelled = SDKMessage.result(SDKMessage.ResultData(
+            subtype: .cancelled,
+            text: "User cancelled",
+            usage: nil,
+            numTurns: 1,
+            durationMs: 500
+        ))
+        let cancelEvents = bridge.mapSDKMessage(resultCancelled)
+
+        // After cancellation, sending a new partialMessage should start fresh
+        // (no stale accumulated text from before cancellation)
+        let newPartial = SDKMessage.partialMessage(SDKMessage.PartialData(text: "New text after cancel"))
+        let newEvents = bridge.mapSDKMessage(newPartial)
+
+        // Verify no stale text from previous partial messages leaked into new events
+        for event in newEvents {
+            if case .stepReasoning(_, let message) = event {
+                XCTAssertFalse(message.contains("Some partial text here"),
+                    "After cancellation, buffer should be clean — no stale text from previous run")
+            }
+        }
     }
 
     /// [P1] .system messages are ignored

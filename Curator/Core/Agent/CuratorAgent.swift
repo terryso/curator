@@ -81,7 +81,10 @@ actor CuratorAgent {
     /// The method:
     /// 1. Calls `agent.stream(userMessage)` to get `AsyncStream<SDKMessage>`
     /// 2. Translates each SDKMessage through `SDKMessageBridge`
-    /// 3. Flattens the resulting `[AgentEvent]` arrays into a single `AsyncStream<AgentEvent>`
+    /// 3. Applies `mergeProgressEvents()` to coalesce rapid progress updates
+    /// 4. Flattens the resulting `[AgentEvent]` arrays into a single `AsyncStream<AgentEvent>`
+    ///
+    /// Pipeline: SDKMessage -> SDKMessageBridge -> mergeProgressEvents() -> AgentJob
     ///
     /// - Parameter userMessage: The natural language instruction from the user.
     /// - Returns: An async stream of AgentEvents for AgentJob consumption.
@@ -89,7 +92,8 @@ actor CuratorAgent {
         let sdkStream = agent.stream(userMessage)
         let bridge = SDKMessageBridge()
 
-        return AsyncStream<AgentEvent> { continuation in
+        // Build raw event stream from SDK messages
+        let rawEventStream = AsyncStream<AgentEvent> { continuation in
             let task = _Concurrency.Task {
                 for await message in sdkStream {
                     let events = bridge.mapSDKMessage(message)
@@ -103,6 +107,9 @@ actor CuratorAgent {
                 task.cancel()
             }
         }
+
+        // Apply merge to coalesce rapid stepProgress events
+        return rawEventStream.mergeProgressEvents()
     }
 
     // MARK: - Cancellation

@@ -42,8 +42,12 @@ struct StepCardView: View {
             // Reasoning bubbles
             if !step.reasoningMessages.isEmpty {
                 VStack(spacing: 6) {
-                    ForEach(step.reasoningMessages, id: \.self) { message in
-                        ReasoningBubbleView(message: message)
+                    ForEach(Array(step.reasoningMessages.enumerated()), id: \.offset) { index, message in
+                        let isLast = index == step.reasoningMessages.count - 1
+                        ReasoningBubbleView(
+                            message: message,
+                            isStreaming: isLast && step.status == .running
+                        )
                     }
                 }
                 .padding(.top, 4)

@@ -63,3 +63,8 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - Pre-tool partialMessage reasoning (arriving before any toolUse event) falls through to `AgentJob.reasoningMessages` array which is not rendered in any view. The messages are silently dropped from the UI. This is a pre-existing limitation of the `stepIDMap.latestValue ?? UUID()` fallback pattern -- pre-existing
 - No explicit `withAnimation(.easeInOut(duration: 0.2))` for streaming text append in ReasoningBubbleView (AC5 spec says "smooth append"). SwiftUI @Observable implicit animation may handle this. Verify visually during QA -- deferred, verify visually
+
+## Deferred from: code review of 4-5-read-only-mode-safety.md (2026-04-23)
+
+- `isWriteOperation` heuristic in `AgentStep` uses keyword matching ("rename", "move", "delete", "remove", "organize") which can false-positive on analysis steps ("organize") and is English-centric. Acceptable for MVP as false-positive direction (showing lock badge on analysis step) is safe. Revisit in Epic 5/6 when SDK tools provide actual operation type metadata. [AgentStep.swift:36-40]
+- `ReadOnlyNoOpRepository` is a near-exact copy of `ConfirmationNoOpRepository` in ConfirmationViewModel.swift. Both are private safety-net types. Could consolidate into a shared test helper in a future refactor pass. [ReadOnlyModeViewModel.swift:130-151]

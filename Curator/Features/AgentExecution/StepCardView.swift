@@ -15,6 +15,10 @@ struct StepCardView: View {
     /// The step to render.
     let step: AgentStep
 
+    /// Whether the app is currently in read-only mode.
+    /// When true, steps with write-related keywords display a read-only badge.
+    var isReadOnlyMode: Bool = false
+
     /// Whether the user prefers reduced motion.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -28,6 +32,13 @@ struct StepCardView: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .frame(maxWidth: .infinity, alignment: .leading)
+
+                // Read-only badge for write operation steps
+                if isReadOnlyMode && step.isWriteOperation {
+                    Label("需要写入权限", systemImage: "lock.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                }
 
                 Text(statusText)
                     .font(.caption)

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-18
-last_updated: 2026-04-23 (Story 4-4 code review complete)
+last_updated: 2026-04-23 (Story 4-5 code review complete, all patches applied)
 
 project: curator
 project_key: NOKEY
@@ -79,7 +79,7 @@ development_status:
   4-2-operation-manager-core: done
   4-3-batch-rollback-and-undo: done
   4-4-confirmation-workflow-ui: done
-  4-5-read-only-mode-safety: backlog
+  4-5-read-only-mode-safety: done
   epic-4-retrospective: optional
 
   # === Epic 5: "Find Duplicates" — 智能去重 ===

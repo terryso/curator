@@ -27,4 +27,16 @@ struct AgentStep: Sendable, Identifiable, Equatable {
         guard totalCount > 0 else { return 0.0 }
         return Double(completedCount) / Double(totalCount)
     }
+
+    /// Whether this step likely involves write operations.
+    ///
+    /// Heuristic-based: checks the step title for keywords associated with
+    /// file-modifying actions (rename, move, delete, remove, organize).
+    /// Used by the UI to display read-only mode annotations on write steps.
+    var isWriteOperation: Bool {
+        let writeKeywords = ["rename", "move", "delete", "remove", "organize",
+                             "重命名", "移动", "删除", "移除", "整理"]
+        let lowerTitle = title.lowercased()
+        return writeKeywords.contains { lowerTitle.contains($0) }
+    }
 }

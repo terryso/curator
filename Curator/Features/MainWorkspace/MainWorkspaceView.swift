@@ -38,6 +38,12 @@ struct MainWorkspaceView: View {
     /// Permission state observing read/write mode — sourced from AppDependencies.
     var permissionState: PermissionState? { dependencies.permissionState }
 
+    /// Read-only mode ViewModel — sourced from AppDependencies.
+    var readOnlyMode: ReadOnlyModeViewModel? { dependencies.readOnlyModeViewModel }
+
+    /// Whether the saved operations sheet is visible.
+    @State private var showSavedOperations = false
+
     init(
         photoViewModel: PhotoLibraryViewModel,
         dependencies: AppDependencies,
@@ -60,13 +66,27 @@ struct MainWorkspaceView: View {
         } detail: {
             // Detail: Agent execution area + bottom input bar
             VStack(spacing: 0) {
+                // Read-only banner (shown when read-only and agent is active)
+                if let readOnlyVM = readOnlyMode, readOnlyVM.isReadOnly,
+                   chatInputViewModel.agentJob != nil {
+                    ReadOnlyBannerView(
+                        readOnlyMode: readOnlyVM,
+                        onRequestWritePermission: {
+                            showWritePermissionPrompt = true
+                        }
+                    )
+                }
+
                 // Main content area -- Quick commands or Agent execution panel
                 if chatInputViewModel.quickCommandsVisible {
                     Spacer()
                     QuickCommandSuggestions(viewModel: chatInputViewModel)
                     Spacer()
                 } else if chatInputViewModel.agentJob != nil {
-                    AgentExecutionPanel(viewModel: executionViewModel)
+                    AgentExecutionPanel(
+                        viewModel: executionViewModel,
+                        isReadOnlyMode: permissionState?.isReadOnly ?? false
+                    )
                 } else {
                     Spacer()
                 }
@@ -126,6 +146,16 @@ struct MainWorkspaceView: View {
                     }
                     .help("当前为只读模式，点击授权写入")
                     .tint(.secondary)
+                }
+
+                // Saved operations button (visible when there are saved operations)
+                if let readOnlyVM = readOnlyMode, readOnlyVM.hasSavedOperations {
+                    Button {
+                        showSavedOperations = true
+                    } label: {
+                        Label("待执行操作", systemImage: "clock.arrow.circlepath")
+                    }
+                    .help("查看保存的待执行操作")
                 }
 
                 // Photo library toggle -- sidebar visibility
@@ -229,6 +259,28 @@ struct MainWorkspaceView: View {
         )) {
             if let undoMgr = undoManager {
                 CrashRecoverySheet(undoManager: undoMgr)
+            }
+        }
+        .sheet(isPresented: $showSavedOperations) {
+            if let readOnlyVM = readOnlyMode {
+                SavedOperationsListView(
+                    readOnlyMode: readOnlyVM,
+                    onExecute: { savedSet in
+                        showSavedOperations = false
+                        // Re-present through confirmation flow
+                        if let confirmationVM = confirmationViewModel {
+                            let request = ConfirmationRequest(
+                                operations: savedSet.operations,
+                                confirmationLevel: ConfirmationLevel.forOperations(savedSet.operations),
+                                summary: savedSet.summary
+                            )
+                            confirmationVM.presentConfirmation(request: request)
+                        }
+                    },
+                    onDismiss: {
+                        showSavedOperations = false
+                    }
+                )
             }
         }
         .sheet(isPresented: Binding<Bool>(

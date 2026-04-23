@@ -46,6 +46,9 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Confirmation ViewModel — manages confirmation workflow for batch operations.
     @Published var confirmationViewModel: ConfirmationViewModel?
 
+    /// Read-only mode ViewModel — manages read-only state and saved operations.
+    @Published var readOnlyModeViewModel: ReadOnlyModeViewModel?
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()
@@ -148,10 +151,14 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
         )
 
         // Register ConfirmationViewModel with operation manager, permission state, and repository provider
+        let readOnlyVM = ReadOnlyModeViewModel(permissionState: permissionState)
+        self.readOnlyModeViewModel = readOnlyVM
+
         self.confirmationViewModel = ConfirmationViewModel(
             operationManager: opManager,
             permissionState: permissionState,
-            repositoryProvider: self
+            repositoryProvider: self,
+            readOnlyModeViewModel: readOnlyVM
         )
     }
 

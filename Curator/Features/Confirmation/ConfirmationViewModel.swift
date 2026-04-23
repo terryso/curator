@@ -58,16 +58,21 @@ final class ConfirmationViewModel {
     /// Repository provider for getting a PhotoLibraryRepository during execution.
     private let repositoryProvider: (any UndoManagerRepositoryProvider)?
 
+    /// Read-only mode ViewModel for saving operations when permission is denied.
+    private let readOnlyModeViewModel: ReadOnlyModeViewModel?
+
     // MARK: - Initialization
 
     init(
         operationManager: (any OperationManaging)? = nil,
         permissionState: PermissionState? = nil,
-        repositoryProvider: (any UndoManagerRepositoryProvider)? = nil
+        repositoryProvider: (any UndoManagerRepositoryProvider)? = nil,
+        readOnlyModeViewModel: ReadOnlyModeViewModel? = nil
     ) {
         self.operationManager = operationManager
         self.permissionState = permissionState
         self.repositoryProvider = repositoryProvider
+        self.readOnlyModeViewModel = readOnlyModeViewModel
     }
 
     // MARK: - Public Interface
@@ -132,8 +137,15 @@ final class ConfirmationViewModel {
         }
     }
 
-    /// Permission was denied — cancel and show save-for-later suggestion.
+    /// Permission was denied — save operations for later and show save-for-later suggestion.
     func permissionDenied() {
+        // Save operations for later execution if a ReadOnlyModeViewModel is available
+        if let currentRequest = request, let readOnlyVM = readOnlyModeViewModel {
+            readOnlyVM.saveOperationsForLater(
+                currentRequest.operations,
+                summary: currentRequest.summary
+            )
+        }
         needsPermissionUpgrade = false
         showPermissionDenied = true
         request = nil

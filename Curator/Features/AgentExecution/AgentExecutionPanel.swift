@@ -12,6 +12,9 @@ struct AgentExecutionPanel: View {
     /// The ViewModel providing execution state.
     @Bindable var viewModel: AgentExecutionViewModel
 
+    /// Whether the app is in read-only mode (passed to StepCardView for annotations).
+    var isReadOnlyMode: Bool = false
+
     /// Whether the user prefers reduced motion.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -54,7 +57,7 @@ struct AgentExecutionPanel: View {
             ScrollView {
                 LazyVStack(spacing: 10) {
                     ForEach(viewModel.steps) { step in
-                        StepCardView(step: step)
+                        StepCardView(step: step, isReadOnlyMode: isReadOnlyMode)
                             .id(step.id)
                             .transition(
                                 .asymmetric(

@@ -43,6 +43,9 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Undo manager ViewModel — manages undo/redo state for batch operations.
     @Published var undoManagerViewModel: UndoManagerViewModel?
 
+    /// Confirmation ViewModel — manages confirmation workflow for batch operations.
+    @Published var confirmationViewModel: ConfirmationViewModel?
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()
@@ -141,6 +144,13 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
         // Register UndoManagerViewModel with operation manager and self as repository provider
         self.undoManagerViewModel = UndoManagerViewModel(
             operationManager: opManager,
+            repositoryProvider: self
+        )
+
+        // Register ConfirmationViewModel with operation manager, permission state, and repository provider
+        self.confirmationViewModel = ConfirmationViewModel(
+            operationManager: opManager,
+            permissionState: permissionState,
             repositoryProvider: self
         )
     }

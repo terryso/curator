@@ -23,6 +23,9 @@ struct MainWorkspaceView: View {
     /// Execution ViewModel observing AgentJob state for the execution panel.
     @State private var executionViewModel: AgentExecutionViewModel = AgentExecutionViewModel()
 
+    /// Confirmation ViewModel managing the confirmation workflow for batch operations.
+    var confirmationViewModel: ConfirmationViewModel? { dependencies.confirmationViewModel }
+
     /// Whether the session history sheet is visible.
     @State private var showSessionHistory = false
 
@@ -75,6 +78,11 @@ struct MainWorkspaceView: View {
                 if let undoMgr = undoManager, undoMgr.isProcessing || undoMgr.lastError != nil {
                     RollbackProgressView(undoManager: undoMgr)
                         .padding(.bottom, 4)
+                }
+
+                // Confirmation workflow overlay
+                if let confirmationVM = confirmationViewModel {
+                    confirmationOverlay(for: confirmationVM)
                 }
             }
             .navigationTitle("Curator")
@@ -160,6 +168,10 @@ struct MainWorkspaceView: View {
         }
         .onChange(of: chatInputViewModel.agentJob) { _, _ in
             executionViewModel.agentJob = chatInputViewModel.agentJob
+            // Trigger confirmation workflow when AgentJob enters .confirm state.
+            // Note: Planned operations are supplied by the agent tool layer (Epic 5/6).
+            // The .confirm state acts as the integration hook; actual operation list
+            // will be passed by the tool that triggered the state transition.
         }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResizeNotification)) { notification in
             guard let window = notification.object as? NSWindow else { return }
@@ -218,6 +230,76 @@ struct MainWorkspaceView: View {
             if let undoMgr = undoManager {
                 CrashRecoverySheet(undoManager: undoMgr)
             }
+        }
+        .sheet(isPresented: Binding<Bool>(
+            get: { confirmationViewModel?.showSecondConfirmation ?? false },
+            set: { _ in }
+        )) {
+            if let confirmationVM = confirmationViewModel, let request = confirmationVM.request {
+                DestructiveConfirmationSheet(
+                    request: request,
+                    onConfirm: {
+                        confirmationVM.confirmDestructive()
+                    },
+                    onCancel: {
+                        confirmationVM.showSecondConfirmation = false
+                    }
+                )
+            }
+        }
+    }
+
+    // MARK: - Confirmation Overlay
+
+    /// Overlay view for the confirmation workflow states.
+    @ViewBuilder
+    private func confirmationOverlay(for confirmationVM: ConfirmationViewModel) -> some View {
+        if confirmationVM.needsPermissionUpgrade {
+            PermissionUpgradeView(
+                onGrant: {
+                    confirmationVM.permissionGranted()
+                },
+                onDeny: {
+                    confirmationVM.permissionDenied()
+                }
+            )
+            .padding(.bottom, 4)
+        } else if confirmationVM.showPermissionDenied {
+            PermissionDeniedView(
+                onDismiss: {
+                    confirmationVM.cancel()
+                }
+            )
+            .padding(.bottom, 4)
+        } else if let request = confirmationVM.request {
+            BatchConfirmationSummaryView(
+                request: request,
+                onExecute: {
+                    confirmationVM.confirm()
+                },
+                onCancel: {
+                    confirmationVM.cancel()
+                }
+            )
+            .padding(.bottom, 4)
+        } else if confirmationVM.isExecuting, let progress = confirmationVM.executionProgress {
+            ExecutionProgressView(progress: progress)
+                .padding(.bottom, 4)
+        } else if let result = confirmationVM.executionResult {
+            ExecutionResultView(
+                result: result,
+                onUndo: {
+                    _Concurrency.Task {
+                        guard let undoMgr = undoManager else { return }
+                        await undoMgr.performUndoAction()
+                    }
+                    confirmationVM.cancel()
+                },
+                onDismiss: {
+                    confirmationVM.cancel()
+                }
+            )
+            .padding(.bottom, 4)
         }
     }
 }

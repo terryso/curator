@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-18
-last_updated: 2026-04-23 (Story 4-5 code review complete, all patches applied)
+last_updated: 2026-04-24 (Story 5-1 pipeline complete)
 
 project: curator
 project_key: NOKEY
@@ -83,8 +83,8 @@ development_status:
   epic-4-retrospective: optional
 
   # === Epic 5: "Find Duplicates" — 智能去重 ===
-  epic-5: backlog
-  5-1-perceptual-hash-engine: backlog
+  epic-5: in-progress
+  5-1-perceptual-hash-engine: done
   5-2-image-analysis-pipeline: backlog
   5-3-dedup-sdk-tools: backlog
   5-4-dedup-review-ui: backlog

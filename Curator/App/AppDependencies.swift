@@ -49,6 +49,12 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Read-only mode ViewModel — manages read-only state and saved operations.
     @Published var readOnlyModeViewModel: ReadOnlyModeViewModel?
 
+    /// Perceptual hash engine — nil until registered.
+    var hasher: (any PerceptualHasherProtocol)?
+
+    /// Hash cache manager — nil until registered.
+    var hashCacheManager: HashCacheManager?
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()
@@ -205,5 +211,12 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
             provider: sdkProvider,
             baseURL: baseURL
         )
+    }
+
+    /// Registers the perceptual hash engine and cache manager.
+    func registerHashEngine() {
+        let cacheManager = HashCacheManager()
+        self.hashCacheManager = cacheManager
+        self.hasher = PerceptualHasher(cacheManager: cacheManager)
     }
 }

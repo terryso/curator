@@ -189,6 +189,14 @@
 		FBD213BE04F297FD8BE97BDF /* OperationSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937528674158896EFB45B245 /* OperationSnapshot.swift */; };
 		FC517B7DB18C59B049A82069 /* AssetMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0018A53DA04E04B8E9F90F /* AssetMetadata.swift */; };
 		FE7F63F5443EAAE3C88D3096 /* OpenAgentSDK in Frameworks */ = {isa = PBXBuildFile; productRef = B3881076E83BDB3B85432BDC /* OpenAgentSDK */; };
+		A3FB842D0B874D68A042F45D /* DuplicateGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B766A505680415B865DA55E /* DuplicateGroup.swift */; };
+		DC715DF7FD6D4864A2D4E5ED /* AnalysisProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF07FAF2E3C94A958CC39F03 /* AnalysisProgress.swift */; };
+		B40F684F5FB4493FB4421D06 /* ImageAnalysisPipelineProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4681F00488A40018940158B /* ImageAnalysisPipelineProtocol.swift */; };
+		E8CA115237FF49068BADBED1 /* ThumbnailGeneratorProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFA7C1963A14C6C98C59666 /* ThumbnailGeneratorProtocol.swift */; };
+		4D8D185168ED44E7BECDCE8B /* ThumbnailGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D62D5B434B1F43398C000AEC /* ThumbnailGenerator.swift */; };
+		30673DF7B1114709983CA41E /* ImageAnalysisPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E651A6BEA7854036B1747329 /* ImageAnalysisPipeline.swift */; };
+		CBDC9D0D797E447EBCB231B6 /* ImageAnalysisPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7E9656BF4FE4AB1A785B79A /* ImageAnalysisPipelineTests.swift */; };
+		E15AE29AB723450F88563E30 /* ThumbnailGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00D8491506C243CC91068B19 /* ThumbnailGeneratorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -404,6 +412,14 @@
 		FB75AF78B179FA78540B154F /* ScanLibraryTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanLibraryTool.swift; sourceTree = "<group>"; };
 		FD31D85D18E51F93491C0AFB /* HashCacheManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HashCacheManagerTests.swift; sourceTree = "<group>"; };
 		FE8D9679AAB68A14E8C84E27 /* SessionHistoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionHistoryViewModel.swift; sourceTree = "<group>"; };
+		8B766A505680415B865DA55E /* DuplicateGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateGroup.swift; sourceTree = "<group>"; };
+		BF07FAF2E3C94A958CC39F03 /* AnalysisProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisProgress.swift; sourceTree = "<group>"; };
+		B4681F00488A40018940158B /* ImageAnalysisPipelineProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAnalysisPipelineProtocol.swift; sourceTree = "<group>"; };
+		BDFA7C1963A14C6C98C59666 /* ThumbnailGeneratorProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailGeneratorProtocol.swift; sourceTree = "<group>"; };
+		D62D5B434B1F43398C000AEC /* ThumbnailGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailGenerator.swift; sourceTree = "<group>"; };
+		E651A6BEA7854036B1747329 /* ImageAnalysisPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAnalysisPipeline.swift; sourceTree = "<group>"; };
+		B7E9656BF4FE4AB1A785B79A /* ImageAnalysisPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAnalysisPipelineTests.swift; sourceTree = "<group>"; };
+		00D8491506C243CC91068B19 /* ThumbnailGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailGeneratorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -479,6 +495,8 @@
 			children = (
 				FD31D85D18E51F93491C0AFB /* HashCacheManagerTests.swift */,
 				D4436C7A5064AE25A66EC7F2 /* PerceptualHasherTests.swift */,
+				B7E9656BF4FE4AB1A785B79A /* ImageAnalysisPipelineTests.swift */,
+				00D8491506C243CC91068B19 /* ThumbnailGeneratorTests.swift */,
 			);
 			path = Analysis;
 			sourceTree = "<group>";
@@ -616,6 +634,8 @@
 				3E31BCDC52CE050623EDFDE5 /* .gitkeep */,
 				9BADA493E90C906F8530D6F9 /* HashCacheManager.swift */,
 				3E6C59A4C6C42A1133996A28 /* PerceptualHasher.swift */,
+				D62D5B434B1F43398C000AEC /* ThumbnailGenerator.swift */,
+				E651A6BEA7854036B1747329 /* ImageAnalysisPipeline.swift */,
 			);
 			path = Analysis;
 			sourceTree = "<group>";
@@ -760,6 +780,10 @@
 				E686EB31282941762F851606 /* LoadingState.swift */,
 				3797589F4CFA5700AAD0E48D /* PairwiseSimilarity.swift */,
 				D1B07D2EA912F293C8AE2307 /* PerceptualHasherProtocol.swift */,
+				8B766A505680415B865DA55E /* DuplicateGroup.swift */,
+				BF07FAF2E3C94A958CC39F03 /* AnalysisProgress.swift */,
+				B4681F00488A40018940158B /* ImageAnalysisPipelineProtocol.swift */,
+				BDFA7C1963A14C6C98C59666 /* ThumbnailGeneratorProtocol.swift */,
 				08D3D0E994AA93F4219CEAB0 /* PerceptualHashValue.swift */,
 				33376691AA1C7CBDB0D4180A /* PermissionState.swift */,
 				27B3DD3F550BD6BE5FEC1114 /* PhotoAsset.swift */,
@@ -1260,6 +1284,12 @@
 				149FB3B1C32329D99DC663A5 /* PerceptualHashValue.swift in Sources */,
 				497009F88D7944274E377FF3 /* PerceptualHasher.swift in Sources */,
 				BDF1D0DEFF2FD7DAD6FABFBF /* PerceptualHasherProtocol.swift in Sources */,
+				A3FB842D0B874D68A042F45D /* DuplicateGroup.swift in Sources */,
+				DC715DF7FD6D4864A2D4E5ED /* AnalysisProgress.swift in Sources */,
+				B40F684F5FB4493FB4421D06 /* ImageAnalysisPipelineProtocol.swift in Sources */,
+				E8CA115237FF49068BADBED1 /* ThumbnailGeneratorProtocol.swift in Sources */,
+				4D8D185168ED44E7BECDCE8B /* ThumbnailGenerator.swift in Sources */,
+				30673DF7B1114709983CA41E /* ImageAnalysisPipeline.swift in Sources */,
 				D230D4260A02EC5C6B84CBB5 /* PermissionDeniedView.swift in Sources */,
 				041965E1C5B3F1C72E37782C /* PermissionLevel.swift in Sources */,
 				157F1EFCD1008025753DA474 /* PermissionState.swift in Sources */,
@@ -1343,6 +1373,8 @@
 				64BF5D751C3489892BA58E82 /* OpenAICompatibleProviderTests.swift in Sources */,
 				E8677F1B76B03C5B5C3603D9 /* OperationManagerTests.swift in Sources */,
 				9F8C814CDBCFE51BBCCD50B2 /* PerceptualHasherTests.swift in Sources */,
+				CBDC9D0D797E447EBCB231B6 /* ImageAnalysisPipelineTests.swift in Sources */,
+				E15AE29AB723450F88563E30 /* ThumbnailGeneratorTests.swift in Sources */,
 				44603D9D6542570C93701DB7 /* PhotoLibraryViewModelTests.swift in Sources */,
 				EBD4EF62BDF41B7C1B895D97 /* PhotoPredicateTests.swift in Sources */,
 				979BEC96BEF294B4067B641F /* ReadOnlyModeTests.swift in Sources */,

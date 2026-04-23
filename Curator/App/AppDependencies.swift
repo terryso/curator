@@ -55,6 +55,12 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Hash cache manager — nil until registered.
     var hashCacheManager: HashCacheManager?
 
+    /// Thumbnail generator — nil until registered.
+    var thumbnailGenerator: (any ThumbnailGeneratorProtocol)?
+
+    /// Image analysis pipeline — nil until registered.
+    var imageAnalysisPipeline: (any ImageAnalysisPipelineProtocol)?
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()
@@ -213,10 +219,25 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
         )
     }
 
-    /// Registers the perceptual hash engine and cache manager.
-    func registerHashEngine() {
+    /// Registers the analysis infrastructure: hash engine, cache manager, thumbnail generator,
+    /// and image analysis pipeline.
+    func registerAnalysisInfrastructure() {
         let cacheManager = HashCacheManager()
         self.hashCacheManager = cacheManager
-        self.hasher = PerceptualHasher(cacheManager: cacheManager)
+
+        let hasherInstance = PerceptualHasher(cacheManager: cacheManager)
+        self.hasher = hasherInstance
+
+        let thumbnailGen = ThumbnailGenerator()
+        self.thumbnailGenerator = thumbnailGen
+
+        if let gateway = llmGateway {
+            let pipeline = ImageAnalysisPipeline(
+                hasher: hasherInstance,
+                llmGateway: gateway,
+                thumbnailGenerator: thumbnailGen
+            )
+            self.imageAnalysisPipeline = pipeline
+        }
     }
 }

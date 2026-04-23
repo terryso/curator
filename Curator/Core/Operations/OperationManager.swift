@@ -105,18 +105,23 @@ actor OperationManager: OperationManaging {
         let batchEntity = try fetchBatchEntity(batchID)
         let currentStatus = BatchStatus(rawValue: batchEntity.status)
 
-        guard currentStatus == .completed || currentStatus == .failed else {
+        guard currentStatus == .completed || currentStatus == .failed || currentStatus == .executing else {
             throw DomainError.invalidState(
                 reason: "Batch \(batchID) cannot be rolled back (current status: \(batchEntity.status))"
             )
         }
 
         let executedSnapshots = batchEntity.snapshots.filter { $0.isExecuted && !$0.isRolledBack }
-        guard !executedSnapshots.isEmpty else {
+
+        // For crash recovery (.executing state), there may be no executed snapshots yet
+        // In that case, just update the status without performing file rollback
+        if executedSnapshots.isEmpty && currentStatus != .executing {
             throw DomainError.invalidState(reason: "Batch \(batchID) has no executed operations to roll back")
         }
 
-        try await rollbackSnapshots(executedSnapshots, repository: repository)
+        if !executedSnapshots.isEmpty {
+            try await rollbackSnapshots(executedSnapshots, repository: repository)
+        }
 
         batchEntity.status = BatchStatus.rolledBack.rawValue
         try modelContext.save()
@@ -156,6 +161,36 @@ actor OperationManager: OperationManaging {
 
         let entities = try modelContext.fetch(descriptor)
         return entities.map { $0.toBatchOperation() }
+    }
+
+    func reexecuteLastRolledBackBatch(repository: PhotoLibraryRepository) async throws {
+        let rolledBackStatus = BatchStatus.rolledBack.rawValue
+        let descriptor = FetchDescriptor<BatchOperationEntity>(
+            predicate: #Predicate { $0.status == rolledBackStatus },
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+
+        let rolledBackBatches = try modelContext.fetch(descriptor)
+        guard let lastBatch = rolledBackBatches.first else {
+            throw DomainError.invalidState(reason: "No rolled-back batch available to re-execute")
+        }
+
+        let rolledBackSnapshots = lastBatch.snapshots.filter { $0.isRolledBack }
+        guard !rolledBackSnapshots.isEmpty else {
+            throw DomainError.invalidState(reason: "Batch \(lastBatch.id) has no rolled-back operations to re-execute")
+        }
+
+        // Re-execute each rolled-back operation in original order
+        for snapshotEntity in rolledBackSnapshots {
+            let operation = try decodePlannedOperation(from: snapshotEntity)
+            try await executeSingleOperation(operation, repository: repository)
+            snapshotEntity.isRolledBack = false
+            snapshotEntity.isExecuted = true
+        }
+
+        lastBatch.status = BatchStatus.completed.rawValue
+        lastBatch.completedAt = Date()
+        try modelContext.save()
     }
 
     // MARK: - Private Helpers

@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "evaluated_at": "2026-04-23T00:00:00Z",
+  "repo": "curator",
+  "target": {
+    "type": "story",
+    "id": "4-3",
+    "label": "Batch Rollback & Undo System"
+  },
+  "collection_status": "COLLECTED",
+  "gate_basis": "priority_thresholds",
+  "gate_status": "PASS",
+  "rationale": "P0 coverage is 100% and overall coverage is 100%. No P1 requirements detected. All 4 acceptance criteria are fully covered by 8 active unit tests with 0 gaps. Oracle confidence is high (formal acceptance criteria).",
+  "p0_status": "MET",
+  "p1_status": "MET",
+  "overall_status": "MET",
+  "critical_open": 0,
+  "links": {
+    "trace_report_path": "_bmad-output/test-artifacts/traceability-matrix-4-3.md",
+    "trace_report_url": "",
+    "artifact_url": "",
+    "journey_evidence_url": ""
+  }
+}

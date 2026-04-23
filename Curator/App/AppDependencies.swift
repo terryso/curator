@@ -8,7 +8,7 @@ import OpenAgentSDK
 /// Concrete implementations are registered during app startup;
 /// tests can replace them with mock implementations.
 @MainActor
-final class AppDependencies: ObservableObject {
+final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Photo library repository — nil until registered.
     @Published var photoRepository: (any PhotoLibraryRepository)?
 
@@ -39,6 +39,9 @@ final class AppDependencies: ObservableObject {
 
     /// Permission state — manages read/write permission tracking.
     var permissionState: PermissionState?
+
+    /// Undo manager ViewModel — manages undo/redo state for batch operations.
+    @Published var undoManagerViewModel: UndoManagerViewModel?
 
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
@@ -134,6 +137,26 @@ final class AppDependencies: ObservableObject {
         let operationContext = ModelContext(manager.container)
         let opManager = OperationManager(modelContext: operationContext)
         self.operationManager = opManager
+
+        // Register UndoManagerViewModel with operation manager and self as repository provider
+        self.undoManagerViewModel = UndoManagerViewModel(
+            operationManager: opManager,
+            repositoryProvider: self
+        )
+    }
+
+    // MARK: - UndoManagerRepositoryProvider
+
+    /// Provides the current photo repository for undo/redo operations.
+    nonisolated func getRepository() -> any PhotoLibraryRepository {
+        // Must be called from MainActor context where photoRepository is set
+        // This is safe because UndoManagerViewModel is @MainActor
+        MainActor.assumeIsolated {
+            guard let repo = self.photoRepository else {
+                fatalError("UndoManagerRepositoryProvider: photoRepository not registered")
+            }
+            return repo
+        }
     }
 
     /// Registers the agent infrastructure: tool registry and agent factory.

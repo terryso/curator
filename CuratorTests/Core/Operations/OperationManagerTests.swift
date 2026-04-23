@@ -887,4 +887,6 @@ private actor MockOperationManager: OperationManaging {
     func detectIncompleteBatches() async throws -> [BatchOperation] { [] }
 
     func getBatchHistory(limit: Int) async throws -> [BatchOperation] { [] }
+
+    func reexecuteLastRolledBackBatch(repository: PhotoLibraryRepository) async throws {}
 }

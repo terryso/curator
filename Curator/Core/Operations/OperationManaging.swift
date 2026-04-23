@@ -59,4 +59,12 @@ protocol OperationManaging: Sendable {
     /// - Parameter limit: Maximum number of batches to return.
     /// - Returns: Array of BatchOperations ordered by creation date (newest first).
     func getBatchHistory(limit: Int) async throws -> [BatchOperation]
+
+    /// Re-executes the most recently rolled-back batch (redo operation, AC3).
+    ///
+    /// Used for bidirectional undo: after a rollback, a second Cmd+Z
+    /// re-applies the original operations to restore the batch to completed state.
+    /// - Parameter repository: The repository to perform re-execution file operations.
+    /// - Throws: `DomainError.invalidState` if no rolled-back batch exists.
+    func reexecuteLastRolledBackBatch(repository: PhotoLibraryRepository) async throws
 }

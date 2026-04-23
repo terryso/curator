@@ -29,6 +29,9 @@ struct MainWorkspaceView: View {
     /// Whether the write permission prompt is visible.
     @State private var showWritePermissionPrompt = false
 
+    /// Undo manager ViewModel — sourced from AppDependencies.
+    var undoManager: UndoManagerViewModel? { dependencies.undoManagerViewModel }
+
     /// Permission state observing read/write mode — sourced from AppDependencies.
     var permissionState: PermissionState? { dependencies.permissionState }
 
@@ -67,6 +70,12 @@ struct MainWorkspaceView: View {
 
                 // Bottom fixed input bar
                 AgentInputBar(viewModel: chatInputViewModel)
+
+                // Rollback progress indicator (overlaid at bottom)
+                if let undoMgr = undoManager, undoMgr.isProcessing || undoMgr.lastError != nil {
+                    RollbackProgressView(undoManager: undoMgr)
+                        .padding(.bottom, 4)
+                }
             }
             .navigationTitle("Curator")
         }
@@ -75,6 +84,31 @@ struct MainWorkspaceView: View {
         )
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                // Undo/Redo button (visible when action available)
+                if let undoMgr = undoManager, undoMgr.canPerformAction {
+                    Button {
+                        _Concurrency.Task {
+                            await undoMgr.performUndoAction()
+                        }
+                    } label: {
+                        Label(
+                            undoMgr.availableAction == .undo ? "撤销" : "重做",
+                            systemImage: undoMgr.availableAction == .undo ? "arrow.uturn.backward" : "arrow.uturn.forward"
+                        )
+                    }
+                    .help(undoMgr.availableAction == .undo ? "撤销上次批量操作 (⌘Z)" : "重做上次撤销的操作 (⌘Z)")
+                    .disabled(undoMgr.isProcessing)
+                }
+
+                // Hidden Cmd+Z shortcut button for keyboard binding
+                Button("") {
+                    _Concurrency.Task {
+                        await undoManager?.performUndoAction()
+                    }
+                }
+                .keyboardShortcut("z", modifiers: .command)
+                .hidden()
+
                 // Read-only mode indicator
                 if let permState = permissionState, permState.isReadOnly {
                     Button {
@@ -117,6 +151,11 @@ struct MainWorkspaceView: View {
             // Connect new session callback
             navigationModel.onNewSession = { [chatInputViewModel] in
                 chatInputViewModel.createNewSession()
+            }
+            // Check for incomplete batches on startup (crash recovery, NFR17)
+            _Concurrency.Task {
+                await undoManager?.checkForIncompleteBatches()
+                await undoManager?.refreshAvailableAction()
             }
         }
         .onChange(of: chatInputViewModel.agentJob) { _, _ in
@@ -167,6 +206,18 @@ struct MainWorkspaceView: View {
                     showWritePermissionPrompt = false
                 }
             )
+        }
+        .sheet(isPresented: Binding<Bool>(
+            get: { undoManager?.showCrashRecoverySheet ?? false },
+            set: { newValue in
+                if !newValue {
+                    _Concurrency.Task { await undoManager?.dismissCrashRecovery() }
+                }
+            }
+        )) {
+            if let undoMgr = undoManager {
+                CrashRecoverySheet(undoManager: undoMgr)
+            }
         }
     }
 }

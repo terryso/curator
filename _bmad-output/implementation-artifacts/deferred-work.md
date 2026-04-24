@@ -88,3 +88,7 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - AgentResultSummaryView exceeds 200-line convention (~256 lines excluding previews). Pre-existing tendency in the codebase; the view is well-structured with clear section decomposition. Address in a refactor pass.
 - Hardcoded English UI strings ("Photos Removed", "Groups Processed", "Space Saved", "Duration", "Undo", "Done", etc.) not localized. Pre-existing across all views; no localization infrastructure exists in the project yet. Address in a dedicated i18n/l10n story.
+
+## Deferred from: code review of 6-2-rename-sdk-tools.md (2026-04-25)
+
+- `RenameItemInput.originalFileName` field is declared in the input struct but never used in the tool implementation. The field has audit/logging value and may be used in future Stories (e.g., rename result summary UI in Story 6.4). OperationManager captures original filename via repository metadata in beginBatch, so the field is redundant for rollback purposes.

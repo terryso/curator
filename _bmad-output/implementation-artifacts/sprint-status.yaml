@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-04-18
-last_updated: 2026-04-24 (Story 6-1 done)
+last_updated: 2026-04-25 (Story 6-2 done)
 
 project: curator
 project_key: NOKEY
@@ -95,7 +95,7 @@ development_status:
   # === Epic 6: "Smart Rename" — AI 智能重命名 ===
   epic-6: in-progress
   6-1-content-analysis-and-naming: done
-  6-2-rename-sdk-tools: backlog
+  6-2-rename-sdk-tools: done
   6-3-rename-review-ui: backlog
   6-4-batch-rename-execution: backlog
   epic-6-retrospective: optional

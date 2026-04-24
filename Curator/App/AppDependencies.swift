@@ -240,4 +240,32 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
             self.imageAnalysisPipeline = pipeline
         }
     }
+
+    /// Registers deduplication SDK tools with the agent tool registry.
+    ///
+    /// Must be called after `registerAgentInfrastructure()` (needs toolRegistry),
+    /// `registerAnalysisInfrastructure()` (needs imageAnalysisPipeline),
+    /// `registerLLMGateway()` (needs operationManager and llmGateway),
+    /// and `registerLocalFolderRepository()` (needs photoRepository).
+    func registerDeduplicationTools() {
+        guard let registry = toolRegistry,
+              let pipeline = imageAnalysisPipeline,
+              let opManager = operationManager,
+              let gateway = llmGateway,
+              let repo = photoRepository else {
+            return
+        }
+
+        registry.register(createAnalyzeDuplicatesTool(
+            pipeline: pipeline,
+            repository: repo
+        ))
+        registry.register(createDeleteAssetsTool(
+            operationManager: opManager,
+            repository: repo
+        ))
+        registry.register(createEstimateCostTool(
+            llmGateway: gateway
+        ))
+    }
 }

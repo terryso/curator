@@ -28,8 +28,10 @@ actor CuratorAgent {
 
     ## Available Tools
 
-    - **scan_library**: Scan the user's photo folder and return a summary of photos found.
-      (More tools will be available as the application evolves.)
+    - **scan_library**: Scan the user's photo folder and return a summary of photos found, including count, formats, and date range.
+    - **analyze_duplicates**: Analyze photos for duplicates using two-stage analysis (local hashing + AI confirmation). Returns groups of similar photos with similarity scores and explanations.
+    - **delete_assets**: Delete specified photo assets. Destructive — always confirm with the user first. Creates snapshots for rollback.
+    - **estimate_cost**: Estimate the API cost for an analysis operation based on photo count and operation type.
 
     ## Guidelines
 
@@ -38,6 +40,9 @@ actor CuratorAgent {
     - Report photo counts and progress updates during long operations.
     - If the user's intent is unclear, ask for clarification rather than guessing.
     - Never modify original image files — only operate on metadata (filenames, directory structure).
+    - For deduplication requests: scan_library -> estimate_cost -> analyze_duplicates -> review with user -> delete_assets (only after explicit user approval).
+    - Always show cost estimate before starting large analysis operations (>100 photos).
+    - Never delete photos without explicit user confirmation.
     """
 
     // MARK: - Initialization

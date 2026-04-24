@@ -48,6 +48,8 @@ struct ContentView: View {
                 }
                 dependencies.registerLLMGateway()
                 dependencies.registerAgentInfrastructure()
+                dependencies.registerAnalysisInfrastructure()
+                dependencies.registerDeduplicationTools()
             }
             .onChange(of: dependencies.photoRepository != nil) { _, hasRepo in
                 if hasRepo, let repo = dependencies.photoRepository {

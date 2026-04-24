@@ -68,3 +68,7 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - `isWriteOperation` heuristic in `AgentStep` uses keyword matching ("rename", "move", "delete", "remove", "organize") which can false-positive on analysis steps ("organize") and is English-centric. Acceptable for MVP as false-positive direction (showing lock badge on analysis step) is safe. Revisit in Epic 5/6 when SDK tools provide actual operation type metadata. [AgentStep.swift:36-40]
 - `ReadOnlyNoOpRepository` is a near-exact copy of `ConfirmationNoOpRepository` in ConfirmationViewModel.swift. Both are private safety-net types. Could consolidate into a shared test helper in a future refactor pass. [ReadOnlyModeViewModel.swift:130-151]
+
+## Deferred from: code review of 5-3-dedup-sdk-tools.md (2026-04-24)
+
+- Duplicate mock `PhotoLibraryRepository` implementations across 3 test files (AnalyzeDuplicatesToolTests, DeleteAssetsToolTests, DedupToolRegistrationTests). Pattern pre-exists from Story 3.2 (ScanLibraryTool tests). Could consolidate into a shared test helper in `CuratorTests/Infrastructure/SDKTools/TestHelpers.swift`.

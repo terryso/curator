@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "evaluated_at": "2026-04-24T06:57:00Z",
+  "repo": "curator",
+  "target": {
+    "type": "story",
+    "id": "5.3",
+    "label": "Deduplication SDK Tools"
+  },
+  "collection_status": "COLLECTED",
+  "gate_basis": "priority_thresholds",
+  "gate_status": "PASS",
+  "rationale": "P0 coverage is 100%, P1 coverage is 100% (target: 90%), and overall coverage is 100% (minimum: 80%). All 6 acceptance criteria have full test coverage at the unit and integration levels. All 18 tests pass with 0 failures. No critical gaps, no uncovered requirements, no blockers.",
+  "p0_status": "MET",
+  "p1_status": "MET",
+  "overall_status": "MET",
+  "critical_open": 0,
+  "links": {
+    "trace_report_path": "_bmad-output/test-artifacts/traceability-matrix-5-3.md",
+    "trace_report_url": "",
+    "artifact_url": "",
+    "journey_evidence_url": ""
+  }
+}

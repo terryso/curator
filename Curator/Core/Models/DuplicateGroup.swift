@@ -10,6 +10,16 @@ enum DuplicateGroupStatus: Sendable, Equatable {
     case rejected
     /// Analysis failed for this group (LLM error, image decode failure, etc.).
     case analysisFailed
+
+    /// Stable string representation for JSON serialization.
+    var stringValue: String {
+        switch self {
+        case .pending: return "pending"
+        case .confirmed: return "confirmed"
+        case .rejected: return "rejected"
+        case .analysisFailed: return "analysisFailed"
+        }
+    }
 }
 
 /// Value type representing a group of duplicate photos identified by the analysis pipeline.

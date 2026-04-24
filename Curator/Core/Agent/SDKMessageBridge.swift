@@ -24,6 +24,11 @@ struct SDKMessageBridge: Sendable {
     /// Used to correlate .toolUse, .toolResult, and .toolProgress events.
     private let stepIDMap: NSLockingDictionary<String, UUID>
 
+    /// Maps SDK toolUseId to the tool name from the originating .toolUse event.
+    /// Used to carry tool-specific structured data into StepResult (e.g. duplicateGroups
+    /// for analyze_duplicates).
+    private let toolNameMap: NSLockingDictionary<String, String>
+
     // MARK: - Partial Message Buffer
 
     /// Accumulates partial text fragments from `.partialMessage` SDK events.
@@ -43,6 +48,7 @@ struct SDKMessageBridge: Sendable {
 
     init() {
         self.stepIDMap = NSLockingDictionary()
+        self.toolNameMap = NSLockingDictionary()
         self.partialTextBuffer = NSLockingBuffer()
     }
 
@@ -102,6 +108,7 @@ struct SDKMessageBridge: Sendable {
     private func mapToolUse(_ data: SDKMessage.ToolUseData) -> [AgentEvent] {
         let stepID = UUID()
         stepIDMap[data.toolUseId] = stepID
+        toolNameMap[data.toolUseId] = data.toolName
         return [.stepStarted(stepID: stepID, title: data.toolName)]
     }
 
@@ -119,7 +126,13 @@ struct SDKMessageBridge: Sendable {
         if data.isError {
             return [.stepFailed(stepID: stepID, error: .analysisFailed(reason: data.content))]
         } else {
-            return [.stepCompleted(stepID: stepID, result: StepResult(stepID: stepID, message: data.content, data: [:]))]
+            // Carry tool-specific structured data into StepResult.data dictionary
+            var stepData: [String: String] = [:]
+            let toolName = toolNameMap[data.toolUseId]
+            if toolName == "analyze_duplicates" {
+                stepData["duplicateGroups"] = data.content
+            }
+            return [.stepCompleted(stepID: stepID, result: StepResult(stepID: stepID, message: data.content, data: stepData))]
         }
     }
 

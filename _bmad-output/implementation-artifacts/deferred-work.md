@@ -77,4 +77,9 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - `previewAssetIndex` state declared in PhotoComparisonCard but never connected to any full-screen cover or QuickLook preview. The tap gesture sets the index but no enlarged image renders. Spec calls for "QuickLook 或 Sheet" enlarging on tap. Deferred — implement when QuickLook/preview infrastructure is added.
 - No keyboard navigation (Tab/Enter/Esc) for duplicate review groups. AC6 requires keyboard navigation between groups. Deferred — add FocusScope and keyboard shortcuts after Epic 5 completion.
-- `extractDuplicateGroups` returns `[]` (AC5 gap). AgentEvent pipeline does not yet carry typed DuplicateGroup data. **To be addressed in Story 5.5** — the batch approval story needs this link to work end-to-end. Work: wire AnalyzeDuplicatesTool output through AgentEvent.reviewReady/stepCompleted to AgentJob, then implement the extraction in MainWorkspaceView.
+- `extractDuplicateGroups` returns `[]` (AC5 gap). AgentEvent pipeline does not yet carry typed DuplicateGroup data. **To be addressed in Story 5.5** — the batch approval story needs this link to work end-to-end. Work: wire AnalyzeDuplicatesTool output through AgentEvent.reviewReady/stepCompleted to AgentJob, then implement the extraction in MainWorkspaceView. *(Resolved in Story 5.5 — extraction now works via StepResult.data["duplicateGroups"])*
+
+## Deferred from: code review of 5-5-batch-approval-and-execution.md (2026-04-24)
+
+- AnalyzeDuplicatesTool not modified for Story 5.5 data flow — detection done in SDKMessageBridge via content sniffing (`isAnalyzeDuplicatesOutput`). The tool already returns correct JSON from Story 5-3. Architecture choice to sniff in bridge vs. modify tool is pre-existing. The sniffing heuristic is fragile (tracked as patch finding).
+- UI text hardcoded in English ("Keep All", "Remove All", "Execute Deletion", "Completed", "Undo", "Dismiss") despite Chinese user story and `communication_language: Mandarin` config. Pre-existing pattern across all views (DuplicateReviewView, PhotoComparisonCard, etc.). Address in a dedicated i18n/l10n story.

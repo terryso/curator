@@ -82,6 +82,7 @@
 		59594C9AF0B08E8F3B2B98D2 /* ReadOnlyModeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8EBE8EF259A56BF3AA10C2E /* ReadOnlyModeViewModel.swift */; };
 		5AE588AF01E2D14DADF2D9C4 /* AgentExecutionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2D6909A948C5A5B30049BD /* AgentExecutionPanel.swift */; };
 		5B600ACA85B31EA6083F904E /* CuratorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E777B2C3C13E17BDCCD92C07 /* CuratorUITests.swift */; };
+		5BCCA106D3EE6C9F030B75CA /* BatchApprovalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEC58D96A37F05E76F6E7325 /* BatchApprovalView.swift */; };
 		5D9C491F2C6DA329E54E8E6F /* SourceChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD3A4404FE9FB5B8216ABE /* SourceChange.swift */; };
 		604676BB6DB2BAD59738CB5D /* ReasoningBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 731366660B3807659C31F755 /* ReasoningBubbleView.swift */; };
 		6277C09E531C670A804204E4 /* AgentJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0F4219F0AADF5441380516 /* AgentJob.swift */; };
@@ -125,6 +126,7 @@
 		979BEC96BEF294B4067B641F /* ReadOnlyModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44B2D1D9D8F20B1BC7AD9CD6 /* ReadOnlyModeTests.swift */; };
 		990DE60B466C1A43F7B2315B /* AnalyzeDuplicatesTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23E727CCC3A6C6B39D21C2D /* AnalyzeDuplicatesTool.swift */; };
 		9A5DD7CF69E99C4C6ED9EE05 /* DomainError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43537555B1BE7A6BE474BEEB /* DomainError.swift */; };
+		9A78E74BD0B0F6864526FC52 /* BatchApprovalViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DE209E7DE0C6F66B461458 /* BatchApprovalViewModelTests.swift */; };
 		9BA4B66983CFCD6B5A911C93 /* LLMConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB3E5BD6EDEC97DD90954C6 /* LLMConfigTests.swift */; };
 		9C029D93BA7EBA94E33ACB8B /* CostEstimateCardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83017EC5EF86736B80D97A49 /* CostEstimateCardTests.swift */; };
 		9D514245631D0440D8996BFF /* SessionHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8D9679AAB68A14E8C84E27 /* SessionHistoryViewModel.swift */; };
@@ -316,6 +318,7 @@
 		5EB3E5BD6EDEC97DD90954C6 /* LLMConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfigTests.swift; sourceTree = "<group>"; };
 		5EEF2B97BF1622DFEED5B7B1 /* PermissionDeniedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionDeniedView.swift; sourceTree = "<group>"; };
 		616F54CE38812FBCB7D2034F /* ModelSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSelectionView.swift; sourceTree = "<group>"; };
+		62DE209E7DE0C6F66B461458 /* BatchApprovalViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchApprovalViewModelTests.swift; sourceTree = "<group>"; };
 		62E9D3176EECC3AE22FF9DE6 /* OnboardingContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingContainerView.swift; sourceTree = "<group>"; };
 		6631D56F083C304EA9239740 /* ErrorMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMapping.swift; sourceTree = "<group>"; };
 		671140177989A061D91DF01A /* PhotoLibraryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryRepository.swift; sourceTree = "<group>"; };
@@ -372,6 +375,7 @@
 		AC50BF360C6BB6CA0B0C26AB /* OperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationManager.swift; sourceTree = "<group>"; };
 		AC7081848A90CE8E02947FCC /* AnalysisProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisProgress.swift; sourceTree = "<group>"; };
 		ACBD3A4404FE9FB5B8216ABE /* SourceChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceChange.swift; sourceTree = "<group>"; };
+		AEC58D96A37F05E76F6E7325 /* BatchApprovalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchApprovalView.swift; sourceTree = "<group>"; };
 		AFA119CACE070CE9CA6F2E98 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		B23F31BF6083D796F9A5AE03 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		B355E015A08BD36B0C8A51E1 /* BatchOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchOperation.swift; sourceTree = "<group>"; };
@@ -715,6 +719,7 @@
 		5DB1DA046F764BD291D05CC4 /* Deduplication */ = {
 			isa = PBXGroup;
 			children = (
+				AEC58D96A37F05E76F6E7325 /* BatchApprovalView.swift */,
 				DECCC0BCC2AF3042C41F60C4 /* DeduplicationViewModel.swift */,
 				D6DECF535F10E654B270710C /* DuplicateReviewView.swift */,
 				489DF3A6E3DD900D5CC2660E /* PhotoComparisonCard.swift */,
@@ -883,6 +888,7 @@
 		8574D1E1E6F199D4729A976D /* Deduplication */ = {
 			isa = PBXGroup;
 			children = (
+				62DE209E7DE0C6F66B461458 /* BatchApprovalViewModelTests.swift */,
 				5952F68C1FA2817E8048E904 /* DeduplicationViewModelTests.swift */,
 			);
 			path = Deduplication;
@@ -1279,6 +1285,7 @@
 				FC517B7DB18C59B049A82069 /* AssetMetadata.swift in Sources */,
 				B6073F8DB74AA5F749F722B7 /* AssetPage.swift in Sources */,
 				4B57BAFEB2B61014D96481DD /* AsyncStream+Extensions.swift in Sources */,
+				5BCCA106D3EE6C9F030B75CA /* BatchApprovalView.swift in Sources */,
 				A5EFFE4CF88DC3CE21E0D483 /* BatchConfirmationSummaryView.swift in Sources */,
 				272C4838F284A5904602759E /* BatchOperation.swift in Sources */,
 				2404A755C0CB8596783D9820 /* BatchStatus.swift in Sources */,
@@ -1408,6 +1415,7 @@
 				26D45A217BF38DF2B63DA331 /* AgentToolRegistryTests.swift in Sources */,
 				DE9C5B5645799D75AA5FB220 /* AnalyzeDuplicatesToolTests.swift in Sources */,
 				C1F1664C2459CDD3E5B4EFE4 /* AsyncStreamMergeTests.swift in Sources */,
+				9A78E74BD0B0F6864526FC52 /* BatchApprovalViewModelTests.swift in Sources */,
 				C56CBE47EE543741875711BC /* BatchRollbackUndoTests.swift in Sources */,
 				D591930CBE417B9B2081F663 /* BuildConfigurationTests.swift in Sources */,
 				2F4B24656B97DE8AFAADF2AD /* ChatInputViewModelTests.swift in Sources */,

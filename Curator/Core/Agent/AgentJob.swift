@@ -20,6 +20,10 @@ final class AgentJob: Equatable {
     /// Steps generated during the Planning phase and updated during execution.
     private(set) var steps: [AgentStep] = []
 
+    /// Completed step results carrying structured data (e.g. DuplicateGroup JSON).
+    /// Populated when `.stepCompleted` events carry a StepResult with data.
+    private(set) var stepResults: [StepResult] = []
+
     /// Summary of execution, populated after completion.
     var executionSummary: ExecutionSummary?
 
@@ -94,6 +98,7 @@ final class AgentJob: Equatable {
         }
         executionTask?.cancel()
         continuation?.finish()
+        stepResults.removeAll()
     }
 
     /// Emit an event into the event stream.
@@ -142,10 +147,11 @@ final class AgentJob: Equatable {
                 reasoningMessages.append(message)
             }
 
-        case .stepCompleted(let stepID, _):
+        case .stepCompleted(let stepID, let result):
             updateStep(id: stepID) { step in
                 step.status = .completed
             }
+            stepResults.append(result)
 
         case .stepFailed(let stepID, let domainError):
             updateStep(id: stepID) { step in

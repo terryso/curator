@@ -17,6 +17,12 @@ struct DuplicateReviewView: View {
     /// The ViewModel providing review state.
     let viewModel: DeduplicationViewModel
 
+    /// The confirmation ViewModel for batch operation confirmation workflow.
+    let confirmationViewModel: ConfirmationViewModel?
+
+    /// The undo manager ViewModel for rollback support.
+    let undoManager: UndoManagerViewModel?
+
     /// Current filter applied to the group list.
     @State private var filter: DuplicateGroupFilter = .all
 
@@ -34,6 +40,13 @@ struct DuplicateReviewView: View {
 
             // Group list or empty state
             groupList
+
+            // Batch approval bar (AC1, AC4, AC6)
+            BatchApprovalView(
+                viewModel: viewModel,
+                confirmationViewModel: confirmationViewModel,
+                undoManager: undoManager
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -229,11 +242,19 @@ struct DuplicateReviewView: View {
         )
     ]
     vm.loadGroups(groups)
-    return DuplicateReviewView(viewModel: vm)
-        .frame(width: 500, height: 600)
+    return DuplicateReviewView(
+        viewModel: vm,
+        confirmationViewModel: nil,
+        undoManager: nil
+    )
+    .frame(width: 500, height: 600)
 }
 
 #Preview("Empty") {
-    DuplicateReviewView(viewModel: DeduplicationViewModel())
-        .frame(width: 500, height: 400)
+    DuplicateReviewView(
+        viewModel: DeduplicationViewModel(),
+        confirmationViewModel: nil,
+        undoManager: nil
+    )
+    .frame(width: 500, height: 400)
 }

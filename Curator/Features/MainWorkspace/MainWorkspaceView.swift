@@ -1,4 +1,5 @@
 import SwiftUI
+import os.log
 
 /// Agent workspace main view with NavigationSplitView three-column layout.
 ///
@@ -89,7 +90,9 @@ struct MainWorkspaceView: View {
                     AgentExecutionPanel(
                         viewModel: executionViewModel,
                         isReadOnlyMode: permissionState?.isReadOnly ?? false,
-                        deduplicationViewModel: deduplicationViewModel
+                        deduplicationViewModel: deduplicationViewModel,
+                        confirmationViewModel: confirmationViewModel,
+                        undoManager: undoManager
                     )
                 } else {
                     Spacer()
@@ -372,17 +375,90 @@ struct MainWorkspaceView: View {
 
     /// Extracts DuplicateGroup data from a completed AgentJob's step results.
     ///
-    /// This is a placeholder implementation. Actual group extraction requires
-    /// AgentEvent to carry typed DuplicateGroup data (via ReviewItem or step result data).
-    /// The full implementation will be completed when the AgentEvent pipeline supports
-    /// structured review data — currently tracked as a follow-up to AC5 integration.
+    /// Iterates through all stepResults stored in the AgentJob, looking for
+    /// entries with a "duplicateGroups" key in their data dictionary. Parses
+    /// the JSON-encoded group data into `[DuplicateGroup]`.
     ///
-    /// - Returns: Empty array until AgentEvent carries typed data.
+    /// - Returns: Extracted duplicate groups, or empty array if none found.
     private static func extractDuplicateGroups(from job: AgentJob) -> [DuplicateGroup] {
-        // TODO: Implement extraction when AgentEvent carries DuplicateGroup[] data.
-        // The AnalyzeDuplicatesTool produces groups during execution; they need to flow
-        // through AgentEvent.stepCompleted result data or AgentEvent.reviewReady items.
+        for result in job.stepResults {
+            let groups = extractDuplicateGroupsFromStepResult(result)
+            if !groups.isEmpty {
+                return groups
+            }
+        }
         return []
+    }
+
+    /// Parses DuplicateGroup data from a single StepResult.
+    ///
+    /// Expects `stepResult.data["duplicateGroups"]` to contain a JSON string
+    /// with a top-level "groups" array. Each group entry contains:
+    /// - "id": UUID string
+    /// - "assetIDs": array of file path strings
+    /// - "fileNames": array of file name strings
+    /// - "similarityScore": Double
+    /// - "reason": String (optional)
+    /// - "assetCount": Int
+    /// - "status": String matching DuplicateGroupStatus.stringValue
+    ///
+    /// Returns empty array if no "duplicateGroups" key exists or JSON is malformed.
+    static func extractDuplicateGroupsFromStepResult(_ stepResult: StepResult) -> [DuplicateGroup] {
+        guard let jsonString = stepResult.data["duplicateGroups"],
+              let jsonData = jsonString.data(using: .utf8),
+              let root = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+              let groupsArray = root["groups"] as? [[String: Any]] else {
+            return []
+        }
+
+        let logger = Logger(subsystem: "com.curator.app", category: "DuplicateGroupExtraction")
+        var groups: [DuplicateGroup] = []
+        for entry in groupsArray {
+            guard let idString = entry["id"] as? String,
+                  let id = UUID(uuidString: idString),
+                  let assetIDs = entry["assetIDs"] as? [String],
+                  let fileNames = entry["fileNames"] as? [String],
+                  let similarityScore = entry["similarityScore"] as? Double,
+                  let statusString = entry["status"] as? String else {
+                logger.warning("Skipping malformed DuplicateGroup entry: missing required fields in \(entry)")
+                continue
+            }
+
+            if assetIDs.count != fileNames.count {
+                logger.warning("DuplicateGroup \(idString): assetIDs count (\(assetIDs.count)) != fileNames count (\(fileNames.count)), truncating to shorter array")
+            }
+
+            let assets = zip(assetIDs, fileNames).map { (assetID, fileName) in
+                PhotoAsset(
+                    id: AssetID(rawValue: assetID),
+                    metadata: AssetMetadata(
+                        fileName: fileName,
+                        fileSize: nil,
+                        creationDate: nil,
+                        cameraModel: nil,
+                        imageWidth: nil,
+                        imageHeight: nil,
+                        gpsLocation: nil,
+                        fileFormat: nil
+                    ),
+                    thumbnailData: nil
+                )
+            }
+
+            let reason = entry["reason"] as? String
+            let status = DuplicateGroupStatus(stringValue: statusString)
+
+            groups.append(DuplicateGroup(
+                id: id,
+                assets: assets,
+                similarityScore: similarityScore,
+                reason: (reason?.isEmpty ?? true) ? nil : reason,
+                thumbnails: [:],
+                status: status
+            ))
+        }
+
+        return groups
     }
 }
 

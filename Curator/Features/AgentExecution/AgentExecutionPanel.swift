@@ -18,6 +18,12 @@ struct AgentExecutionPanel: View {
     /// Deduplication review ViewModel for review state display.
     var deduplicationViewModel: DeduplicationViewModel?
 
+    /// Confirmation ViewModel for batch operation workflow.
+    var confirmationViewModel: ConfirmationViewModel?
+
+    /// Undo manager ViewModel for rollback support.
+    var undoManager: UndoManagerViewModel?
+
     /// Whether the user prefers reduced motion.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -48,7 +54,11 @@ struct AgentExecutionPanel: View {
 
         case .review:
             if let dedupVM = deduplicationViewModel, !dedupVM.groups.isEmpty {
-                DuplicateReviewView(viewModel: dedupVM)
+                DuplicateReviewView(
+                    viewModel: dedupVM,
+                    confirmationViewModel: confirmationViewModel,
+                    undoManager: undoManager
+                )
             } else {
                 stepList
             }

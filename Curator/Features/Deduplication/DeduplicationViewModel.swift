@@ -126,4 +126,39 @@ final class DeduplicationViewModel {
             .flatMap(\.assets)
             .map(\.id)
     }
+
+    // MARK: - Batch Operations (Story 5.5)
+
+    /// Marks all pending (unreviewed) groups as `.keep`.
+    ///
+    /// Already-reviewed groups are not affected — only pending groups are updated.
+    func markAllAsKeep() {
+        for group in groups where reviewStates[group.id] == .pending {
+            reviewStates[group.id] = .keep
+        }
+    }
+
+    /// Marks all pending (unreviewed) groups as `.remove`.
+    ///
+    /// Already-reviewed groups are not affected — only pending groups are updated.
+    func markAllAsRemove() {
+        for group in groups where reviewStates[group.id] == .pending {
+            reviewStates[group.id] = .remove
+        }
+    }
+
+    /// Converts groups marked for removal into PlannedOperation list.
+    ///
+    /// Each asset in a `.remove`-marked group produces a `.delete` PlannedOperation.
+    /// Groups marked as `.keep` or `.pending` are excluded.
+    /// Used to bridge review decisions to the confirmation workflow (AC4).
+    func toDeleteOperations() -> [PlannedOperation] {
+        assetsToRemove().map { assetID in
+            PlannedOperation(
+                operationType: .delete,
+                assetID: assetID,
+                parameters: .delete
+            )
+        }
+    }
 }

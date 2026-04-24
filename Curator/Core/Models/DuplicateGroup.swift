@@ -1,4 +1,5 @@
 import Foundation
+import os.log
 
 /// Status of a duplicate group throughout its lifecycle.
 enum DuplicateGroupStatus: Sendable, Equatable {
@@ -18,6 +19,22 @@ enum DuplicateGroupStatus: Sendable, Equatable {
         case .confirmed: return "confirmed"
         case .rejected: return "rejected"
         case .analysisFailed: return "analysisFailed"
+        }
+    }
+
+    /// Creates a status from its string representation.
+    ///
+    /// Returns `.pending` for unrecognized values and logs a warning.
+    init(stringValue: String) {
+        switch stringValue {
+        case "pending": self = .pending
+        case "confirmed": self = .confirmed
+        case "rejected": self = .rejected
+        case "analysisFailed": self = .analysisFailed
+        default:
+            Logger(subsystem: "com.curator.app", category: "DuplicateGroupStatus")
+                .warning("Unrecognized DuplicateGroupStatus string '\(stringValue)', defaulting to .pending")
+            self = .pending
         }
     }
 }

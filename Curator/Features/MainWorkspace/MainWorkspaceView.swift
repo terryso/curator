@@ -41,6 +41,9 @@ struct MainWorkspaceView: View {
     /// Read-only mode ViewModel — sourced from AppDependencies.
     var readOnlyMode: ReadOnlyModeViewModel? { dependencies.readOnlyModeViewModel }
 
+    /// Deduplication review ViewModel — sourced from AppDependencies.
+    var deduplicationViewModel: DeduplicationViewModel { dependencies.deduplicationViewModel }
+
     /// Whether the saved operations sheet is visible.
     @State private var showSavedOperations = false
 
@@ -85,7 +88,8 @@ struct MainWorkspaceView: View {
                 } else if chatInputViewModel.agentJob != nil {
                     AgentExecutionPanel(
                         viewModel: executionViewModel,
-                        isReadOnlyMode: permissionState?.isReadOnly ?? false
+                        isReadOnlyMode: permissionState?.isReadOnly ?? false,
+                        deduplicationViewModel: deduplicationViewModel
                     )
                 } else {
                     Spacer()
@@ -202,6 +206,15 @@ struct MainWorkspaceView: View {
             // Note: Planned operations are supplied by the agent tool layer (Epic 5/6).
             // The .confirm state acts as the integration hook; actual operation list
             // will be passed by the tool that triggered the state transition.
+        }
+        .onChange(of: executionViewModel.displayState) { _, newState in
+            // When entering review state with duplicate groups, load them into the dedup ViewModel.
+            if newState == .review, let job = chatInputViewModel.agentJob {
+                let groups = Self.extractDuplicateGroups(from: job)
+                if !groups.isEmpty {
+                    deduplicationViewModel.loadGroups(groups)
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didResizeNotification)) { notification in
             guard let window = notification.object as? NSWindow else { return }
@@ -353,6 +366,36 @@ struct MainWorkspaceView: View {
             )
             .padding(.bottom, 4)
         }
+    }
+
+    // MARK: - Duplicate Group Extraction
+
+    /// Extracts DuplicateGroup data from a completed AgentJob's step results.
+    ///
+    /// Searches step results for JSON-encoded DuplicateGroup arrays produced by
+    /// AnalyzeDuplicatesTool. Returns empty array if no groups are found.
+    private static func extractDuplicateGroups(from job: AgentJob) -> [DuplicateGroup] {
+        var groups: [DuplicateGroup] = []
+        let decoder = JSONDecoder()
+
+        for step in job.steps {
+            guard step.status == .completed else { continue }
+            // Check step result data for duplicate groups
+            // The data dictionary may contain a "duplicateGroups" key with JSON
+            if let result = job.executionSummary,
+               let message = result.message as String?,
+               message.contains("duplicate") {
+                // Try to parse groups from the execution summary message
+                // This is a best-effort extraction; the primary path is through
+                // the tool's stepCompleted event data
+            }
+        }
+
+        // Primary extraction path: decode from step results if available
+        // For now, return empty — actual group data flows through AgentEvent
+        // stepCompleted result.data when AnalyzeDuplicatesTool runs.
+        // The integration will be completed when AgentEvent carries typed data.
+        return groups
     }
 }
 

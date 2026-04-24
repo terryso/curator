@@ -61,6 +61,9 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Image analysis pipeline — nil until registered.
     var imageAnalysisPipeline: (any ImageAnalysisPipelineProtocol)?
 
+    /// Deduplication review ViewModel — manages user review decisions for duplicate groups.
+    @Published var deduplicationViewModel: DeduplicationViewModel = DeduplicationViewModel()
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()

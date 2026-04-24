@@ -15,6 +15,9 @@ struct AgentExecutionPanel: View {
     /// Whether the app is in read-only mode (passed to StepCardView for annotations).
     var isReadOnlyMode: Bool = false
 
+    /// Deduplication review ViewModel for review state display.
+    var deduplicationViewModel: DeduplicationViewModel?
+
     /// Whether the user prefers reduced motion.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -43,7 +46,14 @@ struct AgentExecutionPanel: View {
         case .executing:
             stepList
 
-        case .review, .completed, .failed, .cancelled:
+        case .review:
+            if let dedupVM = deduplicationViewModel, !dedupVM.groups.isEmpty {
+                DuplicateReviewView(viewModel: dedupVM)
+            } else {
+                stepList
+            }
+
+        case .completed, .failed, .cancelled:
             stepList
         }
     }
@@ -185,9 +195,15 @@ struct AgentExecutionPanel: View {
         HStack(spacing: 6) {
             Image(systemName: "eye.fill")
                 .foregroundStyle(Color.accentColor)
-            Text("Review results before applying.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+            if let dedupVM = deduplicationViewModel, !dedupVM.groups.isEmpty {
+                Text("Review \(dedupVM.totalGroups) duplicate groups — \(dedupVM.reviewedCount) reviewed")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Review results before applying.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }
@@ -204,7 +220,7 @@ struct AgentExecutionPanel: View {
                   reasoningMessages: ["Comparing visual features..."]),
     ]))
     vm.agentJob = job
-    return AgentExecutionPanel(viewModel: vm)
+    return AgentExecutionPanel(viewModel: vm, deduplicationViewModel: nil)
         .frame(width: 500, height: 400)
 }
 
@@ -221,6 +237,6 @@ struct AgentExecutionPanel: View {
         duration: 45.0, message: "Found 120 duplicates"
     )))
     vm.agentJob = job
-    return AgentExecutionPanel(viewModel: vm)
+    return AgentExecutionPanel(viewModel: vm, deduplicationViewModel: nil)
         .frame(width: 500, height: 400)
 }

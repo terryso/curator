@@ -92,7 +92,29 @@ struct MainWorkspaceView: View {
                         isReadOnlyMode: permissionState?.isReadOnly ?? false,
                         deduplicationViewModel: deduplicationViewModel,
                         confirmationViewModel: confirmationViewModel,
-                        undoManager: undoManager
+                        undoManager: undoManager,
+                        resultSummaryViewModel: dependencies.resultSummaryViewModel,
+                        showResultSummary: dependencies.showResultSummary,
+                        onResultSummaryDone: {
+                            // Save history and dismiss
+                            if let summaryVM = dependencies.resultSummaryViewModel {
+                                let _ = summaryVM.saveToHistory()
+                            }
+                            dependencies.showResultSummary = false
+                            dependencies.resultSummaryViewModel = nil
+                            confirmationViewModel?.cancel()
+                        },
+                        onResultSummaryUndo: {
+                            _Concurrency.Task {
+                                if let summaryVM = dependencies.resultSummaryViewModel {
+                                    let success = await summaryVM.performUndo()
+                                    guard success else { return }
+                                }
+                                dependencies.showResultSummary = false
+                                dependencies.resultSummaryViewModel = nil
+                                confirmationViewModel?.cancel()
+                            }
+                        }
                     )
                 } else {
                     Spacer()
@@ -364,11 +386,54 @@ struct MainWorkspaceView: View {
                     confirmationVM.cancel()
                 },
                 onDismiss: {
-                    confirmationVM.cancel()
+                    // AC6: Dismiss the brief result -> show full AgentResultSummaryView
+                    showAgentResultSummary(from: confirmationVM)
                 }
             )
             .padding(.bottom, 4)
         }
+    }
+
+    // MARK: - Result Summary Integration
+
+    /// Populates and shows the full AgentResultSummaryView after the user dismisses
+    /// the brief ExecutionResultView. Computes saved space from duplicate group data.
+    private func showAgentResultSummary(from confirmationVM: ConfirmationViewModel) {
+        guard let result = confirmationVM.executionResult else {
+            confirmationVM.cancel()
+            return
+        }
+
+        let summaryVM = ResultSummaryViewModel(
+            undoManager: undoManager,
+            modelContext: dependencies.swiftDataManager?.container.mainContext
+        )
+
+        // Compute removed asset sizes from deduplication review data
+        var removedAssetSizes: [AssetID: Int64] = [:]
+        for group in deduplicationViewModel.groups {
+            if deduplicationViewModel.reviewStates[group.id] == .remove {
+                for asset in group.assets {
+                    if let fileSize = asset.metadata.fileSize {
+                        removedAssetSizes[asset.id] = fileSize
+                    }
+                }
+            }
+        }
+
+        // Use agent execution duration when available
+        let duration = executionViewModel.agentJob?.executionSummary?.duration ?? 0.0
+
+        summaryVM.populateFrom(
+            result: result,
+            groups: deduplicationViewModel.groups,
+            reviewStates: deduplicationViewModel.reviewStates,
+            removedAssetSizes: removedAssetSizes,
+            duration: duration
+        )
+
+        dependencies.resultSummaryViewModel = summaryVM
+        dependencies.showResultSummary = true
     }
 
     // MARK: - Duplicate Group Extraction

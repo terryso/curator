@@ -65,6 +65,13 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Uses @Observable (not @Published) since DeduplicationViewModel is @Observable.
     var deduplicationViewModel: DeduplicationViewModel = DeduplicationViewModel()
 
+    /// Result summary ViewModel — manages result summary state after dedup operations.
+    /// Uses @Observable (not @Published) since ResultSummaryViewModel is @Observable.
+    var resultSummaryViewModel: ResultSummaryViewModel?
+
+    /// Whether the AgentResultSummaryView should be displayed in the execution panel.
+    @Published var showResultSummary: Bool = false
+
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {
         let bookmarkManager = FolderBookmarkManager()

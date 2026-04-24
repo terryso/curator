@@ -15,6 +15,7 @@ final class SwiftDataManager: ObservableObject {
             SessionEntity.self,
             OperationSnapshotEntity.self,
             BatchOperationEntity.self,
+            DeduplicationResultEntity.self,
         ])
         let config = ModelConfiguration(
             schema: schema,

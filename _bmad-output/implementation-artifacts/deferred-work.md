@@ -83,3 +83,8 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 
 - AnalyzeDuplicatesTool not modified for Story 5.5 data flow — detection done in SDKMessageBridge via content sniffing (`isAnalyzeDuplicatesOutput`). The tool already returns correct JSON from Story 5-3. Architecture choice to sniff in bridge vs. modify tool is pre-existing. The sniffing heuristic is fragile (tracked as patch finding).
 - UI text hardcoded in English ("Keep All", "Remove All", "Execute Deletion", "Completed", "Undo", "Dismiss") despite Chinese user story and `communication_language: Mandarin` config. Pre-existing pattern across all views (DuplicateReviewView, PhotoComparisonCard, etc.). Address in a dedicated i18n/l10n story.
+
+## Deferred from: code review of 5-6-dedup-result-summary.md (2026-04-24)
+
+- AgentResultSummaryView exceeds 200-line convention (~256 lines excluding previews). Pre-existing tendency in the codebase; the view is well-structured with clear section decomposition. Address in a refactor pass.
+- Hardcoded English UI strings ("Photos Removed", "Groups Processed", "Space Saved", "Duration", "Undo", "Done", etc.) not localized. Pre-existing across all views; no localization infrastructure exists in the project yet. Address in a dedicated i18n/l10n story.

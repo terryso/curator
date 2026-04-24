@@ -24,6 +24,18 @@ struct AgentExecutionPanel: View {
     /// Undo manager ViewModel for rollback support.
     var undoManager: UndoManagerViewModel?
 
+    /// Result summary ViewModel for displaying full result summary after execution.
+    var resultSummaryViewModel: ResultSummaryViewModel?
+
+    /// Whether to show the full result summary instead of the step list.
+    var showResultSummary: Bool = false
+
+    /// Callback when the user clicks "Done" on the result summary.
+    var onResultSummaryDone: (() -> Void)?
+
+    /// Callback when the user clicks "Undo" on the result summary.
+    var onResultSummaryUndo: (() -> Void)?
+
     /// Whether the user prefers reduced motion.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -45,6 +57,23 @@ struct AgentExecutionPanel: View {
     /// State-dependent main content area.
     @ViewBuilder
     private var mainContent: some View {
+        if showResultSummary, let summaryVM = resultSummaryViewModel {
+            // AC6: Full AgentResultSummaryView replaces step list
+            ScrollView {
+                AgentResultSummaryView(
+                    viewModel: summaryVM,
+                    onDone: { onResultSummaryDone?() },
+                    onUndo: { onResultSummaryUndo?() }
+                )
+            }
+        } else {
+            stateDependentContent
+        }
+    }
+
+    /// State-dependent content for non-summary states.
+    @ViewBuilder
+    private var stateDependentContent: some View {
         switch viewModel.displayState {
         case .empty:
             Spacer()

@@ -62,7 +62,8 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     var imageAnalysisPipeline: (any ImageAnalysisPipelineProtocol)?
 
     /// Deduplication review ViewModel — manages user review decisions for duplicate groups.
-    @Published var deduplicationViewModel: DeduplicationViewModel = DeduplicationViewModel()
+    /// Uses @Observable (not @Published) since DeduplicationViewModel is @Observable.
+    var deduplicationViewModel: DeduplicationViewModel = DeduplicationViewModel()
 
     /// Registers the local-folder-backed photo library repository (MVP).
     func registerLocalFolderRepository() {

@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "snapshot_at": "2026-04-24T03:39:53Z",
+  "repo": "curator",
+  "collection_mode": "contract_static",
+  "collection_status": "COLLECTED",
+  "inventory_basis": "acceptance_criteria",
+  "gate_basis": "priority_thresholds",
+  "source_sha": "",
+  "target": {
+    "type": "story",
+    "id": "5.4",
+    "label": "Deduplication Review UI"
+  },
+  "decision_mode": "automated",
+  "evaluator": "nick",
+  "confidence": "high",
+  "oracle": {
+    "resolution_mode": "formal_requirements",
+    "confidence": "high",
+    "sources": [
+      "_bmad-output/implementation-artifacts/5-4-dedup-review-ui.md",
+      "_bmad-output/test-artifacts/atdd-checklist-5-4-dedup-review-ui.md",
+      "CuratorTests/Features/Deduplication/DeduplicationViewModelTests.swift"
+    ],
+    "external_pointer_status": "not_used",
+    "synthetic": false
+  },
+  "coverage": {
+    "inventory": {
+      "covered": 3,
+      "total": 6,
+      "pct": 50
+    },
+    "priority_breakdown": {
+      "P0": { "total": 3, "covered": 3, "pct": 100 },
+      "P1": { "total": 3, "covered": 1, "pct": 33 },
+      "P2": { "total": 0, "covered": 0, "pct": 100 },
+      "P3": { "total": 0, "covered": 0, "pct": 100 }
+    },
+    "by_level": {
+      "e2e": { "tests": 0, "criteria_covered": 0 },
+      "api": { "tests": 0, "criteria_covered": 0 },
+      "component": { "tests": 0, "criteria_covered": 0 },
+      "unit": { "tests": 16, "criteria_covered": 5 },
+      "other": { "tests": 0, "criteria_covered": 0 }
+    }
+  },
+  "tests": {
+    "files": 1,
+    "cases": 16,
+    "skipped_cases": 0,
+    "fixme_cases": 0,
+    "pending_cases": 0
+  },
+  "risk_summary": {
+    "critical_open": 0,
+    "high_open": 2,
+    "medium_open": 1,
+    "low_open": 0
+  },
+  "heuristics": {
+    "endpoint_gaps": 0,
+    "auth_negative_path_status": "not_applicable",
+    "error_path_status": "present",
+    "ui_journey_status": "partial",
+    "ui_state_status": "partial"
+  },
+  "blockers": [],
+  "recommendations": [
+    {
+      "priority": "MEDIUM",
+      "action": "Add integration test for AC5 data flow: loadGroups called when AgentJob enters review state",
+      "requirements": ["AC5"]
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Add accessibility audit to CI/CD pipeline using Xcode Accessibility Inspector automation for AC6",
+      "requirements": ["AC6"]
+    },
+    {
+      "priority": "LOW",
+      "action": "Implement deferred keyboard navigation (Tab/Enter/Esc) and add corresponding tests",
+      "requirements": ["AC6"]
+    },
+    {
+      "priority": "LOW",
+      "action": "Run /bmad:tea:test-review to assess test quality",
+      "requirements": []
+    },
+    {
+      "priority": "LOW",
+      "action": "Consider ViewInspector framework for SwiftUI view testing to improve AC1 and AC5 coverage",
+      "requirements": ["AC1", "AC5"]
+    }
+  ],
+  "links": {
+    "trace_report_path": "_bmad-output/test-artifacts/traceability-matrix-5-4.md",
+    "trace_report_url": "",
+    "artifact_url": "",
+    "journey_evidence_url": ""
+  },
+  "gate_status": "CONCERNS",
+  "gate_criteria": {
+    "p0_coverage_required": "100%",
+    "p0_coverage_actual": "100%",
+    "p0_status": "MET",
+    "p1_coverage_target": "90%",
+    "p1_coverage_minimum": "80%",
+    "p1_coverage_actual": "33%",
+    "p1_status": "NOT_MET",
+    "overall_coverage_minimum": "80%",
+    "overall_coverage_actual": "50%",
+    "overall_status": "NOT_MET"
+  }
+}

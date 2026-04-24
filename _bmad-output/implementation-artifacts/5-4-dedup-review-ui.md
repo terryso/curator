@@ -1,6 +1,6 @@
 # Story 5.4: 去重审核界面
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -381,6 +381,15 @@ GLM-5.1
 - Curator/App/AppDependencies.swift (added deduplicationViewModel property)
 - Curator/Features/AgentExecution/AgentExecutionPanel.swift (added deduplicationViewModel param, review state shows DuplicateReviewView)
 - Curator/Features/MainWorkspace/MainWorkspaceView.swift (added deduplicationViewModel computed property, passes to AgentExecutionPanel, onChange for review state)
+
+### Review Findings
+
+- [x] [Review][Patch] `extractDuplicateGroups` is a dead stub — always returns `[]`, making AC5 integration non-functional [Curator/Features/MainWorkspace/MainWorkspaceView.swift:377-399] — replaced with clean TODO placeholder
+- [x] [Review][Patch] `reviewStates` is publicly mutable — external code can bypass guard checks and corrupt state [Curator/Features/Deduplication/DeduplicationViewModel.swift:42] — changed to `private(set)`
+- [x] [Review][Patch] `@Published` redundant on `@Observable` DeduplicationViewModel in AppDependencies [Curator/App/AppDependencies.swift:65] — removed `@Published`
+- [x] [Review][Patch] `accessibilityElement(children: .combine)` hides individual button actions from VoiceOver [Curator/Features/Deduplication/PhotoComparisonCard.swift:48] — changed to `.contain`
+- [x] [Review][Defer] `previewAssetIndex` declared but never used — no thumbnail preview rendered [Curator/Features/Deduplication/PhotoComparisonCard.swift:26] — deferred, pre-existing
+- [x] [Review][Defer] No keyboard navigation (Tab/Enter/Esc) for AC6 [Curator/Features/Deduplication/DuplicateReviewView.swift] — deferred, pre-existing
 
 ### Change Log
 

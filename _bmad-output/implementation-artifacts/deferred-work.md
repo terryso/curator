@@ -72,3 +72,9 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 ## Deferred from: code review of 5-3-dedup-sdk-tools.md (2026-04-24)
 
 - Duplicate mock `PhotoLibraryRepository` implementations across 3 test files (AnalyzeDuplicatesToolTests, DeleteAssetsToolTests, DedupToolRegistrationTests). Pattern pre-exists from Story 3.2 (ScanLibraryTool tests). Could consolidate into a shared test helper in `CuratorTests/Infrastructure/SDKTools/TestHelpers.swift`.
+
+## Deferred from: code review of 5-4-dedup-review-ui.md (2026-04-24)
+
+- `previewAssetIndex` state declared in PhotoComparisonCard but never connected to any full-screen cover or QuickLook preview. The tap gesture sets the index but no enlarged image renders. Spec calls for "QuickLook 或 Sheet" enlarging on tap. Deferred — implement when QuickLook/preview infrastructure is added.
+- No keyboard navigation (Tab/Enter/Esc) for duplicate review groups. AC6 requires keyboard navigation between groups. Deferred — add FocusScope and keyboard shortcuts after Epic 5 completion.
+- `extractDuplicateGroups` returns `[]` (AC5 gap). AgentEvent pipeline does not yet carry typed DuplicateGroup data. **To be addressed in Story 5.5** — the batch approval story needs this link to work end-to-end. Work: wire AnalyzeDuplicatesTool output through AgentEvent.reviewReady/stepCompleted to AgentJob, then implement the extraction in MainWorkspaceView.

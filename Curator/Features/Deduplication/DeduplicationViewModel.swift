@@ -36,10 +36,12 @@ final class DeduplicationViewModel {
     // MARK: - Observable State
 
     /// All duplicate groups loaded for review.
-    var groups: [DuplicateGroup] = []
+    /// Read-only externally — mutations must go through loadGroups().
+    private(set) var groups: [DuplicateGroup] = []
 
     /// Review decision for each group, keyed by group UUID.
-    var reviewStates: [UUID: DuplicateGroupReviewState] = [:]
+    /// Read-only externally — mutations must go through markAsKeep/markAsRemove/toggleReviewState.
+    private(set) var reviewStates: [UUID: DuplicateGroupReviewState] = [:]
 
     // MARK: - Computed Properties
 

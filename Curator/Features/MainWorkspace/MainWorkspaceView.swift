@@ -372,30 +372,17 @@ struct MainWorkspaceView: View {
 
     /// Extracts DuplicateGroup data from a completed AgentJob's step results.
     ///
-    /// Searches step results for JSON-encoded DuplicateGroup arrays produced by
-    /// AnalyzeDuplicatesTool. Returns empty array if no groups are found.
+    /// This is a placeholder implementation. Actual group extraction requires
+    /// AgentEvent to carry typed DuplicateGroup data (via ReviewItem or step result data).
+    /// The full implementation will be completed when the AgentEvent pipeline supports
+    /// structured review data — currently tracked as a follow-up to AC5 integration.
+    ///
+    /// - Returns: Empty array until AgentEvent carries typed data.
     private static func extractDuplicateGroups(from job: AgentJob) -> [DuplicateGroup] {
-        var groups: [DuplicateGroup] = []
-        let decoder = JSONDecoder()
-
-        for step in job.steps {
-            guard step.status == .completed else { continue }
-            // Check step result data for duplicate groups
-            // The data dictionary may contain a "duplicateGroups" key with JSON
-            if let result = job.executionSummary,
-               let message = result.message as String?,
-               message.contains("duplicate") {
-                // Try to parse groups from the execution summary message
-                // This is a best-effort extraction; the primary path is through
-                // the tool's stepCompleted event data
-            }
-        }
-
-        // Primary extraction path: decode from step results if available
-        // For now, return empty — actual group data flows through AgentEvent
-        // stepCompleted result.data when AnalyzeDuplicatesTool runs.
-        // The integration will be completed when AgentEvent carries typed data.
-        return groups
+        // TODO: Implement extraction when AgentEvent carries DuplicateGroup[] data.
+        // The AnalyzeDuplicatesTool produces groups during execution; they need to flow
+        // through AgentEvent.stepCompleted result data or AgentEvent.reviewReady items.
+        return []
     }
 }
 

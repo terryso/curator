@@ -18,6 +18,9 @@ struct AgentExecutionPanel: View {
     /// Deduplication review ViewModel for review state display.
     var deduplicationViewModel: DeduplicationViewModel?
 
+    /// Rename review ViewModel for rename review state display.
+    var renameViewModel: RenameViewModel?
+
     /// Confirmation ViewModel for batch operation workflow.
     var confirmationViewModel: ConfirmationViewModel?
 
@@ -88,6 +91,8 @@ struct AgentExecutionPanel: View {
                     confirmationViewModel: confirmationViewModel,
                     undoManager: undoManager
                 )
+            } else if let renameVM = renameViewModel, !renameVM.suggestions.isEmpty {
+                RenameReviewView(viewModel: renameVM)
             } else {
                 stepList
             }
@@ -236,6 +241,10 @@ struct AgentExecutionPanel: View {
                 .foregroundStyle(Color.accentColor)
             if let dedupVM = deduplicationViewModel, !dedupVM.groups.isEmpty {
                 Text("Review \(dedupVM.totalGroups) duplicate groups — \(dedupVM.reviewedCount) reviewed")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            } else if let renameVM = renameViewModel, !renameVM.suggestions.isEmpty {
+                Text("Review \(renameVM.totalSuggestions) rename suggestions — \(renameVM.reviewedCount) reviewed")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             } else {

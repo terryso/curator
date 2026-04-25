@@ -92,3 +92,10 @@ Epic 1 UI 基础架构正确（NavigationSplitView 三栏、Toolbar、Sidebar）
 ## Deferred from: code review of 6-2-rename-sdk-tools.md (2026-04-25)
 
 - `RenameItemInput.originalFileName` field is declared in the input struct but never used in the tool implementation. The field has audit/logging value and may be used in future Stories (e.g., rename result summary UI in Story 6.4). OperationManager captures original filename via repository metadata in beginBatch, so the field is redundant for rollback purposes.
+
+## Deferred from: code review of 6-3-rename-review-ui (2026-04-25)
+
+- `parseRenameSuggestionStatus` discards associated values for "edited" and "failed" cases, returning `.edited("")` and `.failed("Unknown error")`. Consistent with dedup extraction pattern. Review decisions tracked separately via `RenameReviewDecision`, so this is pre-existing design. [MainWorkspaceView.swift:611-619]
+- Validation indicator in RenameSuggestionCard shows only "Valid/Invalid file name" without indicating which rule was violated (empty, illegal chars, too long, leading/trailing period). UX polish deferred to a future pass. [RenameSuggestionCard.swift:266-274]
+- Spec UX-DR5 describes "smooth transition animation effect" between current and suggested names. Implementation uses a static arrow icon (previously bouncing, removed during review for NFR2). A true name crossfade/slide transition is deferred as UX polish. [RenameSuggestionCard.swift:103-115]
+- Thumbnail in RenameSuggestionCard is a placeholder (SF Symbol "photo") instead of loading actual photo thumbnails. `RenameSuggestion` does not carry image data; thumbnail loading would require additional asset lookup infrastructure. Deferred. [RenameSuggestionCard.swift:128-136]

@@ -45,6 +45,9 @@ struct MainWorkspaceView: View {
     /// Deduplication review ViewModel — sourced from AppDependencies.
     var deduplicationViewModel: DeduplicationViewModel { dependencies.deduplicationViewModel }
 
+    /// Rename review ViewModel — sourced from AppDependencies.
+    var renameViewModel: RenameViewModel { dependencies.renameViewModel }
+
     /// Whether the saved operations sheet is visible.
     @State private var showSavedOperations = false
 
@@ -91,6 +94,7 @@ struct MainWorkspaceView: View {
                         viewModel: executionViewModel,
                         isReadOnlyMode: permissionState?.isReadOnly ?? false,
                         deduplicationViewModel: deduplicationViewModel,
+                        renameViewModel: renameViewModel,
                         confirmationViewModel: confirmationViewModel,
                         undoManager: undoManager,
                         resultSummaryViewModel: dependencies.resultSummaryViewModel,
@@ -238,6 +242,12 @@ struct MainWorkspaceView: View {
                 let groups = Self.extractDuplicateGroups(from: job)
                 if !groups.isEmpty {
                     deduplicationViewModel.loadGroups(groups)
+                }
+
+                // When entering review state with rename suggestions, load them into the rename ViewModel.
+                let suggestions = Self.extractRenameSuggestions(from: job)
+                if !suggestions.isEmpty {
+                    renameViewModel.loadSuggestions(suggestions)
                 }
             }
         }
@@ -524,6 +534,88 @@ struct MainWorkspaceView: View {
         }
 
         return groups
+    }
+
+    // MARK: - Rename Suggestion Extraction
+
+    /// Extracts RenameSuggestion data from a completed AgentJob's step results.
+    ///
+    /// Iterates through all stepResults stored in the AgentJob, looking for
+    /// entries with a "renameSuggestions" key in their data dictionary. Parses
+    /// the JSON-encoded suggestion data into `[RenameSuggestion]`.
+    ///
+    /// - Returns: Extracted rename suggestions, or empty array if none found.
+    private static func extractRenameSuggestions(from job: AgentJob) -> [RenameSuggestion] {
+        for result in job.stepResults {
+            let suggestions = extractRenameSuggestionsFromStepResult(result)
+            if !suggestions.isEmpty {
+                return suggestions
+            }
+        }
+        return []
+    }
+
+    /// Parses RenameSuggestion data from a single StepResult.
+    ///
+    /// Expects `stepResult.data["renameSuggestions"]` to contain a JSON string
+    /// with a top-level "suggestions" array. Each entry contains:
+    /// - "id": UUID string
+    /// - "assetID": String
+    /// - "originalFileName": String
+    /// - "suggestedName": String
+    /// - "confidence": Double
+    /// - "analysisDescription": String (optional)
+    /// - "status": String matching RenameSuggestionStatus.stringValue
+    ///
+    /// Returns empty array if no "renameSuggestions" key exists or JSON is malformed.
+    static func extractRenameSuggestionsFromStepResult(_ stepResult: StepResult) -> [RenameSuggestion] {
+        guard let jsonString = stepResult.data["renameSuggestions"],
+              let jsonData = jsonString.data(using: .utf8),
+              let root = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+              let suggestionsArray = root["suggestions"] as? [[String: Any]] else {
+            return []
+        }
+
+        let logger = Logger(subsystem: "com.curator.app", category: "RenameSuggestionExtraction")
+        var suggestions: [RenameSuggestion] = []
+        for entry in suggestionsArray {
+            guard let idString = entry["id"] as? String,
+                  let id = UUID(uuidString: idString),
+                  let assetIDString = entry["assetID"] as? String,
+                  let originalFileName = entry["originalFileName"] as? String,
+                  let suggestedName = entry["suggestedName"] as? String,
+                  let confidence = entry["confidence"] as? Double else {
+                logger.warning("Skipping malformed RenameSuggestion entry: missing required fields")
+                continue
+            }
+
+            let analysisDescription = entry["analysisDescription"] as? String
+            let statusString = entry["status"] as? String ?? "pending"
+            let status = parseRenameSuggestionStatus(statusString)
+
+            suggestions.append(RenameSuggestion(
+                id: id,
+                assetID: AssetID(rawValue: assetIDString),
+                originalFileName: originalFileName,
+                suggestedName: suggestedName,
+                confidence: confidence,
+                analysisDescription: analysisDescription,
+                status: status
+            ))
+        }
+
+        return suggestions
+    }
+
+    /// Parses a status string into a RenameSuggestionStatus.
+    private static func parseRenameSuggestionStatus(_ stringValue: String) -> RenameSuggestionStatus {
+        switch stringValue {
+        case "accepted": return .accepted
+        case "rejected": return .rejected
+        case "edited": return .edited("")
+        case "failed": return .failed("Unknown error")
+        default: return .pending
+        }
     }
 }
 

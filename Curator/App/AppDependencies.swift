@@ -65,6 +65,10 @@ final class AppDependencies: ObservableObject, UndoManagerRepositoryProvider {
     /// Uses @Observable (not @Published) since DeduplicationViewModel is @Observable.
     var deduplicationViewModel: DeduplicationViewModel = DeduplicationViewModel()
 
+    /// Rename review ViewModel — manages user review decisions for rename suggestions.
+    /// Uses @Observable (not @Published) since RenameViewModel is @Observable.
+    var renameViewModel: RenameViewModel = RenameViewModel()
+
     /// Result summary ViewModel — manages result summary state after dedup operations.
     /// Uses @Observable (not @Published) since ResultSummaryViewModel is @Observable.
     var resultSummaryViewModel: ResultSummaryViewModel?

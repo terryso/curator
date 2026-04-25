@@ -18,6 +18,12 @@ struct RenameReviewView: View {
     /// The ViewModel providing review state.
     let viewModel: RenameViewModel
 
+    /// The confirmation ViewModel for batch operation confirmation workflow.
+    let confirmationViewModel: ConfirmationViewModel?
+
+    /// The undo manager ViewModel for rollback support.
+    let undoManager: UndoManagerViewModel?
+
     /// Current filter applied to the suggestion list.
     @State private var filter: RenameSuggestionFilter = .all
 
@@ -38,6 +44,13 @@ struct RenameReviewView: View {
 
             // Suggestion list or empty state
             suggestionList
+
+            // Batch rename action bar (AC1, AC2, AC3)
+            BatchRenameView(
+                viewModel: viewModel,
+                confirmationViewModel: confirmationViewModel,
+                undoManager: undoManager
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -255,11 +268,19 @@ struct RenameReviewView: View {
         ),
     ]
     vm.loadSuggestions(suggestions)
-    return RenameReviewView(viewModel: vm)
-        .frame(width: 500, height: 600)
+    return RenameReviewView(
+        viewModel: vm,
+        confirmationViewModel: nil,
+        undoManager: nil
+    )
+    .frame(width: 500, height: 600)
 }
 
 #Preview("Empty") {
-    RenameReviewView(viewModel: RenameViewModel())
-        .frame(width: 500, height: 400)
+    RenameReviewView(
+        viewModel: RenameViewModel(),
+        confirmationViewModel: nil,
+        undoManager: nil
+    )
+    .frame(width: 500, height: 400)
 }

@@ -92,7 +92,11 @@ struct AgentExecutionPanel: View {
                     undoManager: undoManager
                 )
             } else if let renameVM = renameViewModel, !renameVM.suggestions.isEmpty {
-                RenameReviewView(viewModel: renameVM)
+                RenameReviewView(
+                    viewModel: renameVM,
+                    confirmationViewModel: confirmationViewModel,
+                    undoManager: undoManager
+                )
             } else {
                 stepList
             }
